@@ -27,7 +27,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.tauri.dev-test",
       "targets": "all"
     },
     "security": {
@@ -40,7 +40,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "svoyak-tauri-app",
+        "title": "СВОЯК - HW edition",
         "width": 800,
         "height": 600
       }

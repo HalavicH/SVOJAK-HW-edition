@@ -11,7 +11,25 @@ async function greet() {
 window.addEventListener("DOMContentLoaded", () => {
     greetInputEl = document.querySelector("#greet-input");
     greetMsgEl = document.querySelector("#greet-msg");
-    document
-        .querySelector("#greet-button")
-        .addEventListener("click", () => greet());
+
+    // modal processing
+    const openModal = () => {
+        const modal = document.querySelector("#settingsModal");
+        modal.style.display = "block";
+    };
+
+    const closeModal = () => {
+        const modal = document.querySelector("#settingsModal");
+        modal.style.display = "none";
+    };
+
+    const settingsButton = document.querySelector("#settings-button");
+    settingsButton.addEventListener("click", openModal);
+
+    const closeButton = document.querySelector("#close-settings-modal");
+    closeButton.addEventListener("click", closeModal);
 });
+
+console.log("test");
+
+
