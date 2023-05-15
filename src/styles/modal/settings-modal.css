@@ -8,6 +8,9 @@
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.5);
+
+    backdrop-filter: blur(10px);
+    transition: opacity 0.5s;
 }
 
 .modal-content {
@@ -15,7 +18,7 @@
     border: 1px solid transparent;
 
     background-color: #313838;
-    /*margin: 10% auto;*/
+    margin: 10% auto;
     padding: 20px;
     width: 60%;
     max-width: 600px;
@@ -72,7 +75,7 @@
     font-family: inherit;
 
     color: #ded2d2;
-    background-color: #181717;
+    background-color: #262828;
 
     transition: border-color 0.25s;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
@@ -83,6 +86,7 @@
 .settings-group > .row {
     justify-content: space-between;
 }
+
 .settings-group select:hover {
     border-color: #999;
 }
@@ -90,4 +94,104 @@
 .settings-group select:focus {
     outline: none;
     box-shadow: 0 0 4px #aaa;
+}
+
+#apply-settings-btn {
+    width: fit-content;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-right: 20px;
+    color: #2a2a2a;
+    background-color: #189a84;
+
+    /*margin-left: 100px;*/
+}
+
+#apply-settings-btn:active {
+    background-color: #0f3b34;
+    color: #c4c4c4;
+}
+
+#apply-settings-row {
+    margin-top: 10px;
+    align-self: end;
+}
+
+/* Terminal table */
+#terminal-data-table {
+    /*background-color: black;*/
+}
+
+#terminal-data-table tr {
+    /*background-color: black;*/
+    text-align: center;
+    /*align-items: center;*/
+}
+
+#terminal-data-labels {
+    background-color: rgb(60, 70, 68);
+}
+
+#terminal-data-labels td {
+    /*background-color: #232827;*/
+    /*text-align: center;*/
+    border-radius: 10px;
+}
+
+.term-name {
+    text-align: center;
+}
+
+/************ Statuses ************/
+.hub-status {
+    padding: 0 5px 0 5px;
+    margin: 5px;
+    border-radius: 10px;
+    border: 1px solid black;
+
+    text-align: center;
+    width: fit-content;
+    font-weight: bolder;
+}
+
+.hub-status.not-detected {
+    color: #bdbbbb;
+    background-color: #c71111;
+}
+
+.hub-status.detected {
+    color: #3a3a3a;
+    background-color: #63c711;
+}
+
+/* Status badge */
+.term-status {
+    display: inline-block;
+    padding: 1px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bolder;
+    width: 60px;
+    text-align: center;
+}
+
+/* Define different badge styles for each status */
+.term-status.missing {
+    background-color: gray;
+    color: white;
+}
+
+.term-status.detected {
+    background-color: green;
+    color: white;
+}
+
+.term-status.pressed {
+    background-color: blue;
+    color: white;
+}
+
+.term-status.penalty {
+    background-color: red;
+    color: white;
 }
