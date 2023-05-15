@@ -14,13 +14,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // modal processing
     const openModal = () => {
-        const modal = document.querySelector("#settingsModal");
-        modal.style.display = "block";
+        const modalContainer = document.querySelector("#settings-modal");
+
+        modalContainer.style.display = "block";
+        modalContainer.offsetHeight;
+        modalContainer.style.opacity = 1;
     };
 
     const closeModal = () => {
-        const modal = document.querySelector("#settingsModal");
-        modal.style.display = "none";
+        const modalContainer = document.querySelector("#settings-modal");
+
+        modalContainer.style.opacity = 0;
+
+        setTimeout(function() {
+            modalContainer.style.display = "none";
+        }, 500);
     };
 
     const settingsButton = document.querySelector("#settings-button");

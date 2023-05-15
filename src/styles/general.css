@@ -1,3 +1,4 @@
+/* Text */
 a {
     font-weight: 500;
     color: #646cff;
@@ -12,11 +13,11 @@ h1 {
     text-align: center;
 }
 
+/* Text */
 input,
 button {
     border-radius: 8px;
     border: 1px solid transparent;
-    padding: 0.6em 1.2em;
     font-size: 1em;
     font-weight: 500;
     font-family: inherit;
@@ -24,6 +25,10 @@ button {
     background-color: #ffffff;
     transition: border-color 0.25s;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+button {
+    padding: 0.6em 1.2em;
 }
 
 button {
@@ -42,4 +47,24 @@ button:active {
 input,
 button {
     outline: none;
+}
+
+
+/* Blocks */
+table {
+    outline: black;
+    border: 1px solid black;
+
+    padding: 3px;
+    width: 100%;
+}
+
+tr {
+    margin: 2px;
+    padding: 2px;
+}
+
+td {
+    margin: 2px;
+    padding: 0 2px 0 2px;
 }

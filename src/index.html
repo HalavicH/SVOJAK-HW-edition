@@ -7,11 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Tauri App</title>
     <script type="module" src="main.js" defer></script>
-    <style>
-        .logo.vanilla:hover {
-            filter: drop-shadow(0 0 2em #ffe21c);
-        }
-    </style>
 </head>
 
 <body>
@@ -26,8 +21,8 @@
 
     <div class="row">
         <div>
-            <button id="settings-button" type="button">Setup HW & Players (HUB & Terminals)</button>
-            <p>or</p>
+            <button id="settings-button" type="button">Check setup (HW & Players)</button>
+            <p>then</p>
             <button id="start" type="button">Start the game</button>
         </div>
     </div>
@@ -36,8 +31,8 @@
 </div>
 
 <!-- Modal settings window -->
-<div id="settingsModal" class="modal">
-    <div class="modal-content">
+<div id="settings-modal" class="modal">
+    <div class="modal-content" id="settings-modal-content">
         <span class="close" id="close-settings-modal">&times;</span>
         <h2>Settings</h2>
         <!-- Add your settings options and controls here -->
@@ -74,27 +69,53 @@
                     </td>
                 </tr>
             </table>
+            <div id="apply-settings-row">
+                <button id="apply-settings-btn">Discover HUB</button>
+            </div>
         </div>
 
         <div class="settings-group" id="hw-status-group">
             <p class="title">HUB & Terminal status</p>
-            <table class="grid">
-                <tr class="grid-row">
-                    <td>
-                        Hub status:
-                    </td>
-                    <td>
-                        <div class="hub-status">Not Detected</div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Terminal status:
-                    </td>
-                    <td>
-                    </td>
-                </tr>
-            </table>
+            <div class="row">
+                <div>Hub status:</div>
+                <div class="hub-status detected">Detected</div>
+            </div>
+
+            <div id="hub-data-block">
+                <div>Terminal data:</div>
+                <table id="terminal-data-table">
+                    <tr id="terminal-data-labels">
+                        <td>Id</td>
+                        <td>Status</td>
+                        <td>Name</td>
+                        <td>Use</td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x01</td>
+                        <td class="term-status detected">Detected</td>
+                        <td><input type="text" class="term-name" placeholder="Enter player name"></td>
+                        <td><input type="checkbox" class=""></td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x02</td>
+                        <td class="term-status missing">Missing</td>
+                        <td><input type="text" class="term-name" placeholder="Enter player name"></td>
+                        <td><input type="checkbox"></td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x03</td>
+                        <td class="term-status detected">Detected</td>
+                        <td><input type="text" class="term-name" placeholder="Enter player name"></td>
+                        <td><input type="checkbox"></td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x04</td>
+                        <td class="term-status detected">Detected</td>
+                        <td><input type="text" class="term-name" placeholder="Enter player name"></td>
+                        <td><input type="checkbox"></td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </div>
