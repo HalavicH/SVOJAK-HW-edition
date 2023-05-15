@@ -1,5 +1,5 @@
 .modal {
-    display: none; /* TODO: change to none */
+    display: block; /* TODO: change to none */
     position: fixed;
     z-index: 9999;
     left: 0;
@@ -15,7 +15,7 @@
     border: 1px solid transparent;
 
     background-color: #313838;
-    margin: 10% auto;
+    /*margin: 10% auto;*/
     padding: 20px;
     width: 60%;
     max-width: 600px;
