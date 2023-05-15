@@ -1,0 +1,93 @@
+.modal {
+    display: none; /* TODO: change to none */
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    border-radius: 8px;
+    border: 1px solid transparent;
+
+    background-color: #313838;
+    margin: 10% auto;
+    padding: 20px;
+    width: 60%;
+    max-width: 600px;
+}
+
+.close {
+    color: #888;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* General settings group styles */
+.settings-group {
+    background-color: #2f2f2f;
+    border: 1px solid black;
+    border-radius: inherit;
+    padding: 5px 5px 5px 10px;
+    margin: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-group > .title {;
+    margin-top: 0;
+    margin-left: 15px;
+    color: #9cb7b9;
+    font-style: italic;
+    font-size: 16px;
+}
+
+.settings-group select {
+    /* For making flat looking */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    border-radius: 8px;
+    border: 1px solid transparent;
+
+    padding: 0 10px 0 10px;
+    margin: 5px 5px 5px 10px;
+
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+
+    color: #ded2d2;
+    background-color: #181717;
+
+    transition: border-color 0.25s;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+
+    width: 95%;
+}
+
+.settings-group > .row {
+    justify-content: space-between;
+}
+.settings-group select:hover {
+    border-color: #999;
+}
+
+.settings-group select:focus {
+    outline: none;
+    box-shadow: 0 0 4px #aaa;
+}
