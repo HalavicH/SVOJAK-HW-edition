@@ -38,7 +38,7 @@
         <!-- Add your settings options and controls here -->
 
         <div class="settings-group" id="serial-settings">
-            <p class="title">Setup Serial connection:</p>
+            <p class="title">Setup HUB Serial connection:</p>
             <table class="grid">
                 <tr class="grid-row">
                     <td>
@@ -56,61 +56,56 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="serial-speed-menu">Select speed: </label>
+                        <div>Hub status:</div>
                     </td>
                     <td>
-                        <select id="serial-speed-menu" name="size">
-                            <option value="dummy" selected>Dummy speed</option>
-                            <option value="COM1">9 600</option>
-                            <option value="COM2">11 800</option>
-                            <option value="COM3">115 200</option>
-                            <option value="COM4">200 000</option>
-                        </select>
+                        <div class="hub-status detected">Detected</div>
                     </td>
                 </tr>
             </table>
-            <div id="apply-settings-row">
-                <button id="apply-settings-btn">Discover HUB</button>
-            </div>
+<!--            <div id="apply-settings-row">-->
+<!--                <button id="apply-settings-btn">Discover HUB</button>-->
+<!--            </div>-->
         </div>
 
         <div class="settings-group" id="hw-status-group">
-            <p class="title">HUB & Terminal status</p>
-            <div class="row">
-                <div>Hub status:</div>
-                <div class="hub-status detected">Detected</div>
-            </div>
+            <p class="title">Setup terminals & users</p>
 
+            <div class="row">
+                <div>Provide radio channel num:</div>
+                <input type="text" name="radio-channel" id="radio-channel" placeholder="1-127">
+                <button id="discover-terminals" class="inline-btn">Discover</button>
+            </div>
             <div id="hub-data-block">
                 <div>Terminal data:</div>
                 <table id="terminal-data-table">
                     <tr id="terminal-data-labels">
                         <td>Id</td>
-                        <td>Status</td>
+                        <td>Icon</td>
                         <td>Name</td>
                         <td>Use</td>
                     </tr>
                     <tr class="terminal-data">
                         <td>0x01</td>
-                        <td class="term-status detected">Detected</td>
-                        <td><input type="text" class="term-name" placeholder="Enter player name"></td>
+                        <td><img src="assets/default-icon.png" class="user-image" alt="Select image"></td>
+                        <td><input type="text" class="term-name" id="term-one" placeholder="Enter player name"></td>
                         <td><input type="checkbox" class=""></td>
                     </tr>
                     <tr class="terminal-data">
                         <td>0x02</td>
-                        <td class="term-status missing">Missing</td>
+                        <td><img src="assets/default-icon.png" class="user-image" alt="Select image"></td>
                         <td><input type="text" class="term-name" placeholder="Enter player name"></td>
                         <td><input type="checkbox"></td>
                     </tr>
                     <tr class="terminal-data">
                         <td>0x03</td>
-                        <td class="term-status detected">Detected</td>
+                        <td><img src="assets/default-icon.png" class="user-image" alt="Select image"></td>
                         <td><input type="text" class="term-name" placeholder="Enter player name"></td>
                         <td><input type="checkbox"></td>
                     </tr>
                     <tr class="terminal-data">
                         <td>0x04</td>
-                        <td class="term-status detected">Detected</td>
+                        <td><img src="assets/default-icon.png" class="user-image" alt="Select image"></td>
                         <td><input type="text" class="term-name" placeholder="Enter player name"></td>
                         <td><input type="checkbox"></td>
                     </tr>
