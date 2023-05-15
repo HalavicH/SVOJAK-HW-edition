@@ -10,6 +10,7 @@
     background-color: rgba(0, 0, 0, 0.5);
 
     backdrop-filter: blur(10px);
+    /*opacity: 0;*/
     transition: opacity 0.5s;
 }
 
@@ -18,7 +19,7 @@
     border: 1px solid transparent;
 
     background-color: #313838;
-    margin: 10% auto;
+    /*margin: 10% auto;*/
     padding: 20px;
     width: 60%;
     max-width: 600px;
@@ -38,6 +39,7 @@
     text-decoration: none;
     cursor: pointer;
 }
+
 
 /* General settings group styles */
 .settings-group {
@@ -68,7 +70,7 @@
     border: 1px solid transparent;
 
     padding: 0 10px 0 10px;
-    margin: 5px 5px 5px 10px;
+    /*margin: 5px 5px 5px 10px;*/
 
     font-size: 1em;
     font-weight: 500;
@@ -96,10 +98,18 @@
     box-shadow: 0 0 4px #aaa;
 }
 
-#apply-settings-btn {
+
+/***************************************/
+/*               Elements              */
+/***************************************/
+#radio-channel {
+    margin-left: 0;
+    width: 70px;
+    text-align: center;
+}
+
+#discover-terminals {
     width: fit-content;
-    padding-top: 5px;
-    padding-bottom: 5px;
     margin-right: 20px;
     color: #2a2a2a;
     background-color: #189a84;
@@ -107,9 +117,10 @@
     /*margin-left: 100px;*/
 }
 
-#apply-settings-btn:active {
+#discover-terminals:active {
     background-color: #0f3b34;
     color: #c4c4c4;
+    box-shadow: 2px 2px black;
 }
 
 #apply-settings-row {
@@ -119,7 +130,8 @@
 
 /* Terminal table */
 #terminal-data-table {
-    /*background-color: black;*/
+    background-color: #2d2d2d;
+    border: 1px solid black;
 }
 
 #terminal-data-table tr {
@@ -133,25 +145,28 @@
 }
 
 #terminal-data-labels td {
+    /*border: 1px solid #181818;*/
     /*background-color: #232827;*/
     /*text-align: center;*/
     border-radius: 10px;
+    align-items: center;
 }
 
 .term-name {
     text-align: center;
+    width: 100%;
 }
 
 /************ Statuses ************/
 .hub-status {
-    padding: 0 5px 0 5px;
-    margin: 5px;
-    border-radius: 10px;
     border: 1px solid black;
-
     text-align: center;
-    width: fit-content;
+    display: inline-block;
+    padding: 1px 10px 1px 10px;
+    border-radius: 5px;
+    font-size: 12px;
     font-weight: bolder;
+    width: 60px;
 }
 
 .hub-status.not-detected {
@@ -166,13 +181,14 @@
 
 /* Status badge */
 .term-status {
+    border: 1px solid black;
+    text-align: center;
     display: inline-block;
     padding: 1px 10px;
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 5px;
+    font-size: 12px;
     font-weight: bolder;
     width: 60px;
-    text-align: center;
 }
 
 /* Define different badge styles for each status */
@@ -194,4 +210,19 @@
 .term-status.penalty {
     background-color: red;
     color: white;
+}
+
+#hub-data-block {
+    margin-top: 10px;
+}
+
+.user-image {
+    /*margin: 5px;*/
+    width: 32px;
+    height: 32px;
+
+    /*border: 1px solid black;*/
+    border-radius: 50%;
+
+    cursor: pointer;
 }
