@@ -44,15 +44,20 @@ async function openModal() {
 
     // Fill serial port menu
     const serialPortMenu = document.querySelector("#serial-port-menu");
+    serialPortMenu.innerHTML = "";
+
+    let optionElement = document.createElement("option");
+    optionElement.innerText = "Select port";
+    serialPortMenu.appendChild(optionElement);
 
     result.forEach((portName) => {
-        var optionElement = document.createElement("option");
 
+        var optionElement = document.createElement("option");
         optionElement.innerText = portName;
 
         serialPortMenu.appendChild(optionElement);
     });
-    
+
     setHubStatus(hubStatus);
     hubStatus = !hubStatus;
 
@@ -96,10 +101,10 @@ function selectImage() {
     fileInput.click();
 }
 
-function setHubStatus(isDetected) {
+function setHubStatus(status) {
     const hubStatus = document.querySelector(".hub-status");
 
-    if (isDetected) {
+    if (status === "Detected") {
         hubStatus.textContent = "Detected";
         hubStatus.className = "hub-status detected";
     } else {
@@ -126,4 +131,8 @@ async function serialPortSelectHandler(event) {
     const result = await invoke("open_selected_port", {path: selectedOption});
 
     console.info("serialPortSelectHandler: result = " + result);
+
+    setHubStatus(result);
 }
+
+setHubStatus();
