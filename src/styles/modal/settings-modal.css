@@ -169,17 +169,19 @@
     border-radius: 5px;
     font-size: 12px;
     font-weight: bolder;
-    width: 60px;
+    width: 90px;
 }
 
 .hub-status.not-detected {
     color: #bdbbbb;
     background-color: #c71111;
+    content: 'Not detected';
 }
 
 .hub-status.detected {
     color: #3a3a3a;
     background-color: #63c711;
+    content: 'Detected';
 }
 
 /* Status badge */
