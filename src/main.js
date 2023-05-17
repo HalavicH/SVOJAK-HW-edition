@@ -20,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const closeButton = document.querySelector("#close-settings-modal");
     closeButton.addEventListener("click", closeModal);
 
-    const first = document.querySelector(".term-name");
+    const first = document.querySelector("#term-one");
     first.addEventListener("click", selectImage);
 });
 
@@ -59,7 +59,7 @@ function selectImage() {
         var reader = new FileReader();
         reader.onload = function(e) {
             // Update the image cell with the selected image
-            document.getElementById("image-cell").src = e.target.result;
+            document.getElementById("term-one").src = e.target.result;
         };
         reader.readAsDataURL(file);
     });
