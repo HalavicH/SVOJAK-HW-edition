@@ -25,10 +25,10 @@ window.addEventListener("DOMContentLoaded", () => {
     first.addEventListener("click", selectImage);
 
     document.querySelector("#discover-terminals")
-            .addEventListener("click", discover);
+        .addEventListener("click", discover);
 
     document.querySelector("#serial-port-menu")
-            .addEventListener("change", serialPortSelectHandler);
+        .addEventListener("change", serialPortSelectHandler);
 
 });
 
@@ -38,12 +38,12 @@ async function openModal() {
     const modalContainer = document.querySelector("#settings-modal");
 
     // Serial data obtaining
-    var result = await invoke("discover_serial_ports");
+    const result = await invoke("discover_serial_ports");
 
     console.info("openModal: result = " + result);
 
     // Fill serial port menu
-    var serialPortMenu = document.querySelector("#serial-port-menu");
+    const serialPortMenu = document.querySelector("#serial-port-menu");
 
     result.forEach((portName) => {
         var optionElement = document.createElement("option");
@@ -52,41 +52,40 @@ async function openModal() {
 
         serialPortMenu.appendChild(optionElement);
     });
-
-
+    
     setHubStatus(hubStatus);
     hubStatus = !hubStatus;
-
 
     modalContainer.style.display = "block";
     modalContainer.offsetHeight;
     modalContainer.style.opacity = 1;
-};
+}
 
 function closeModal() {
     const modalContainer = document.querySelector("#settings-modal");
 
     modalContainer.style.opacity = 0;
 
-    setTimeout(function() {
+    setTimeout(function () {
         modalContainer.style.display = "none";
     }, 500);
-};
+}
+
 function selectImage() {
     // Create an input element of type "file"
-    var fileInput = document.createElement("input");
+    const fileInput = document.createElement("input");
     fileInput.type = "file";
 
     // Set the accept attribute to filter only image files
     fileInput.accept = "image/*";
 
     // Add an event listener to handle file selection
-    fileInput.addEventListener("change", function(event) {
-        var file = event.target.files[0];
+    fileInput.addEventListener("change", function (event) {
+        const file = event.target.files[0];
 
         // Read the selected image file
-        var reader = new FileReader();
-        reader.onload = function(e) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
             // Update the image cell with the selected image
             document.getElementById("term-one").src = e.target.result;
         };
@@ -98,7 +97,7 @@ function selectImage() {
 }
 
 function setHubStatus(isDetected) {
-    var hubStatus = document.querySelector(".hub-status");
+    const hubStatus = document.querySelector(".hub-status");
 
     if (isDetected) {
         hubStatus.textContent = "Detected";
@@ -110,21 +109,21 @@ function setHubStatus(isDetected) {
 }
 
 async function discover() {
-    var channelIdObject = document.querySelector("#radio-channel");
-    var result = await invoke("discover_terminals",
-                              {channelId: parseInt(channelIdObject.value)});
+    const channelIdObject = document.querySelector("#radio-channel");
+    const result = await invoke("discover_terminals",
+        {channelId: parseInt(channelIdObject.value)});
 
     console.info("result = " + result);
 }
 
 async function serialPortSelectHandler(event) {
     // Get the selected option value
-    var selectedOption = event.target.value;
+    const selectedOption = event.target.value;
 
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
 
-    var result = await invoke("open_selected_port", {path: selectedOption});
+    const result = await invoke("open_selected_port", {path: selectedOption});
 
     console.info("serialPortSelectHandler: result = " + result);
 }
