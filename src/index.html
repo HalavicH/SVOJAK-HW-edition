@@ -40,7 +40,15 @@
         <div class="settings-group" id="serial-settings">
             <p class="title">Setup HUB Serial connection:</p>
             <table class="grid">
-                <tr class="grid-row">
+                <tr>
+                    <td>
+                        <div>Hub status:</div>
+                    </td>
+                    <td>
+                        <div class="hub-status not-detected">Not detected</div>
+                    </td>
+                </tr>
+                <tr>
                     <td>
                         <label for="serial-port-menu">Select serial device: </label>
                     </td>
@@ -48,14 +56,6 @@
                         <select id="serial-port-menu" name="size">
                             <option value="dummy" selected>Select serial port</option>
                         </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div>Hub status:</div>
-                    </td>
-                    <td>
-                        <div class="hub-status not-detected">Not detected</div>
                     </td>
                 </tr>
             </table>
