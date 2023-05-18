@@ -165,7 +165,8 @@
     border: 1px solid black;
     text-align: center;
     display: inline-block;
-    padding: 1px 10px 1px 10px;
+    padding: 0 4px;
+    margin: 5px 0;
     border-radius: 5px;
     font-size: 12px;
     font-weight: bolder;
@@ -173,15 +174,17 @@
 }
 
 .hub-status.not-detected {
-    color: #bdbbbb;
-    background-color: #c71111;
-    content: 'Not detected';
+    color: #8a8a8a;
+    background: rgba(173, 173, 173, 0.1);
+    border: 1px solid #818181;
 }
 
 .hub-status.detected {
-    color: #3a3a3a;
-    background-color: #63c711;
-    content: 'Detected';
+    color: #52AA65;
+    background: rgba(82, 170, 101, 0.1);
+    border: 1px solid #52AA65;
+    box-shadow: 0 0 0.5em #58db24;
+    transition: box-shadow 0.5s;
 }
 
 /* Status badge */
