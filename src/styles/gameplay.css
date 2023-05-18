@@ -1,0 +1,5 @@
+@import "general.css";
+@import "root.css";
+#controls {
+    display: none;
+}
