@@ -1,11 +1,11 @@
-const {invoke} = window.__TAURI__.tauri;
+// const {invoke} = window.__TAURI__.tauri;
 
 let greetInputEl;
 let greetMsgEl;
 
 async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    greetMsgEl.textContent = await invoke("greet", {name: greetInputEl.value});
+    greetMsgEl.textContent = await invoke("greet", { name: greetInputEl.value });
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -43,6 +43,7 @@ const closeModal = () => {
         modalContainer.style.display = "none";
     }, 500);
 };
+
 function selectImage() {
     // Create an input element of type "file"
     var fileInput = document.createElement("input");
