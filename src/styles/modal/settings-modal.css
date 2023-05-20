@@ -19,7 +19,7 @@
     border: 1px solid transparent;
 
     background-color: var(--modal-background-color);
-    margin: 10% auto;
+    /*margin: 10% auto;*/
     padding: 20px;
     width: 60%;
     max-width: 600px;

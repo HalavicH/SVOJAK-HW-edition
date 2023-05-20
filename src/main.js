@@ -16,10 +16,13 @@ window.addEventListener("DOMContentLoaded", () => {
     // modal processing
 
     const settingsButton = document.querySelector("#settings-button");
-    settingsButton.addEventListener("click", openModal);
+    settingsButton.addEventListener("click", openSettingsModal);
+
+    const settingsButton1 = document.querySelector("#start");
+    settingsButton1.addEventListener("click", openSettingsModal);
 
     const closeButton = document.querySelector("#close-settings-modal");
-    closeButton.addEventListener("click", closeModal);
+    closeButton.addEventListener("click", closeSettingsModal);
 
     const first = document.querySelector("#term-one");
     first.addEventListener("click", selectImage);
@@ -34,13 +37,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
 console.log("test");
 
-async function openModal() {
+function openModal(modalContainer) {
+    modalContainer.style.display = "block";
+    modalContainer.offsetHeight;
+    modalContainer.style.opacity = 1;
+}
+
+async function openSettingsModal() {
     const modalContainer = document.querySelector("#settings-modal");
 
     // Serial data obtaining
     const result = await invoke("discover_serial_ports");
 
-    console.info("openModal: result = " + result);
+    console.info("openSettingsModal: result = " + result);
 
     // Fill serial port menu
     const serialPortMenu = document.querySelector("#serial-port-menu");
@@ -61,19 +70,25 @@ async function openModal() {
     setHubStatus(hubStatus);
     hubStatus = !hubStatus;
 
-    modalContainer.style.display = "block";
-    modalContainer.offsetHeight;
-    modalContainer.style.opacity = 1;
+    openModal(modalContainer);
 }
 
-function closeModal() {
-    const modalContainer = document.querySelector("#settings-modal");
-
+function closeModal(modalContainer) {
     modalContainer.style.opacity = 0;
 
     setTimeout(function () {
         modalContainer.style.display = "none";
     }, 500);
+}
+
+function closeSettingsModal() {
+    const modalContainer = document.querySelector("#settings-modal");
+    closeModal(modalContainer);
+}
+
+function closePackModal() {
+    const modalContainer = document.querySelector("#pack-modal");
+    closeModal(modalContainer);
 }
 
 function selectImage() {
