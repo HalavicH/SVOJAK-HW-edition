@@ -64,7 +64,7 @@ button:hover {
 
 button:active {
     border-color: #396cd8;
-    background-color: #e8e8e8;
+    background-color: var(--primary-button-active-color);
 }
 
 /* Blocks */
