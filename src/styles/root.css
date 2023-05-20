@@ -1,12 +1,24 @@
 :root {
+    /* SET LIGHT THEME */
+    --text-color: #0f0f0f;
+    --background-color: #f6f6f6;
+    --primary-button-color: #ffffff;
+    --modal-background-color: #eaf6f6;
+    --modal-settings-block: #e2f0fd;
+    --modal-table-background-color: #c3ebef;
+    --modal-table-border-color: #bddce0;
+    --modal-labels-color: #c5cef5;
+    --modal-settings-block-border: #8692c9;
+    --select-modal-button-color: #c7cef2;
+    --modal-discover-button-color: #cbeaee;
+    --modal-discover-button-border-color: #bddce0;
+
+    color: var(--text-color);
+    background-color: var(--background-color);
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
     font-size: 16px;
     line-height: 24px;
     font-weight: 400;
-
-    color: #0f0f0f;
-    background-color: #f6f6f6;
-
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -14,3 +26,19 @@
     -webkit-text-size-adjust: 100%;
 }
 
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* SET DARK THEME */
+        --text-color: #f6f6f6;
+        --background-color: #2f2f2f;
+        --primary-button-color: #b1bfc098;
+        --modal-background-color: #383838;
+        --modal-settings-block: #2f2f2f;
+        --modal-table-background-color: #262626;
+        --modal-labels-color: #3d4643;
+        --modal-settings-block-border: #000000;
+        --select-modal-button-color: #262828;
+        --modal-discover-button-color: #499885;
+        --modal-discover-button-border-color: #368270;
+    }
+}

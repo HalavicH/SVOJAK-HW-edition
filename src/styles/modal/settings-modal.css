@@ -18,7 +18,7 @@
     border-radius: 8px;
     border: 1px solid transparent;
 
-    background-color: #313838;
+    background-color: var(--modal-background-color);
     margin: 10% auto;
     padding: 20px;
     width: 60%;
@@ -40,11 +40,10 @@
     cursor: pointer;
 }
 
-
 /* General settings group styles */
 .settings-group {
-    background-color: #2f2f2f;
-    border: 1px solid black;
+    background-color: var(--modal-settings-block);
+    border: 1px solid var(--modal-settings-block-border);
     border-radius: inherit;
     padding: 5px 5px 5px 10px;
     margin: 5px;
@@ -52,10 +51,11 @@
     flex-direction: column;
 }
 
-.settings-group > .title {;
+.settings-group > .title {
     margin-top: 0;
     margin-left: 15px;
-    color: #9cb7b9;
+    /* color: #9cb7b9; */
+    color: var(--text-color);
     font-style: italic;
     font-size: 16px;
 }
@@ -76,8 +76,9 @@
     font-weight: 500;
     font-family: inherit;
 
-    color: #ded2d2;
-    background-color: #262828;
+    color: var(--text-color);
+    background-color: var(--select-modal-button-color);
+    border: solid 1px #3a3a3a6e;
 
     transition: border-color 0.25s;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
@@ -98,7 +99,6 @@
     box-shadow: 0 0 4px #aaa;
 }
 
-
 /***************************************/
 /*               Elements              */
 /***************************************/
@@ -112,7 +112,8 @@
     width: fit-content;
     margin-right: 20px;
     color: #2a2a2a;
-    background-color: #189a84;
+    background-color: var(--modal-discover-button-color);
+    border: solid 1px var(--modal-discover-button-border-color);
 
     /*margin-left: 100px;*/
 }
@@ -130,7 +131,8 @@
 
 /* Terminal table */
 #terminal-data-table {
-    background-color: #262626;
+    background-color: var(--modal-table-background-color);
+    border: solid 1px var(--modal-table-border-color);
     margin-top: 5px;
     padding: 5px;
     border-radius: 10px;
@@ -144,7 +146,7 @@
 }
 
 #terminal-data-labels {
-    background-color: rgb(60, 70, 68);
+    background-color: var(--modal-labels-color);
 }
 
 #terminal-data-labels td {
@@ -180,11 +182,9 @@
 }
 
 .hub-status.detected {
-    color: #52AA65;
+    color: #52aa65;
     background: rgba(82, 170, 101, 0.1);
-    border: 1px solid #52AA65;
-    box-shadow: 0 0 0.5em #58db24;
-    transition: box-shadow 0.5s;
+    border: 1px solid #52aa65;
 }
 
 /* Status badge */
@@ -234,12 +234,3 @@
 
     cursor: pointer;
 }
-
-/*.modal {*/
-/*    display: block;*/
-/*    opacity: 1;*/
-/*}*/
-
-/*.modal-content {*/
-/*    margin: unset;*/
-/*}*/
