@@ -183,6 +183,8 @@
     color: #52aa65;
     background: rgba(82, 170, 101, 0.1);
     border: 1px solid #52aa65;
+    box-shadow: 0 0 0.5em #58db24;
+    transition: box-shadow 0.5s;
 }
 
 /* Status badge */
