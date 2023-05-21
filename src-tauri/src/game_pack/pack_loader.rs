@@ -92,3 +92,8 @@ fn map_package(dto: PackageDto) -> Package {
         },
     }
 }
+
+pub fn load_pack(file_path: &str) -> Package {
+    let package: PackageDto = parse_package(file_path);
+    map_package(package)
+}
