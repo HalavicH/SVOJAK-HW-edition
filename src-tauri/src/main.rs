@@ -50,4 +50,17 @@ fn main() {
                         open_selected_port])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    /*
+     *  Pack loader usage example
+     *
+     * let package: Package = load_pack("path/to/content.xml");
+     *
+     * println!("{:#?}", package);
+     *
+     * Before using such modules should be included:
+     *
+     * use svoyak_tauri_app::game_pack::pack_entities::Package;
+     * use svoyak_tauri_app::game_pack::pack_loader::load_pack;
+     */
 }
