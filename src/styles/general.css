@@ -1,4 +1,4 @@
-/* @import url("./skroll.css"); */
+@import "root.css";
 
 html {
     box-sizing: border-box;
@@ -114,3 +114,8 @@ td {
 .inline-btn {
     padding: 0 10px 0 10px;
 }
+
+li {
+    list-style-type: none;
+}
+
