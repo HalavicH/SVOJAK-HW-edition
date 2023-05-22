@@ -70,9 +70,16 @@
     width: 90px;
 }
 
-.hub-status.not-detected {
+.hub-status.no-device {
     color: #8a8a8a;
     background: rgba(173, 173, 173, 0.1);
+    border: 1px solid #818181;
+}
+
+
+.hub-status.unknown-device {
+    color: #8a8a8a;
+    background: rgba(163, 147, 3, 0.1);
     border: 1px solid #818181;
 }
 
@@ -121,7 +128,7 @@
     margin-top: 10px;
 }
 
-.user-image {
+.player-image {
     width: 32px;
     height: 32px;
     border-radius: 50%;
