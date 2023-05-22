@@ -1,12 +1,13 @@
 @import "general.css";
 
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
     padding: 0;
     color: var(--text-color);
     background-color: var(--background-color);
-  }  
+}
 
 .container {
     height: 100vh;
@@ -23,47 +24,118 @@ html, body {
 }
 
 #round-label {
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 13px;
+    margin: 10px;
+    margin-bottom: 0;
+    font-size: 22px;
     border: solid 1px #DCC680;
     border-radius: 5px;
-    width: 212px;
     height: 27px;
     background-color: #FDF2D0;
     color: black;
     font-weight: bold;
     padding: 7px 0px 7px 0px;
     text-align: center;
+
 }
 
 
 #player-list {
     display: flex;
-    flex-direction: row;
+    flex-wrap: nowrap;
     justify-content: center;
     border-radius: 10px;
-    background-color: var(--modal-table-background-color);
+    background-color: var(--items-block-color);
     margin-top: auto;
+    height: 30vh;
+    margin: 10px;
+    margin-top: 0;
 }
 
 .player-badge {
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
+
+    background-color: var(--items-block-color);
+    border: 1px solid var(--items-block-border-color);
     border-radius: 10px;
+    padding: 5px 5px 5px 10px;
+    margin: 5px;
+    max-width: 15%;
 }
 
+/* Statuses */
+.player-badge.inactive {
+    color: #000000;
+    filter: grayscale(100%);
+    border: 1px solid #818181;
+}
+
+.player-badge.game-over {
+    color: #000000;
+    filter: grayscale(100%);
+    border: 1px solid #818181;
+}
+
+.player-badge.first-response {
+    color: #ffffff;
+    background: rgba(45, 62, 163, 0.5);
+    border: 1px solid #3844b3;
+    box-shadow: 0 0 0.5em #243fdb;
+    transition: box-shadow 0.5s;
+}
+
+.player-badge.topic-selection {
+    color: #ffffff;
+    background: rgba(56, 143, 146, 0.8);
+    border: 1px solid #18afb9;
+    box-shadow: 0 0 0.5em #2dd1dd;
+    transition: box-shadow 0.5s;
+}
+
+.player-badge.target-player {
+    color: #ffffff;
+    background: rgba(108, 36, 190, 0.836);
+    border: 1px solid #3a0086;
+    box-shadow: 0 0 0.9em #59049e;
+    transition: box-shadow 0.5s;
+}
+
+.player-badge.wrong-answer {
+    color: #ffffff;
+    background: rgba(190, 36, 36, 0.836);
+    border: 1px solid #cc0d0d;
+    box-shadow: 0 0 0.9em #ff0000;
+    transition: box-shadow 0.5s;
+}
+
+.player-badge.correct-answer {
+    color: #ffffff;
+    background: rgba(82, 170, 101, 0.6);
+    border: 1px solid #52aa65;
+    box-shadow: 0 0 0.5em #58db24;
+    transition: box-shadow 0.5s;
+}
+
+
 .player-icon {
-    max-width: 250px;
-    max-height: 200px;
+    box-sizing: border-box;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    align-self: center;
 }
 
 .player-details {
     display: flex;
     flex-direction: row;
+    position: relative;
+    align-self: center;
     margin-left: auto;
     margin-right: auto;
-    background-color: var(--modal-labels-color);
-    border-radius: inherit;
+    background-color: var(--modal-table-labels-color);
     padding: 3px 7px 3px 7px;
 }
 
@@ -77,6 +149,7 @@ html, body {
     margin: 0;
 }
 
+/* Table */
 #round-data {
     border-collapse: collapse;
     border: 1px solid white;
@@ -90,6 +163,11 @@ html, body {
 
 #round-data-box {
     flex: 1;
+}
+
+.items-block {
+    margin: 10px;
+    padding: 0;
 }
 
 .round-td-theme {
