@@ -1,0 +1,73 @@
+@import "./modal-common.css";
+
+
+.pack-info-title {
+    margin-top: 0%;
+    text-align: center;
+    color: var(--title-text-color);
+    font-style: italic;
+    font-size: 20px;
+}
+
+/***************************************/
+/*               Elements              */
+/***************************************/
+
+#pack-name {
+    text-align: center;
+    font-size: x-large;
+}
+
+#pack-author-form {
+    margin: 0;
+    text-align: center;
+}
+
+/*  */
+#topic-list-title {
+    margin-left: 20px;
+}
+
+#topic-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+#topic-list li {
+    list-style-type: disc;
+    min-width: 30%;
+}
+
+/*  */
+#pack-content-brief {
+    display: flex;
+    flex-direction: row;
+}
+
+#pack-content-brief li {
+    padding: 0;
+    justify-content: space-between;
+    flex: 1;
+}
+
+#start-the-game {
+    align-self: center;
+    align-items: center;
+}
+
+#round-duration-selector-block {
+    display: flex;
+    justify-content: space-around;
+}
+
+#round-duration {
+    width: 20%;
+    align-self: center;
+}
+
+#action-block {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+}
