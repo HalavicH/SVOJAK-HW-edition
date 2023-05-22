@@ -183,3 +183,7 @@ body {
     font-weight: bold;
     font-size: xx-large;
 }
+
+.round-td-price.used {
+    background-color: #807c7c;
+}
