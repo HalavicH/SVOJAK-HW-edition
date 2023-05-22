@@ -5,7 +5,9 @@
         <link rel="stylesheet" href="styles/index.css" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Tauri App</title>
-        <script type="module" src="main.js" defer></script>
+        <script type="module" src="./scripts/main.js" defer></script>
+        <script type="module" src="./scripts/index.js" defer></script>
+
     </head>
 
     <body>
@@ -50,9 +52,7 @@
                                 <div>Hub status:</div>
                             </td>
                             <td>
-                                <div class="hub-status not-detected">
-                                    Not detected
-                                </div>
+                                <div id="hub-status-field" class="hub-status"></div>
                             </td>
                         </tr>
                         <tr>
@@ -62,11 +62,7 @@
                                 </label>
                             </td>
                             <td>
-                                <select id="serial-port-menu" name="size">
-                                    <option value="dummy" selected>
-                                        Select serial port
-                                    </option>
-                                </select>
+                                <select id="serial-port-menu" name="size"></select>
                             </td>
                         </tr>
                     </table>
@@ -104,7 +100,7 @@
                                 <td>
                                     <img
                                         src="assets/default-icon.png"
-                                        class="user-image"
+                                        class="player-image"
                                         id="term-one"
                                         alt="Select image"
                                     />
@@ -123,7 +119,7 @@
                                 <td>
                                     <img
                                         src="assets/default-icon.png"
-                                        class="user-image"
+                                        class="player-image"
                                         alt="Select image"
                                     />
                                 </td>
@@ -141,7 +137,7 @@
                                 <td>
                                     <img
                                         src="assets/default-icon.png"
-                                        class="user-image"
+                                        class="player-image"
                                         alt="Select image"
                                     />
                                 </td>
@@ -159,7 +155,7 @@
                                 <td>
                                     <img
                                         src="assets/default-icon.png"
-                                        class="user-image"
+                                        class="player-image"
                                         alt="Select image"
                                     />
                                 </td>
