@@ -1,0 +1,116 @@
+@import "general.css";
+@import "modal/settings-modal.css";
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+    background-color: var(--background-color);
+  }  
+
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    justify-content: flex-start;
+    /* align-items: center; */
+    /* width: 100%; */
+    border: solid 1px #FFFFFF;
+    overflow: auto;
+}
+
+#controls {
+    display: none;
+
+}
+
+#round-label {
+    /* position: absolute; */
+    margin-left: auto;
+    margin-right: auto;
+    /* top: 0%; */
+    font-size: 13px;
+    border: solid 1px #DCC680;
+    border-radius: 5px;
+    width: 212px;
+    height: 27px;
+    background-color: #FDF2D0;
+    color: black;
+    font-weight: bold;
+    padding: 7px 0px 7px 0px;
+    text-align: center;
+}
+
+
+#player-list {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    /* flex-wrap: wrap; */
+    /* margin-bottom: 0;
+    padding: 5px; */
+    background-color: var(--modal-table-background-color);
+    margin-top: auto; /* Push players section to the bottom */
+    box-sizing: border-box;
+}
+
+.player-badge {
+    box-sizing: border-box;
+}
+
+.player-icon {
+    max-width: 250px;
+    max-height: 200px;
+}
+
+.player-details {
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: var(--modal-labels-color);
+    border-radius: inherit;
+    padding: 3px 7px 3px 7px;
+
+}
+
+.player-details-name {
+    padding: 3px;
+    margin: 0;
+}
+
+.player-details-score {
+    padding: 3px;
+    margin: 0;
+}
+
+#round-data {
+    border-collapse: collapse;
+    border: 1px solid white;
+    flex: 1;
+}
+
+#round-data th,
+#round-data td {
+    border: 1px solid white;
+}
+
+#round-data-box {
+    flex: 1;
+}
+
+.round-td-theme {
+    width: 40%;
+    font-weight: bold;
+    text-align: center;
+    font-size: xx-large;
+}
+
+.round-td-price {
+    width: 10%;
+    text-align: center;
+    font-weight: bold;
+    font-size: xx-large;
+}
