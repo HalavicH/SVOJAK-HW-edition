@@ -45,11 +45,11 @@ export function getSettingsConfig() {
 
 export function getPackInfo(pathToPack) {
     return {
-        packName: "Zlyj reper Zenyk",
-        packAuthor: "Zlyj reper Zenyk",
-        packRounds: 3,
-        packTopics: 20,
-        packQuestion: 66,
-        packTopicList: ["sss", "ooo", "mmm", "bbb", "rrr", "aaa", "Fallout Equestria"]
+        packName: "Скрябін",
+        packAuthor: "Кузьма",
+        packRounds: 1,
+        packTopics: 10,
+        packQuestion: 16,
+        packTopicList: ["фsss", "фooo", "фmmm", "фbbb", "rrr", "aaa", "Fallout Equestria"]
     }
 }
