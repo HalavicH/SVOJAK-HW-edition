@@ -5,8 +5,12 @@ console.log("Gameplay loaded!");
 
 window.addEventListener("DOMContentLoaded", () => {
     // modal processing
-    document.querySelector("#go-to-main-menu").addEventListener("click", () => {
-        window.location.href = "./index.html";
+    document.querySelectorAll(".go-to-main-menu")
+        .forEach((button) => {
+            console.log("Applying handler to button: " + button);
+            button.addEventListener("click", () => {
+                window.location.href = "./index.html";
+        });
     });
 
     // document.querySelector("#go-to-main-menu").addEventListener("click", () => {
@@ -63,7 +67,10 @@ function processRoundFromBackend() {
     const packList = document.querySelector("#round-data-tbody")
     packList.innerHTML = "";
 
-    document.querySelector("#round-label").innerText = "Round: " + round.roundName;
+    document.querySelectorAll(".round-label")
+        .forEach((label) => {
+            label.innerText = "Round: " + round.roundName;
+        });
 
     round.roundTopics.forEach((topic) => {
         // Create row
@@ -130,6 +137,25 @@ function processQuestionSelection(event) {
         return;
     }
 
-    console.log("Retreiving question '" + topic + ":" + price + "'");
     question.className = "round-td-price used";
+    console.log("Retreiving question '" + topic + ":" + price + "'");
+
+    processQustionDisplay(topic, price);
+}
+
+function processQustionDisplay(topic, price) {
+    displayQuestionScreen();
+
+    // const question = getQuestionData(topic, price);
+
+}
+
+function displayQuestionScreen() {
+    // Disable round viewport
+    const roundViewport = document.querySelector("#round-screen");
+    roundViewport.style.display = "none";
+
+    // Enable question viewport
+    const questionViewport = document.querySelector("#question-screen");
+    questionViewport.style.display = "flex";
 }
