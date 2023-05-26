@@ -6,18 +6,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./styles/gameplay.css">
+    <script type="module" src="./scripts/gameplay.js" defer></script>
 
     <title>Document</title>
 </head>
 
 <body>
     <div class="container">
-        <div>
+        <div id="title-bar">
             <p id="round-label">Round: (number)</p>
+            <button type="button" id="go-to-main-menu">Menu</button>
         </div>
         <div class="items-block" id="round-data-box">
             <table id="round-data">
-                <tbody>
+                <tbody id="round-data-tbody">
                     <tr>
                         <td class="round-td-theme">Група 1</td>
                         <td class="round-td-price used">100</td>
@@ -25,7 +27,6 @@
                         <td class="round-td-price">300</td>
                         <td class="round-td-price">400</td>
                         <td class="round-td-price">500</td>
-
                     </tr>
                     <tr>
                         <td class="round-td-theme">Група 2</td>
