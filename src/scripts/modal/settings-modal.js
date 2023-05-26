@@ -1,7 +1,8 @@
 
 import {openModal, closeModal} from "./modal-common.js";
 import {getSettingsConfig} from "./../back-end-com.js";
-import {isImageExisting} from "../utils.js";
+import {getImagePathOrDefault} from "../utils.js";
+
 
 
 const {invoke} = window.__TAURI__.tauri;
@@ -95,13 +96,7 @@ function fillPlayersData(newPlayersData) {
         let tdIcon = document.createElement("td");
         tr.appendChild(tdIcon);
 
-        let imagePath = playerData.playerIconPath;
-        if ((imagePath === undefined)
-            || (imagePath === "")
-            || (isImageExisting(imagePath) === false)) {
-            console.log("Using default icon for user: " + playerData.playerName);
-            imagePath = "./assets/default-icon.png";
-        }
+        const imagePath = getImagePathOrDefault(playerData.playerIconPath);
 
         let icon = document.createElement("img");
         icon.src = imagePath;
