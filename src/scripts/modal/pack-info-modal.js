@@ -58,3 +58,9 @@ export function closePackInfoModal() {
 
     closeModal(modalPackInfoContainer);
 }
+
+export function goToGameplayPage() {
+    window.location.href = "./gameplay.html";
+}
+
+
