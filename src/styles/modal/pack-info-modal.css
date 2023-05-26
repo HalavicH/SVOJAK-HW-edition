@@ -1,22 +1,10 @@
 @import "./modal-common.css";
 
 
-.pack-info-title {
-    margin-top: 0%;
-    text-align: center;
-    color: var(--title-text-color);
-    font-style: italic;
-    font-size: 20px;
-}
 
 /***************************************/
 /*               Elements              */
 /***************************************/
-
-#pack-name {
-    text-align: center;
-    font-size: x-large;
-}
 
 #pack-author-form {
     margin: 0;

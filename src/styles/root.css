@@ -17,6 +17,8 @@
     --modal-table-border-color: #bddce0;
     --modal-select-color: #c7cef2;
 
+    --accent-color: rgba(40, 114, 124, 0.281);
+
     /* Other common settings */
     color: var(--text-color);
     background-color: var(--background-color);
@@ -50,5 +52,7 @@
         --modal-table-border-color: rgba(189, 220, 224, 0);
         --modal-table-labels-color: #3d4643;
         --modal-select-color: #262828;
+
+        --accent-color: rgba(40, 114, 124, 0.281);
     }
 } 
