@@ -1,5 +1,6 @@
 @import "general.css";
 @import "./modal/pig-in-poke-modal.css";
+@import "./modal/auction-modal.css";
 
 html,
 body {

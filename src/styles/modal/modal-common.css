@@ -34,8 +34,12 @@
 }
 
 .items-block-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
     margin-top: 5px;
-    text-align: center;
+
     color: var(--title-text-color);
     font-style: italic;
     font-size: 20px;

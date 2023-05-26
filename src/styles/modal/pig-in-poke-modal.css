@@ -3,7 +3,7 @@
 /* #pig-in-poke-modal {
     display: block;
     opacity: 1;
-} */
+}   */
 
 #pig-in-poke-rules {
     display: flex;
@@ -48,7 +48,7 @@
 .player-victim-badge > .name {
     text-align: center;
 
-    background-color: rgb(17, 61, 8);
+    background-color: rgb(94, 4, 4);
     border: 1px solid var(--items-block-border-color);
     border-radius: 10px;
 
