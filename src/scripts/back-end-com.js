@@ -1,7 +1,3 @@
-
-
-
-
 export function getSettingsConfig() {
     return {
         hubStatus: "Detected",
@@ -13,34 +9,34 @@ export function getSettingsConfig() {
                 terminalId: 35,
                 playerIconPath: "./assets/default-icon.png",
                 playerName: "Button",
-                used: true
+                used: true,
             },
             {
                 terminalId: 34,
                 playerIconPath: "",
                 playerName: "Button2",
-                used: true
+                used: true,
             },
             {
                 terminalId: 33,
                 playerIconPath: "",
                 playerName: "Button3",
-                used: true
+                used: true,
             },
             {
                 terminalId: 32,
                 playerIconPath: "",
                 playerName: "Button4",
-                used: true
+                used: true,
             },
             {
                 terminalId: 31,
                 playerIconPath: "",
                 playerName: "Button5",
-                used: true
-            }
-        ]
-    }
+                used: true,
+            },
+        ],
+    };
 }
 
 export function getPackInfo(pathToPack) {
@@ -50,6 +46,124 @@ export function getPackInfo(pathToPack) {
         packRounds: 1,
         packTopics: 10,
         packQuestion: 16,
-        packTopicList: ["фsss", "фooo", "фmmm", "фbbb", "rrr", "aaa", "Fallout Equestria"]
-    }
+        packTopicList: ["фsss", "фooo", "фmmm", "фbbb", "rrr", "aaa", "Fallout Equestria"],
+    };
+}
+
+export function fetchPlayers() {
+    return [
+        {
+            playerIconPath: "./assets/default-icon.png",
+            playerName: "Button",
+            score: 200,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button2",
+            score: 500,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button3",
+            score: 200,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button4",
+            score: 700,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button5",
+            score: -100,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button2",
+            score: 500,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button3",
+            score: 200,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button4",
+            score: 700,
+        },
+        {
+            playerIconPath: "",
+            playerName: "Button5",
+            score: -100,
+        },
+    ];
+}
+
+export function fetchRound() {
+    return {
+        roundName: "1",
+        roundTopics: [
+            {
+                topicName: "Festivals",
+                questions: {
+                    price1: 1000,
+                    price2: 2000,
+                    price3: 3000,
+                    price4: 4000,
+                    price5: 5000,
+                },
+            },
+            {
+                topicName: "Meme",
+                questions: {
+                    price1: 1000,
+                    price2: 2000,
+                    price3: 3000,
+                    price4: 4000,
+                    price5: 5000,
+                },
+            },
+            {
+                topicName: "Amogus",
+                questions: {
+                    price1: 1000,
+                    price2: 2000,
+                    price3: 3000,
+                    price4: 4000,
+                    price5: 5000,
+                },
+            },
+            {
+                topicName: "G4",
+                questions: {
+                    price1: 1000,
+                    price2: 2000,
+                    price3: 3000,
+                    price4: 4000,
+                    price5: 5000,
+                },
+            },
+            {
+                topicName: "Music",
+                questions: {
+                    price1: 1000,
+                    price2: 2000,
+                    price3: 3000,
+                    price4: 4000,
+                    price5: 5000,
+                },
+            },
+            {
+                topicName: "Fanfics",
+                questions: {
+                    price1: 1000,
+                    price2: 2000,
+                    price3: 3000,
+                    price4: 4000,
+                    price5: 5000,
+                },
+            },
+        ],
+    };
 }

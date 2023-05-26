@@ -4,7 +4,7 @@ import { getPackInfo } from "./../back-end-com.js";
 export async function openPackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 
-    const filePath = ""; // selectPackFile();
+    const filePath = "";
     const packInfo = getPackInfo(filePath);
 
     setPackName(packInfo.packName);

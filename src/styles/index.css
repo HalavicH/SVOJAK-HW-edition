@@ -21,9 +21,3 @@
 .logo.bronucon:hover {
     filter: drop-shadow(0 0 2em #dbbd24);
 }
-
-.row {
-    display: flex;
-    justify-content: center;
-    align-items: center; 
-}
