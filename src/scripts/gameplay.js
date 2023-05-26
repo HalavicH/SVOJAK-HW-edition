@@ -124,9 +124,12 @@ function processQuestionSelection(event) {
     const price = question.innerText;
     const topic = question.querySelector("div").innerText;
 
-    console.log("Triggered");
-    console.log("Data: ", event.target);
-    console.log("Retreiving question '" + topic + ":" + price + "'");
+    console.info("Triggered");
 
+    if (question.className.includes("used")) {
+        return;
+    }
+
+    console.log("Retreiving question '" + topic + ":" + price + "'");
     question.className = "round-td-price used";
 }
