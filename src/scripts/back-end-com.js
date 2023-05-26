@@ -167,3 +167,25 @@ export function fetchRound() {
         ],
     };
 }
+
+export async function getQuestionData(topic, price) {
+    return {
+        questionType: "normal", // "normal", "pig-in-poke", "auction"
+        mediaType: "text", // "text", "video", "music", "picture"
+        content: "What is the best pone?"
+    }
+}
+
+export async function getFastestClick() {
+    return {
+        newUpdatesPresent: true,
+        userWithFastestClick: "Button"
+    }
+}
+
+export async function getUpdatedScores(answeredCorrectly) {
+    return {
+        userName: "HalavicH",
+        newScore: 666,
+    }
+}
