@@ -1,6 +1,5 @@
-
 import {openModal, closeModal} from "./modal-common.js";
-import {getSettingsConfig} from "./../back-end-com.js";
+import {getSettingsConfig, discoverHub} from "./../back-end-com.js";
 import {getImagePathOrDefault} from "../utils.js";
 
 
@@ -10,13 +9,12 @@ const {invoke} = window.__TAURI__.tauri;
 export async function openSettingsModal() {
     const modalContainer = document.querySelector("#settings-modal");
     openModal(modalContainer);
-    const config = getSettingsConfig();
+    const config = await getSettingsConfig();
 
-    setHubStatus(config.hubStatus);
-    fillSerialPortMenu(config.availablePorts, config.hubPort);
-    setRadioChannel(config.radioChannel);
+    // setHubStatus(config.hub_status);
+    fillSerialPortMenu(config.available_ports, config.hub_port);
+    setRadioChannel(config.radio_channel);
     fillPlayersData(config.players);
-
 }
 
 export function closeSettingsModal() {
@@ -64,7 +62,7 @@ function fillSerialPortMenu(availablePorts, activePort) {
 function setRadioChannel(radioChannel) {
     const radioChannelInput = document.querySelector("#radio-channel")
 
-    if (radioChannel === undefined || radioChannel == "") {
+    if (radioChannel === undefined || radioChannel === 0) {
         radioChannelInput.value = "";
         return;
     }
@@ -133,7 +131,7 @@ export async function serialPortSelectHandler(event) {
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
 
-    const result = await invoke("open_selected_port", { path: selectedOption });
+    const result = discoverHub(selectedOption);
 
     console.info("serialPortSelectHandler: result = " + result);
 
