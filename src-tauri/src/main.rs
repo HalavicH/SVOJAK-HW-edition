@@ -1,5 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#[allow(unused_imports)]
 
 use svoyak_tauri_app::api::setup::*;
 use svoyak_tauri_app::api::gameplay::*;
@@ -12,9 +13,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // Setup API
             fetch_configuration,
-            discover_serial_ports,
             discover_hub,
             discover_terminals,
+            save_players,
             // Gameplay API
             get_question,
         ])
@@ -36,6 +37,13 @@ fn main() {
 }
 
 fn log_ctx_content() {
-    let context = game_ctx();
+    let mut context = game_ctx();
+
+    context.players.push(Player::new(1));
+    context.players.push(Player::new(2));
+    context.players.push(Player::new(3));
+    context.players.push(Player::new(4));
+    context.players.push(Player::new(5));
+
     println!("default context: {context:#?}");
 }
