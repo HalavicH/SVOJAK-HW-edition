@@ -9,7 +9,6 @@ export async function openSettingsModal() {
     openModal(modalContainer);
     const config = await getSettingsConfig();
 
-    // setHubStatus(config.hub_status);
     fillSerialPortMenu(config.available_ports, config.hub_port);
     setRadioChannel(config.radio_channel);
     fillPlayersData(config.players);
@@ -37,10 +36,10 @@ function processPlayerDataSaving() {
         const used = playerDataElements[3].firstChild.checked;
 
         const playerData = {
-            term_id: id,
+            termId: id,
             icon: icon,
             name: name,
-            is_used: used,
+            isUsed: used,
             score: 0,
         };
 
@@ -115,7 +114,7 @@ function fillPlayersData(newPlayersData) {
         tbody.appendChild(tr);
 
         let tdId = document.createElement("td");
-        tdId.innerText = playerData.term_id;
+        tdId.innerText = playerData.termId;
         tr.appendChild(tdId);
 
         let tdIcon = document.createElement("td");
@@ -143,18 +142,30 @@ function fillPlayersData(newPlayersData) {
 
         let usedCheckBox = document.createElement("input");
         usedCheckBox.type = "checkbox";
-        usedCheckBox.checked = playerData.is_used;
+        usedCheckBox.checked = playerData.isUsed;
         tdUsed.appendChild(usedCheckBox);
     });
 }
 
-export async function discover() {
+export async function discoverTerminals() {
     const channelIdObject = document.querySelector("#radio-channel");
-    const result = await invoke("discover_terminals", {
+    const terminals = await invoke("discover_terminals", {
         channelId: parseInt(channelIdObject.value),
     });
 
-    console.info("result = " + result);
+    console.info("result = " + terminals);
+
+    let mockPlayers = [];
+    terminals.forEach((id) => {
+        mockPlayers.push({
+            termId: id,
+            icon: "",
+            name: "",
+            isUsed: true
+        });
+    });
+
+    fillPlayersData(mockPlayers);
 }
 
 export async function serialPortSelectHandler(event) {
@@ -170,3 +181,4 @@ export async function serialPortSelectHandler(event) {
 
     setHubStatus(result);
 }
+

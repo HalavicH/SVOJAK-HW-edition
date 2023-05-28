@@ -13,10 +13,10 @@ pub struct ConfigDto {
 
 #[derive(Debug, Serialize)]
 pub struct PlayerSetupDto {
-    pub term_id: u8,
+    pub termId: u8,
     pub icon: String,
     pub name: String,
-    pub is_used: bool,
+    pub isUsed: bool,
 }
 
 #[derive(Debug, Serialize)]
