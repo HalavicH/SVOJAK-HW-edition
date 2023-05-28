@@ -62,7 +62,7 @@ impl HubManager {
 
 #[derive(Default, Debug)]
 pub struct GameContext {
-    pub players: HashMap<String, Player>,
+    pub players: HashMap<u8, Player>,
     pub pack: Package,
     pub hub: HubManager,
 }
