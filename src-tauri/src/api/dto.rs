@@ -1,9 +1,9 @@
 #[allow(unused_imports, unused_variables)]
 
-use serde::Serialize;
-use crate::core::game_entities::Player;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize)]
+#[allow(non_snake_case)]
 pub struct ConfigDto {
     pub hub_port: String,
     pub available_ports: Vec<String>,
@@ -11,7 +11,8 @@ pub struct ConfigDto {
     pub players: Vec<PlayerSetupDto>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
+#[allow(non_snake_case)]
 pub struct PlayerSetupDto {
     pub termId: u8,
     pub icon: String,
@@ -25,3 +26,13 @@ pub struct PlayerScoreDto {
     pub score: i32,
 }
 
+#[derive(Debug, Serialize)]
+#[allow(non_snake_case)]
+pub struct PackInfoDto {
+    pub packName: String,
+    pub packAuthor: String,
+    pub packRounds: i32,
+    pub packTopics: i32,
+    pub packQuestion: i32,
+    pub packTopicList: Vec<String>,
+}

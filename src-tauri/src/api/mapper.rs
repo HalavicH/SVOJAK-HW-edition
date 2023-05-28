@@ -39,11 +39,9 @@ pub fn get_config_dto() -> ConfigDto {
 pub fn update_players(players: &Vec<Player>) {
     let mut context = game_ctx();
 
-    let players_map: HashMap<String, Player> = HashMap::new();
-
     context.players = players.iter()
         .fold(HashMap::new(), |mut map, player| {
-        map.insert(player.name.clone(), player.clone());
+        map.insert(player.term_id, player.clone());
         map
     });
 }
