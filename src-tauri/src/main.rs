@@ -39,11 +39,11 @@ fn main() {
 fn log_ctx_content() {
     let mut context = game_ctx();
 
-    context.players.push(Player::new(1));
-    context.players.push(Player::new(2));
-    context.players.push(Player::new(3));
-    context.players.push(Player::new(4));
-    context.players.push(Player::new(5));
+    // context.players.push(Player::new(1));
+    // context.players.push(Player::new(2));
+    // context.players.push(Player::new(3));
+    // context.players.push(Player::new(4));
+    // context.players.push(Player::new(5));
 
     println!("default context: {context:#?}");
 }
