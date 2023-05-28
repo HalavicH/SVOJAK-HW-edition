@@ -1,6 +1,8 @@
 import { openModal, closeModal } from "./modal-common.js";
 import { getPackInfo } from "./../back-end-com.js";
 
+const {invoke} = window.__TAURI__.tauri;
+
 export async function openPackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 

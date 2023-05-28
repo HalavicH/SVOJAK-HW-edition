@@ -1,4 +1,12 @@
-export function getSettingsConfig() {
+
+
+const {invoke} = window.__TAURI__.tauri;
+
+export async function getSettingsConfig() {
+    const config = await invoke("fetch_configuration");
+
+    return config;
+
     return {
         hubStatus: "Detected",
         hubPort: "/dev/tty3",
@@ -38,6 +46,15 @@ export function getSettingsConfig() {
         ],
     };
 }
+
+export async function discoverHub(selectedOption) {
+    const result = await invoke("discover_hub",
+        {
+            path: selectedOption
+        });
+}
+
+
 
 export function getPackInfo(pathToPack) {
     return {
