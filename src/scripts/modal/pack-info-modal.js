@@ -7,7 +7,7 @@ export async function openPackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 
     const filePath = "";
-    const packInfo = getPackInfo(filePath);
+    const packInfo = await getPackInfo(filePath);
 
     setPackName(packInfo.packName);
     setPackAuthor(packInfo.packAuthor);
