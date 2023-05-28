@@ -1,10 +1,13 @@
+#[allow(unused_imports, unused_variables)]
+
 use serde::Serialize;
 use tauri::{command};
 use crate::api::dto::ConfigDto;
-use crate::api::mapper::{get_config_dto, update_game_context};
+use crate::api::mapper::{get_config_dto, update_players};
 use crate::core::game_entities::{game_ctx, HubStatus, Player};
 use crate::game_pack::pack_loader;
 use crate::game_pack::pack_entities::Round;
+use tauri::api::dialog::FileDialogBuilder;
 
 /// Provide saved game configuration
 #[command]
@@ -12,21 +15,6 @@ pub fn fetch_configuration() -> ConfigDto {
     println!("Fetching config");
 
     get_config_dto()
-}
-
-/// Queries OS for all available serial ports
-#[command]
-pub fn discover_serial_ports() -> Vec<String> {
-    let ports = serialport::available_ports().expect("No ports found!");
-    let mut ports_vec = Vec::new();
-
-    for p in ports {
-        println!("{}", p.port_name);
-
-        ports_vec.push(p.port_name.clone());
-    }
-
-    ports_vec
 }
 
 /// Tries to detect hub at given serial port. If successful saves port name
@@ -48,16 +36,31 @@ pub fn discover_terminals(channel_id: i32) -> Vec<u8> {
 
 /// Saves configuration to game context
 #[command]
-pub fn save_config(config: ConfigDto) {
-    println!("Updating game context with new config: {config:#?}");
+pub fn save_players(players: Vec<Player>) {
+    println!("Updating game context with new config: {players:#?}");
 
-    update_game_context(&config)
+    update_players(&players)
 }
 
 /// Load game pack into the game
 #[command]
-pub fn load_pack(path: String) {
-    println!("Try to load pack from: {pack}");
-    game_ctx().pack = pack_loader::load_pack(&path);
-    println!("Pack contains: {:#?}", game_ctx().pack)
+pub fn load_pack() {
+    // println!("Try to load pack from: {path}");
+    // game_ctx().pack = pack_loader::load_pack(&path);
+    // println!("Pack contains: {:#?}", game_ctx().pack)
 }
+
+// #[tauri::command]
+// fn open_file_dialog() -> Result<String, String> {
+//     let path = FileDialogBuilder::new()
+//         .pick_files(|f| {
+//             f.allowed_types(&["*"])
+//         })
+//         .show()
+//         .unwrap()
+//         .into_single()
+//         .ok_or("No file selected")?;
+//
+//     let path_str = path.to_string_lossy().to_string();
+//     Ok(path_str)
+// }
