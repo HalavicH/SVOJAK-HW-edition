@@ -1,4 +1,5 @@
 import { fetchPlayers, fetchRound } from "./back-end-com.js";
+import { processPipPlayers } from "./pig-in-poke-modal.js";
 import { getImagePathOrDefault } from "./utils.js";
 
 console.log("Gameplay loaded!");
@@ -17,12 +18,13 @@ window.addEventListener("DOMContentLoaded", () => {
     //     window.location.href = "./index.html";
     // });
 
-    processPlayers();
+    processMainScreenPlayers();
     processRoundFromBackend();
+    processPipPlayers("Button");
 });
 
 // Todo: видалити старих гравців, та додати нових
-export function processPlayers() {
+export function processMainScreenPlayers() {
     const players = fetchPlayers();
     const playerList = document.querySelector("#player-list");
     playerList.innerHTML = "";
