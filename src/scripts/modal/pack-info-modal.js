@@ -1,5 +1,5 @@
 import { openModal, closeModal } from "./modal-common.js";
-import { getPackInfo } from "./../back-end-com.js";
+import { getPackInfo, saveRoundDuration } from "./../back-end-com.js";
 
 const {invoke} = window.__TAURI__.tauri;
 
@@ -61,7 +61,19 @@ export function closePackInfoModal() {
     closeModal(modalPackInfoContainer);
 }
 
-export function goToGameplayPage() {
+export function startTheGame() {
+    const raundDurationOptions = document
+    .querySelector("#round-duration")
+    .querySelectorAll("option");
+
+    raundDurationOptions.forEach((option) => {
+        if (option.selected) {
+            const duration = parseInt(option.value) 
+        }
+    });
+
+    saveRoundDuration(duration);
+
     window.location.href = "./gameplay.html";
 }
 
