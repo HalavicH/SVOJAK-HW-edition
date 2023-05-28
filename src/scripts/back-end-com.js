@@ -6,45 +6,6 @@ export async function getSettingsConfig() {
     const config = await invoke("fetch_configuration");
 
     return config;
-
-    return {
-        hubStatus: "Detected",
-        hubPort: "/dev/tty3",
-        availablePorts: ["/dev/tty1", "/dev/tty2", "/dev/tty3"],
-        // radioChannel: "",
-        players: [
-            {
-                terminalId: 35,
-                playerIconPath: "./assets/default-icon.png",
-                playerName: "Button",
-                used: true,
-            },
-            {
-                terminalId: 34,
-                playerIconPath: "",
-                playerName: "Button2",
-                used: true,
-            },
-            {
-                terminalId: 33,
-                playerIconPath: "",
-                playerName: "Button3",
-                used: true,
-            },
-            {
-                terminalId: 32,
-                playerIconPath: "",
-                playerName: "Button4",
-                used: true,
-            },
-            {
-                terminalId: 31,
-                playerIconPath: "",
-                playerName: "Button5",
-                used: true,
-            },
-        ],
-    };
 }
 
 export async function discoverHub(selectedOption) {
@@ -54,10 +15,8 @@ export async function discoverHub(selectedOption) {
         });
 }
 
-
-
-export async function savePlayers(players) {
-    players.forEach((player) => {
+export async function savePlayers(playersList) {
+    playersList.forEach((player) => {
         console.log("===============");
         console.log("Saved player");
         console.log("   id: " + player.terminalId);
@@ -66,6 +25,10 @@ export async function savePlayers(players) {
         console.log("   used: " + player.used);
         console.log("===============");
     });  
+
+    await invoke("save_players", {
+        players: playersList
+    });
 }
 
 export async function saveRoundDuration(roundDurationMinutes) {
@@ -221,4 +184,8 @@ export async function getUpdatedScores(answeredCorrectly) {
         userName: "HalavicH",
         newScore: 666,
     }
+}
+
+export async function sendPipVictim(victimName) {
+    console.log(victimName);
 }
