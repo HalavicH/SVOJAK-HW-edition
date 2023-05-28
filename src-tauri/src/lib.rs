@@ -14,3 +14,6 @@ pub mod game_pack {
     pub mod pack_entities;
     pub mod pack_loader;
 }
+pub mod hw_comm {
+    pub mod api;
+}

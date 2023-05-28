@@ -1,3 +1,5 @@
+#[allow(unused_imports, unused_variables)]
+
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -6,17 +8,20 @@ use crate::game_pack::pack_entities::Package;
 
 #[derive(Debug, Eq, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Player {
-    name: String,
-    icon: String,
+    pub name: String,
+    pub icon: String,
     // todo: make actual image
-    term_id: u8,
-    score: i32,
-    is_used: bool,
+    pub term_id: u8,
+    pub score: i32,
+    pub is_used: bool,
 }
 
 impl Player {
-    pub fn new(name: String, icon: String, term_id: u8) -> Self {
-        Self { name, icon, term_id, score: 0, is_used: false }
+    pub fn new(term_id: u8) -> Self {
+        Self {
+            term_id,
+            ..Default::default()
+        }
     }
 }
 
