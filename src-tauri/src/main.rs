@@ -16,6 +16,7 @@ fn main() {
             discover_hub,
             discover_terminals,
             save_players,
+            get_pack_info,
             // Gameplay API
             get_question,
         ])
