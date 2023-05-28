@@ -1,5 +1,5 @@
 import {openSettingsModal, closeSettingsModal, discover, serialPortSelectHandler} from "./modal/settings-modal.js";
-import {openPackInfoModal, closePackInfoModal, goToGameplayPage} from "./modal/pack-info-modal.js";
+import {openPackInfoModal, closePackInfoModal, startTheGame} from "./modal/pack-info-modal.js";
 
 window.addEventListener("DOMContentLoaded", () => {
     // modal processing
@@ -34,8 +34,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document
         .querySelector("#start-the-game")
-        .addEventListener("click", goToGameplayPage);
-    
+        .addEventListener("click", startTheGame);
+
 });
 
 

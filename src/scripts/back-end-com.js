@@ -56,6 +56,22 @@ export async function discoverHub(selectedOption) {
 
 
 
+export async function savePlayers(players) {
+    players.forEach((player) => {
+        console.log("===============");
+        console.log("Saved player");
+        console.log("   id: " + player.terminalId);
+        console.log("   iconPath: " + player.playerIconPath);
+        console.log("   name: " + player.playerName);
+        console.log("   used: " + player.used);
+        console.log("===============");
+    });  
+}
+
+export async function saveRoundDuration(roundDurationMinutes) {
+        console.log("Round duration: " + roundDurationMinutes);
+}
+
 export function getPackInfo(pathToPack) {
     return {
         packName: "Скрябін",
