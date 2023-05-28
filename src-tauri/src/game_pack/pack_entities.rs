@@ -46,12 +46,12 @@ pub struct Author {
     pub name: String,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct Info {
     pub authors: Vec<Author>,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct Package {
     pub name: String,
     pub version: String,
