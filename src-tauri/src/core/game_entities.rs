@@ -2,6 +2,7 @@
 
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
 use crate::game_pack::pack_entities::Package;
@@ -61,7 +62,7 @@ impl HubManager {
 
 #[derive(Default, Debug)]
 pub struct GameContext {
-    pub players: Vec<Player>,
+    pub players: HashMap<String, Player>,
     pub pack: Package,
     pub hub: HubManager,
 }

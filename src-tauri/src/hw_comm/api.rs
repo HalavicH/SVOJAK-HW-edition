@@ -3,7 +3,7 @@ pub fn discover_serial_ports() -> Vec<String> {
     let ports = serialport::available_ports().expect("No ports found!");
     let mut ports_vec = Vec::new();
 
-    println!("{:?}", ports);
+    println!("Serial ports: {:?}", ports);
 
 
     for p in ports {

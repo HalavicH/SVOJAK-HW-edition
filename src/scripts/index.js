@@ -1,4 +1,4 @@
-import {openSettingsModal, closeSettingsModal, discover, serialPortSelectHandler} from "./modal/settings-modal.js";
+import {openSettingsModal, closeSettingsModal, discoverTerminals, serialPortSelectHandler} from "./modal/settings-modal.js";
 import {openPackInfoModal, closePackInfoModal, startTheGame} from "./modal/pack-info-modal.js";
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document
         .querySelector("#discover-terminals")
-        .addEventListener("click", discover);
+        .addEventListener("click", discoverTerminals);
 
     document
         .querySelector("#serial-port-menu")
