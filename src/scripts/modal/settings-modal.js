@@ -31,16 +31,17 @@ function processPlayerDataSaving() {
     playerElementList.forEach((playerRow) => {
         const playerDataElements = playerRow.querySelectorAll("td");
 
-        const id = playerDataElements[0].innerText;
+        const id = parseInt(playerDataElements[0].innerText);
         const icon = "./assets/game-over-picture.png"; // TODO: save icon from playerDataElements[1];
         const name = playerDataElements[2].firstChild.value;
         const used = playerDataElements[3].firstChild.checked;
 
         const playerData = {
-            terminalId: id,
-            playerIconPath: icon,
-            playerName: name,
-            used: used,
+            term_id: id,
+            icon: icon,
+            name: name,
+            is_used: used,
+            score: 0,
         };
 
         playerDataList.push(playerData);
@@ -114,13 +115,13 @@ function fillPlayersData(newPlayersData) {
         tbody.appendChild(tr);
 
         let tdId = document.createElement("td");
-        tdId.innerText = playerData.terminalId;
+        tdId.innerText = playerData.term_id;
         tr.appendChild(tdId);
 
         let tdIcon = document.createElement("td");
         tr.appendChild(tdIcon);
 
-        const imagePath = getImagePathOrDefault(playerData.playerIconPath);
+        const imagePath = getImagePathOrDefault(playerData.icon);
 
         let icon = document.createElement("img");
         icon.src = imagePath;
@@ -133,17 +134,16 @@ function fillPlayersData(newPlayersData) {
         input.className = "term-name";
         input.placeholder = "Enter player name";
         input.type = "text";
+        input.value = playerData.name;
         tdName.appendChild(input);
         tr.appendChild(tdName);
-
-        
 
         let tdUsed = document.createElement("td");
         tr.appendChild(tdUsed);
 
         let usedCheckBox = document.createElement("input");
         usedCheckBox.type = "checkbox";
-        usedCheckBox.checked = playerData.used;
+        usedCheckBox.checked = playerData.is_used;
         tdUsed.appendChild(usedCheckBox);
     });
 }
