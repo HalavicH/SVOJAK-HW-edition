@@ -65,10 +65,10 @@ export function startTheGame() {
     const raundDurationOptions = document
     .querySelector("#round-duration")
     .querySelectorAll("option");
-
+    let duration = 0;
     raundDurationOptions.forEach((option) => {
         if (option.selected) {
-            const duration = parseInt(option.value) 
+            duration = parseInt(option.value) 
         }
     });
 

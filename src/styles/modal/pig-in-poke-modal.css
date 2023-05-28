@@ -1,9 +1,9 @@
 @import "./modal-common.css";
 
-/* #pig-in-poke-modal {
+#pig-in-poke-modal {
     display: block;
     opacity: 1;
-}   */
+}  
 
 #pig-in-poke-rules {
     display: flex;
