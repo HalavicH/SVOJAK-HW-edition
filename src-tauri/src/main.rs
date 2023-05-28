@@ -12,7 +12,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // Setup API
             fetch_configuration,
-            discover_serial_ports,
+            // discover_serial_ports,
             discover_hub,
             discover_terminals,
             // Gameplay API
