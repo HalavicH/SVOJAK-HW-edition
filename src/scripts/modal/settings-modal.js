@@ -1,10 +1,8 @@
-import {openModal, closeModal} from "./modal-common.js";
-import {getSettingsConfig, discoverHub} from "./../back-end-com.js";
-import {getImagePathOrDefault} from "../utils.js";
+import { openModal, closeModal } from "./modal-common.js";
+import { getSettingsConfig, savePlayers, discoverHub } from "./../back-end-com.js";
+import { getImagePathOrDefault } from "../utils.js";
 
-
-
-const {invoke} = window.__TAURI__.tauri;
+const { invoke } = window.__TAURI__.tauri;
 
 export async function openSettingsModal() {
     const modalContainer = document.querySelector("#settings-modal");
@@ -20,7 +18,36 @@ export async function openSettingsModal() {
 export function closeSettingsModal() {
     const modalContainer = document.querySelector("#settings-modal");
 
+    processPlayerDataSaving();
+
     closeModal(modalContainer);
+}
+
+function processPlayerDataSaving() {
+    let playerElementList = document.querySelector("#terminal-data-table").querySelectorAll(".terminal-data");
+
+    let playerDataList = [];
+
+    playerElementList.forEach((playerRow) => {
+        const playerDataElements = playerRow.querySelectorAll("td");
+
+        const id = playerDataElements[0].innerText;
+        const icon = "./assets/game-over-picture.png"; // TODO: save icon from playerDataElements[1];
+        const name = playerDataElements[2].firstChild.value;
+        const used = playerDataElements[3].firstChild.checked;
+
+        const playerData = {
+            terminalId: id,
+            playerIconPath: icon,
+            playerName: name,
+            used: used,
+        };
+
+        playerDataList.push(playerData);
+    });
+
+    // TODO: Save player list
+    savePlayers(playerDataList);
 }
 
 function setHubStatus(status) {
@@ -56,11 +83,10 @@ function fillSerialPortMenu(availablePorts, activePort) {
 
         serialPortMenu.appendChild(optionElement);
     });
-
 }
 
 function setRadioChannel(radioChannel) {
-    const radioChannelInput = document.querySelector("#radio-channel")
+    const radioChannelInput = document.querySelector("#radio-channel");
 
     if (radioChannel === undefined || radioChannel === 0) {
         radioChannelInput.value = "";
@@ -101,9 +127,16 @@ function fillPlayersData(newPlayersData) {
         icon.className = "player-image";
         tdIcon.appendChild(icon);
 
+        // <input class="term-name" placeholder="Enter player name" type="text"></input>
         let tdName = document.createElement("td");
-        tdName.innerText = playerData.playerName;
+        let input = document.createElement("input");
+        input.className = "term-name";
+        input.placeholder = "Enter player name";
+        input.type = "text";
+        tdName.appendChild(input);
         tr.appendChild(tdName);
+
+        
 
         let tdUsed = document.createElement("td");
         tr.appendChild(tdUsed);
@@ -112,7 +145,7 @@ function fillPlayersData(newPlayersData) {
         usedCheckBox.type = "checkbox";
         usedCheckBox.checked = playerData.used;
         tdUsed.appendChild(usedCheckBox);
-    })
+    });
 }
 
 export async function discover() {
@@ -137,6 +170,3 @@ export async function serialPortSelectHandler(event) {
 
     setHubStatus(result);
 }
-
-
-
