@@ -179,7 +179,7 @@ export async function getFastestClick() {
     };
 }
 
-export async function getUpdatedScore(answeredCorrectly) {
+export async function answerQuestion(answeredCorrectly) {
     return {
         // TODO: Add id and check by id
         targetPlayer: "Жерти",
@@ -191,6 +191,6 @@ export async function sendPipVictim(victimName) {
     console.log(victimName);
 }
 
-export async function getActivePlayer() {
-    return { id: 1, playerName: "Button" };
+export async function getActivePlayerId() {
+    return 1;
 }
