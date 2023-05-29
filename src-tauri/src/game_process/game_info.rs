@@ -4,6 +4,11 @@ use tempfile::TempDir;
 
 use crate::game_pack::pack_entities::Package;
 
+pub static PACKAGE_AUDIO_DIR_NAME: &str = "Audio";
+pub static PACKAGE_CONTENT_FILE_NAME: &str = "content.xml";
+pub static PACKAGE_IMAGES_DIR_NAME: &str = "Images";
+pub static PACKAGE_VIDEO_DIR_NAME: &str = "Video";
+
 #[derive(Debug, Clone)]
 pub struct GameInfo {
     // !warning: if you lose this pointer, temp directory will be deleted
