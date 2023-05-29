@@ -37,51 +37,60 @@ export async function getPackInfo(pathToPack) {
     };
 }
 
-export function fetchPlayers() {
+export async function fetchPlayers() {
     return [
         {
+            id: 1,
             playerIconPath: "./assets/default-icon.png",
             playerName: "Button",
             score: 200,
         },
         {
+            id: 2,
             playerIconPath: "",
             playerName: "Button2",
             score: 500,
         },
         {
+            id: 3,
             playerIconPath: "",
             playerName: "Button3",
             score: 200,
         },
         {
+            id: 4,
             playerIconPath: "",
             playerName: "Button4",
             score: 700,
         },
         {
+            id: 5,
             playerIconPath: "",
             playerName: "Button5",
             score: -100,
         },
         {
+            id: 6,
             playerIconPath: "",
             playerName: "Button2",
             score: 500,
         },
         {
+            id: 7,
             playerIconPath: "",
             playerName: "Button3",
             score: 200,
         },
         {
+            id: 8,
             playerIconPath: "",
             playerName: "Button4",
             score: 700,
         },
         {
+            id: 9,
             playerIconPath: "",
-            playerName: "Button5",
+            playerName: "Жерти",
             score: -100,
         },
     ];
@@ -157,7 +166,7 @@ export function fetchRound() {
 
 export async function getQuestionData(topic, price) {
     return {
-        questionType: "normal", // "normal", "pig-in-poke", "auction"
+        questionType: "pig-in-poke", // "normal", "pig-in-poke", "auction"
         mediaType: "text", // "text", "video", "music", "picture"
         content: "What is the best pone?",
     };
@@ -170,13 +179,18 @@ export async function getFastestClick() {
     };
 }
 
-export async function getUpdatedScores(answeredCorrectly) {
+export async function getUpdatedScore(answeredCorrectly) {
     return {
-        userName: "HalavicH",
+        // TODO: Add id and check by id
+        targetPlayer: "Жерти",
         newScore: 666,
     };
 }
 
 export async function sendPipVictim(victimName) {
     console.log(victimName);
+}
+
+export async function getActivePlayer() {
+    return { id: 1, playerName: "Button" };
 }

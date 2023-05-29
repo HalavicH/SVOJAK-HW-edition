@@ -1,4 +1,4 @@
-import { fetchPlayers, fetchRound } from "./back-end-com.js";
+import { fetchPlayers, fetchRound, getActivePlayer, getUpdatedScore, getQuestionData } from "./back-end-com.js";
 import { processPipPlayers } from "./pig-in-poke-modal.js";
 import { getImagePathOrDefault } from "./utils.js";
 
@@ -13,19 +13,18 @@ window.addEventListener("DOMContentLoaded", () => {
                 window.location.href = "./index.html";
         });
     });
-
-    // document.querySelector("#go-to-main-menu").addEventListener("click", () => {
-    //     window.location.href = "./index.html";
-    // });
+    
+    document
+        .querySelector("#correct-answer-btn")
+        .addEventListener("click", processCorrectAnswer);
 
     processMainScreenPlayers();
     processRoundFromBackend();
-    processPipPlayers("Button");
 });
 
 // Todo: видалити старих гравців, та додати нових
-export function processMainScreenPlayers() {
-    const players = fetchPlayers();
+export async function processMainScreenPlayers() {
+    const players = await fetchPlayers();
     const playerList = document.querySelector("#player-list");
     playerList.innerHTML = "";
 
@@ -91,44 +90,24 @@ function processRoundFromBackend() {
         tr.appendChild(tdTheme);
 
         ////////// 1-5 questions //////////
-        let tdPrice1 = document.createElement("td");
-        tdPrice1.className = "round-td-price";
-        tdPrice1.innerText = topic.questions.price1;
-        tdPrice1.appendChild(topicMarker.cloneNode(true));
-        tdPrice1.addEventListener("click", processQuestionSelection);
-        tr.appendChild(tdPrice1);
-
-        let tdPrice2 = document.createElement("td");
-        tdPrice2.className = "round-td-price";
-        tdPrice2.innerText = topic.questions.price2;
-        tdPrice2.appendChild(topicMarker.cloneNode(true));
-        tdPrice2.addEventListener("click", processQuestionSelection);
-        tr.appendChild(tdPrice2);
-
-        let tdPrice3 = document.createElement("td");
-        tdPrice3.className = "round-td-price";
-        tdPrice3.innerText = topic.questions.price3;
-        tdPrice3.appendChild(topicMarker.cloneNode(true));
-        tdPrice3.addEventListener("click", processQuestionSelection);
-        tr.appendChild(tdPrice3);
-
-        let tdPrice4 = document.createElement("td");
-        tdPrice4.className = "round-td-price";
-        tdPrice4.innerText = topic.questions.price4;
-        tdPrice4.appendChild(topicMarker.cloneNode(true));
-        tdPrice4.addEventListener("click", processQuestionSelection);
-        tr.appendChild(tdPrice4);
-
-        let tdPrice5 = document.createElement("td");
-        tdPrice5.className = "round-td-price";
-        tdPrice5.innerText = topic.questions.price5;
-        tdPrice5.appendChild(topicMarker.cloneNode(true));
-        tdPrice5.addEventListener("click", processQuestionSelection);
-        tr.appendChild(tdPrice5);
+        addQuestion(topic.questions.price1, topicMarker, tr);
+        addQuestion(topic.questions.price2, topicMarker, tr);
+        addQuestion(topic.questions.price3, topicMarker, tr);
+        addQuestion(topic.questions.price4, topicMarker, tr);
+        addQuestion(topic.questions.price5, topicMarker, tr);        
     });
 } 
 
-function processQuestionSelection(event) {
+function addQuestion(price, marker, tr) {
+    let tdQuestion = document.createElement("td");
+    tdQuestion.className = "round-td-price";
+    tdQuestion.innerText = price;
+    tdQuestion.appendChild(marker.cloneNode(true));
+    tdQuestion.addEventListener("click", processQuestionSelection);
+    tr.appendChild(tdQuestion);
+}
+
+async function processQuestionSelection(event) {
     const question = event.target;
     const price = question.innerText;
     const topic = question.querySelector("div").innerText;
@@ -140,19 +119,27 @@ function processQuestionSelection(event) {
     }
 
     question.className = "round-td-price used";
+    await processQustionDisplay(topic, price);
+}
+
+async function processQustionDisplay(topic, price) {
     console.log("Retreiving question '" + topic + ":" + price + "'");
+    const question = await getQuestionData(topic, price);
+    console.log("Response"
+        + ". questionType: " + question.questionType
+        + ", mediaType: " + question.mediaType
+        + ", content: " + question.content);
 
-    processQustionDisplay(topic, price);
+    if (question.questionType === "normal") {
+        displayQuestionScreen();
+    } else if (question.questionType === "pig-in-poke") {
+        processPipPlayers(await getActivePlayer());
+    } else if (question.questionType === "auction") {
+        // TODO: schow auction modal
+    }
 }
 
-function processQustionDisplay(topic, price) {
-    displayQuestionScreen();
-
-    // const question = getQuestionData(topic, price);
-
-}
-
-function displayQuestionScreen() {
+export function displayQuestionScreen() {
     // Disable round viewport
     const roundViewport = document.querySelector("#round-screen");
     roundViewport.style.display = "none";
@@ -161,3 +148,37 @@ function displayQuestionScreen() {
     const questionViewport = document.querySelector("#question-screen");
     questionViewport.style.display = "flex";
 }
+
+function displayRoundScreen() {
+    // Disable question viewport
+    const questionViewport = document.querySelector("#question-screen");
+    questionViewport.style.display = "none";
+    
+    // Enable round viewport
+    const roundViewport = document.querySelector("#round-screen");
+    roundViewport.style.display = "flex";
+}
+
+function processCorrectAnswer(event) {
+    displayRoundScreen();
+    
+    updateUserScore(true);
+}
+
+async function updateUserScore(isCorrect) {
+    const response = await getUpdatedScore(isCorrect);
+    console.log("Response is: name: " + response.targetPlayer + " score: " + response.newScore);
+
+    const playerBadges = document.querySelector("#player-list").querySelectorAll(".player-badge");
+
+    playerBadges.forEach((player) => {
+        if (response.targetPlayer === player.querySelector(".player-details-name").innerText) {
+            player.querySelector(".player-details-score-value").innerText = response.newScore;
+        }
+    });
+}
+
+// <div class="player-details">
+//     <p class="player-details-name">HalavicH</p>
+//     <p class="player-details-score">Score: 100</p>
+// </div>
