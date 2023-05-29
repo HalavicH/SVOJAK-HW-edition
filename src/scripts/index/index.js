@@ -20,6 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
         .querySelector("#close-pack-info-modal")
         .addEventListener("click", closePackInfoModal);
 
+    // TODO: REWORK
     document
         .querySelector("#term-one")
         .addEventListener("click", selectImage);

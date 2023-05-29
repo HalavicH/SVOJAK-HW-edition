@@ -1,5 +1,5 @@
-import { openModal, closeModal } from "./modal-common.js";
-import { getPackInfo, saveRoundDuration } from "./../back-end-com.js";
+import { openModal, closeModal } from "../../service/modal-common.js";
+import { getPackInfo, saveRoundDuration } from "../../service/back-end-com.js";
 
 const {invoke} = window.__TAURI__.tauri;
 

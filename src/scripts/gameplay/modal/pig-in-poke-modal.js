@@ -1,7 +1,7 @@
-import { fetchPlayers, sendPipVictim } from "./back-end-com.js";
-import { closeModal, openModal } from "./modal/modal-common.js";
-import { getImagePathOrDefault } from "./utils.js";
-import { displayQuestionScreen } from "./gameplay.js";
+import { fetchPlayers, sendPipVictim } from "../../service/back-end-com.js";
+import { closeModal, openModal } from "../../service/modal-common.js";
+import { getImagePathOrDefault } from "../../service/utils.js";
+import { displayQuestionScreen } from "../gameplay-service.js";
 
 
 // Todo: видалити старих гравців, та додати нових
@@ -46,13 +46,9 @@ export async function processPipPlayers(activePlayerId) {
 async function processVictimSelection(event) { 
     // Єбаний костиль.
     const victim = event.target.parentNode.parentNode;
-    console.log("Victim is: " + victim.innerHTML);
-
     const name = victim.querySelector("p").innerText;
     console.log("Victim is: " + name);
     
-    closeModal(document.querySelector("#pig-in-poke-modal"));
-
     sendPipVictim(name);
 
     const modal = document.querySelector("#pig-in-poke-modal");

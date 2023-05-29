@@ -1,10 +1,17 @@
-import { fetchPlayers, fetchRound, getActivePlayerId, answerQuestion, getQuestionData } from "./back-end-com.js";
-import { processPipPlayers } from "./pig-in-poke-modal.js";
-import { getImagePathOrDefault } from "./utils.js";
+import { fetchPlayers, fetchRound } from "../service/back-end-com.js";
+import { getImagePathOrDefault } from "../service/utils.js";
+import { processCorrectAnswer, processWrongAnswer, processQuestionSelection } from "./gameplay-service.js";
 
 console.log("Gameplay loaded!");
 
+// SETUP //
 window.addEventListener("DOMContentLoaded", () => {
+    addButtonEventListeners();
+    processMainScreenPlayers();
+    processRoundFromBackend();
+});
+
+function addButtonEventListeners() {
     // modal processing
     document.querySelectorAll(".go-to-main-menu")
         .forEach((button) => {
@@ -21,12 +28,8 @@ window.addEventListener("DOMContentLoaded", () => {
     document
         .querySelector("#wrong-answer-btn")
         .addEventListener("click", processWrongAnswer);
+}
 
-    processMainScreenPlayers();
-    processRoundFromBackend();
-});
-
-// Todo: видалити старих гравців, та додати нових
 export async function processMainScreenPlayers() {
     const players = await fetchPlayers();
     const playerList = document.querySelector("#player-list");
@@ -120,96 +123,3 @@ function addQuestion(price, marker, tr) {
     tdQuestion.addEventListener("click", processQuestionSelection);
     tr.appendChild(tdQuestion);
 }
-
-async function processQuestionSelection(event) {
-    const question = event.target;
-    const price = question.innerText;
-    const topic = question.querySelector("div").innerText;
-
-    console.info("Triggered");
-
-    if (question.className.includes("used")) {
-        return;
-    }
-
-    question.className = "round-td-price used";
-    await processQustionDisplay(topic, price);
-}
-
-async function processQustionDisplay(topic, price) {
-    console.log("Retreiving question '" + topic + ":" + price + "'");
-    const question = await getQuestionData(topic, price);
-    console.log("Response"
-        + ". questionType: " + question.questionType
-        + ", mediaType: " + question.mediaType
-        + ", content: " + question.content);
-
-    if (question.questionType === "normal") {
-        displayQuestionScreen();
-    } else if (question.questionType === "pig-in-poke") {
-        processPipPlayers(await getActivePlayerId());
-    } else if (question.questionType === "auction") {
-        // TODO: schow auction modal
-    }
-}
-
-export function displayQuestionScreen() {
-    // Disable round viewport
-    const roundViewport = document.querySelector("#round-screen");
-    roundViewport.style.display = "none";
-
-    // Enable question viewport
-    const questionViewport = document.querySelector("#question-screen");
-    questionViewport.style.display = "flex";
-}
-
-function displayRoundScreen() {
-    // Disable question viewport
-    const questionViewport = document.querySelector("#question-screen");
-    questionViewport.style.display = "none";
-    
-    // Enable round viewport
-    const roundViewport = document.querySelector("#round-screen");
-    roundViewport.style.display = "flex";
-}
-
-async function processCorrectAnswer(event) {
-    const player = await answerQuestion(true);
-    updateUserScore(player.id);
-
-    // TODO: Clear player selection (.className = "player-badge")
-    // TODO: set active player badge
-        // 1. getActivePlayerId()
-        // 2. .className = "player-badge topic-selection"
-
-    displayRoundScreen();    
-}
-
-async function processWrongAnswer(event) {
-    console.log("Activeeeee!!!!!!!!!!!!!");
-
-    const player = await answerQuestion(false);
-    updateUserScore(player.id);
-
-    // TODO: set active player badge
-        // 1. getActivePlayerId()
-        // 2. .className = "player-badge topic-selection"
-
-    // TODO: make player inactive, set answer forbidden
-
-}
-
-async function updateUserScore(playerId) {
-    const playerBadges = document.querySelector("#player-list").querySelectorAll(".player-badge");
-
-    playerBadges.forEach((player) => {
-        if (playerId === player.querySelector(".player-details-id").innerText) {
-            player.querySelector(".player-details-score-value").innerText = response.newScore;
-        }
-    });
-}
-
-// <div class="player-details">
-//     <p class="player-details-name">HalavicH</p>
-//     <p class="player-details-score">Score: 100</p>
-// </div>

@@ -1,6 +1,6 @@
-import { openModal, closeModal } from "./modal-common.js";
-import { getSettingsConfig, savePlayers, discoverHub } from "./../back-end-com.js";
-import { getImagePathOrDefault } from "../utils.js";
+import { openModal, closeModal } from "../../service/modal-common.js";
+import { getSettingsConfig, savePlayers, discoverHub } from "../../service/back-end-com.js";
+import { getImagePathOrDefault } from "../../service/utils.js";
 
 const { invoke } = window.__TAURI__.tauri;
 
