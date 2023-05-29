@@ -1,17 +1,19 @@
 import { fetchPlayers, sendPipVictim } from "./back-end-com.js";
-import { closeModal } from "./modal/modal-common.js";
+import { closeModal, openModal } from "./modal/modal-common.js";
 import { getImagePathOrDefault } from "./utils.js";
+import { displayQuestionScreen } from "./gameplay.js";
 
 
 // Todo: видалити старих гравців, та додати нових
-export function processPipPlayers(currentPlayerName) {
-    const players = fetchPlayers();
+export async function processPipPlayers(activePlayer) {
+    const players = await fetchPlayers();
     const playerList = document.querySelector("#player-victim-list");
     playerList.innerHTML = "";
 
     players.forEach((player) => {
-        if (player.playerName === currentPlayerName) {
-            console.log("Player '" + currentPlayerName + "' removed from pip because he is choosing the victim");
+        // TODO: Compare termId
+        if (player.playerName === activePlayer.playerName) {
+            console.log("Player '" + activePlayer + "' removed from pip because he is choosing the victim");
             return;
         }
         
@@ -35,9 +37,13 @@ export function processPipPlayers(currentPlayerName) {
         playerName.innerText = player.playerName;
         playerBadge.appendChild(playerName);
     });
+
+    const modal = document.querySelector("#pig-in-poke-modal");
+
+    openModal(modal);
 }
 
-function processVictimSelection(event) {
+async function processVictimSelection(event) { 
     // Єбаний костиль.
     const victim = event.target.parentNode.parentNode;
     console.log("Victim is: " + victim.innerHTML);
@@ -48,5 +54,9 @@ function processVictimSelection(event) {
     closeModal(document.querySelector("#pig-in-poke-modal"));
 
     sendPipVictim(name);
-}
 
+    const modal = document.querySelector("#pig-in-poke-modal");
+    closeModal(modal);
+
+    displayQuestionScreen();
+}
