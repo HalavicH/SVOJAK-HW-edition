@@ -4,6 +4,8 @@ use std::fs;
 use crate::game_pack::pack_dto::*;
 use crate::game_pack::pack_entities::*;
 
+use crate::game_process::game_info::GameInfo;
+
 fn parse_package(file_path: &str) -> PackageDto {
     let package_xml =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
@@ -93,7 +95,9 @@ fn map_package(dto: PackageDto) -> Package {
     }
 }
 
-pub fn load_pack(file_path: &str) -> Package {
-    let package: PackageDto = parse_package(file_path);
+pub fn load_pack(game_information: &GameInfo) -> Package {
+    let package_content_file_str = game_information.pack_content_file_path.to_str().unwrap();
+    let package: PackageDto = parse_package(package_content_file_str);
+
     map_package(package)
 }
