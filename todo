@@ -1,0 +1,124 @@
+
+Logic:
+
+index:
+    welcome-screen:
+        modal:
+            settings:
+                api:
+                    - fetchConfiguration()
+                        -> Config {hub-port, available-ports, radio-channel, players}
+                        // get saved config from backend
+                    - selectHubPort(desiredPort)
+                        -> HubStatus
+                        // Select desiredPort and return status
+                    - discoverTerminals(radioChannel)
+                        -> [1, 2, 3, 4, ...]
+                        // Pass desiredChannel and return terminals.
+                    - save()
+                        // TODO: dopysat'
+            pack-info:
+                api:
+                    - getPackInfo()
+                    // TODO: dopysat'
+
+gameplay:
+    round-screen:
+        api:
+            - fetchPlayers()
+            - fetchRound()
+            - getQuestionData(topic, price)
+        front:
+            - processQuestionShow() {NORMAL/PIP/AUCTION}
+        modal:
+            pip:
+                api:
+                    - sendPipVictim()
+            auction:
+
+    question-screen:
+        api:
+            - allowAnswer()
+            - waitForResponse()
+                -> { fastestPlayer: "Name" }
+                // підсвітити чувака 
+            - answerQuestion(isCorrect)
+                -> UpdatedScore {"Name", score}
+                    // true => update score, clear player selection (except dead) show round screen 
+                    // false => update score, make player inactive, set answer forbidden 
+            
+
+
+
+gameplay:
+    round-screen:
+        setup:
+            - DOMEvent
+                - addButtonEventListeners()
+                - processMainScreenPlayers()
+                    - fetchPlayers()
+                - fetchRound()
+        menu:
+            - menuButtonHandler()
+|                - confirmationModal()
+                - goToMainMenu()
+        question-price:
+            - processQuestionSelection()
+                - processQustionDisplay(topic, price)
+                    - getQuestionData(topic, price)
+QS                  normal => displayQuestionScreen()
+MP                  pip => processPipPlayers(await getActivePlayerId()); -> pip modal
+MA                  auction => processAuctionPlayers(await getActivePlayerId()); -> auction modal
+
+        player-score:
+
+
+        front:
+            - processQuestionShow() {NORMAL/PIP/AUCTION}
+        modal:
+            pip:
+                - processVictimSelection()
+                    - sendPipVictim()
+                    - closeModal(modal);
+                    - setPipPlayersSelection()
+                        - setAllPlayersState("inactive") .className = "player-badge " + state;
+                        - setActivePlayerBadgeState() // await getActivePlayerId()
+                            - 
+|                    - allowAnswer()
+QS                  - displayQuestionScreen()
+
+|            auction:
+                - processAuctionPlayers()
+                    - showAllPlayers()
+|                    - pollBackendForNewBid() <- for activeUser                
+|                    - pollBackendForNewBid() <- for all users
+|                    - allowAnswer()
+|QS                  - displayQuestionScreen()
+
+    question-screen:
+        menu:
+            - the same as before
+        allow-answer:
+|            - allowAnswerHandler()
+                - allowAnswer()
+                - waitForFirstClick() {id}
+                - setActivePlayerBadgeState()
+
+        correct-answer:
+            - processCorrectAnswer()
+                - answerQuestion(true)
+                - updateUserScore()
+               - goToRoundScreen()
+                     - setAllPlayersState("") .className = "player-badge " + state;
+                     - setActivePlayerBadgeState()
+                     - displayRoundScreen()
+
+
+        wrong-answer:
+            - processWrongAnswer()
+                - answerQuestion(false)
+                - updateUserScore()
+|                (>0 && normal) => forbidAnswer()
+|                _ => goToRoundScreen()
+
+
