@@ -24,16 +24,33 @@ fn main() {
         .expect("error while running tauri application");
 
     /*
-     *  Pack loader usage example
+     *  Game loader usage example
      *
-     * let package: Package = load_pack("path/to/content.xml");
+     * let game: GameInstance = load_game("path/to/game_package.siq");
      *
-     * println!("{:#?}", package);
+     * println!("{:#?}", game);
      *
      * Before using such modules should be included:
      *
-     * use svoyak_tauri_app::game_pack::pack_entities::Package;
-     * use svoyak_tauri_app::game_pack::pack_loader::load_pack;
+     * use svoyak_tauri_app::game_process::game_processor::load_game;
+     * use svoyak_tauri_app::game_process::game_info::GameInstance;
+     *
+     * Out example:
+     *
+     * GameInstance {
+     *     information: GameInfo {
+     *         pack_content_dir: TempDir {
+     *             path: "/var/folders/s2/99s5p5054xz0kgpp1y4f0slm0000gn/T/.tmpha0THA",
+     *         },
+     *         pack_content_file_path: "/var/folders/s2/99s5p5054xz0kgpp1y4f0slm0000gn/T/.tmpha0THA/content.xml",
+     *         pack_video_path: "/var/folders/s2/99s5p5054xz0kgpp1y4f0slm0000gn/T/.tmpha0THA/Video",
+     *         pack_images_path: "/var/folders/s2/99s5p5054xz0kgpp1y4f0slm0000gn/T/.tmpha0THA/Images",
+     *         pack_audio_path: "/var/folders/s2/99s5p5054xz0kgpp1y4f0slm0000gn/T/.tmpha0THA/Audio",
+     *     },
+     *     package: Package {
+     *         ...
+     *     }
+     * }
      */
 }
 
