@@ -5,15 +5,15 @@ import { displayQuestionScreen } from "./gameplay.js";
 
 
 // Todo: видалити старих гравців, та додати нових
-export async function processPipPlayers(activePlayer) {
+export async function processPipPlayers(activePlayerId) {
     const players = await fetchPlayers();
     const playerList = document.querySelector("#player-victim-list");
     playerList.innerHTML = "";
 
     players.forEach((player) => {
         // TODO: Compare termId
-        if (player.playerName === activePlayer.playerName) {
-            console.log("Player '" + activePlayer + "' removed from pip because he is choosing the victim");
+        if (player.id === activePlayerId) {
+            console.log("Player with id: '" + activePlayerId + "' removed from pip because he is choosing the victim");
             return;
         }
         

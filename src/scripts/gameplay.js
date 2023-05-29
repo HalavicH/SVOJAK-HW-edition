@@ -1,4 +1,4 @@
-import { fetchPlayers, fetchRound, getActivePlayer, getUpdatedScore, getQuestionData } from "./back-end-com.js";
+import { fetchPlayers, fetchRound, getActivePlayerId, answerQuestion, getQuestionData } from "./back-end-com.js";
 import { processPipPlayers } from "./pig-in-poke-modal.js";
 import { getImagePathOrDefault } from "./utils.js";
 
@@ -18,6 +18,10 @@ window.addEventListener("DOMContentLoaded", () => {
         .querySelector("#correct-answer-btn")
         .addEventListener("click", processCorrectAnswer);
 
+    document
+        .querySelector("#wrong-answer-btn")
+        .addEventListener("click", processWrongAnswer);
+
     processMainScreenPlayers();
     processRoundFromBackend();
 });
@@ -29,38 +33,48 @@ export async function processMainScreenPlayers() {
     playerList.innerHTML = "";
 
     players.forEach((player) => {
-        let playerBadge = document.createElement("div");
-        playerBadge.className = "player-badge";
-        playerList.appendChild(playerBadge);
-
-        let playerIcon = document.createElement("div");
-        playerIcon.className = "player-icon";
-        playerBadge.appendChild(playerIcon);
-
-        let icon = document.createElement("img");
-        icon.src = getImagePathOrDefault(player.playerIconPath);
-        playerIcon.appendChild(icon);
-
-        let playersDetails = document.createElement("div");
-        playersDetails.className = "player-details";
-        playerBadge.appendChild(playersDetails);
-
-        let playerDetailsName = document.createElement("p");
-        playerDetailsName.className = "player-details-name";
-        playerDetailsName.innerText = player.playerName;
-        playersDetails.appendChild(playerDetailsName);
-
-        let playerDetailsScore = document.createElement("div");
-        playerDetailsScore.className = "player-details-score";
-        playerDetailsScore.innerText = "Score: ";
-        playersDetails.appendChild(playerDetailsScore);
-
-        let score = document.createElement("p");
-        score.className = "player-details-score-value";
-        score.innerText = player.score;
-        playerDetailsScore.appendChild(score);
-
+        addMainscreenPlayer(player, playerList)
     });
+}
+
+function addMainscreenPlayer(player, playerList) {
+    let playerBadge = document.createElement("div");
+    playerBadge.className = "player-badge";
+    playerList.appendChild(playerBadge);
+
+    let playerIcon = document.createElement("div");
+    playerIcon.className = "player-icon";
+    playerBadge.appendChild(playerIcon);
+
+    let icon = document.createElement("img");
+    icon.src = getImagePathOrDefault(player.playerIconPath);
+    playerIcon.appendChild(icon);
+
+    let playersDetails = document.createElement("div");
+    playersDetails.className = "player-details";
+    playerBadge.appendChild(playersDetails);
+
+    let playerDetailsId = document.createElement("div");
+    playerDetailsId.className = "player-details-id";
+    playerDetailsId.style.display = "none";
+    playerDetailsId.innerText = player.id;
+    playersDetails.appendChild(playerDetailsId);
+
+    let playerDetailsName = document.createElement("p");
+    playerDetailsName.className = "player-details-name";
+    playerDetailsName.innerText = player.playerName;
+    playersDetails.appendChild(playerDetailsName);
+
+    let playerDetailsScore = document.createElement("div");
+    playerDetailsScore.className = "player-details-score";
+    playerDetailsScore.innerText = "Score: ";
+    playersDetails.appendChild(playerDetailsScore);
+
+    let score = document.createElement("p");
+    score.className = "player-details-score-value";
+    score.innerText = player.score;
+    playerDetailsScore.appendChild(score);
+
 }
 
 function processRoundFromBackend() {
@@ -133,7 +147,7 @@ async function processQustionDisplay(topic, price) {
     if (question.questionType === "normal") {
         displayQuestionScreen();
     } else if (question.questionType === "pig-in-poke") {
-        processPipPlayers(await getActivePlayer());
+        processPipPlayers(await getActivePlayerId());
     } else if (question.questionType === "auction") {
         // TODO: schow auction modal
     }
@@ -159,20 +173,37 @@ function displayRoundScreen() {
     roundViewport.style.display = "flex";
 }
 
-function processCorrectAnswer(event) {
-    displayRoundScreen();
-    
-    updateUserScore(true);
+async function processCorrectAnswer(event) {
+    const player = await answerQuestion(true);
+    updateUserScore(player.id);
+
+    // TODO: Clear player selection (.className = "player-badge")
+    // TODO: set active player badge
+        // 1. getActivePlayerId()
+        // 2. .className = "player-badge topic-selection"
+
+    displayRoundScreen();    
 }
 
-async function updateUserScore(isCorrect) {
-    const response = await getUpdatedScore(isCorrect);
-    console.log("Response is: name: " + response.targetPlayer + " score: " + response.newScore);
+async function processWrongAnswer(event) {
+    console.log("Activeeeee!!!!!!!!!!!!!");
 
+    const player = await answerQuestion(false);
+    updateUserScore(player.id);
+
+    // TODO: set active player badge
+        // 1. getActivePlayerId()
+        // 2. .className = "player-badge topic-selection"
+
+    // TODO: make player inactive, set answer forbidden
+
+}
+
+async function updateUserScore(playerId) {
     const playerBadges = document.querySelector("#player-list").querySelectorAll(".player-badge");
 
     playerBadges.forEach((player) => {
-        if (response.targetPlayer === player.querySelector(".player-details-name").innerText) {
+        if (playerId === player.querySelector(".player-details-id").innerText) {
             player.querySelector(".player-details-score-value").innerText = response.newScore;
         }
     });
