@@ -4,14 +4,12 @@ import { getImagePathOrDefault } from "../../service/utils.js";
 import { displayQuestionScreen } from "../gameplay-service.js";
 
 
-// Todo: видалити старих гравців, та додати нових
 export async function processPipPlayers(activePlayerId) {
     const players = await fetchPlayers();
     const playerList = document.querySelector("#player-victim-list");
     playerList.innerHTML = "";
 
     players.forEach((player) => {
-        // TODO: Compare termId
         if (player.id === activePlayerId) {
             console.log("Player with id: '" + activePlayerId + "' removed from pip because he is choosing the victim");
             return;
@@ -22,7 +20,6 @@ export async function processPipPlayers(activePlayerId) {
         playerBadge.addEventListener("click", processVictimSelection);
         playerBadge.style.cursor = "pointer";
         playerList.appendChild(playerBadge);
-        // playerBadge.click();
 
         let playerIcon = document.createElement("div");
         playerIcon.className = "player-icon";
