@@ -166,7 +166,7 @@ export function fetchRound() {
 
 export async function getQuestionData(topic, price) {
     return {
-        questionType: "auction", // "normal", "pig-in-poke", "auction"
+        questionType: "pig-in-poke", // "normal", "pig-in-poke", "auction"
         mediaType: "text", // "text", "video", "music", "picture"
         content: "What is the best pone?",
     };
@@ -182,7 +182,7 @@ export async function getFastestClick() {
 export async function answerQuestion(answeredCorrectly) {
     return {
         // TODO: Add id and check by id
-        targetPlayer: "Жерти",
+        id: 1,
         newScore: 666,
     };
 }
@@ -193,4 +193,12 @@ export async function sendPipVictim(victimName) {
 
 export async function getActivePlayerId() {
     return 1;
+}
+
+export async function allowAnswer() {
+
+}
+
+export async function waitForFirstClick() {
+    return 2;
 }
