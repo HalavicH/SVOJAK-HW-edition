@@ -166,7 +166,7 @@ export function fetchRound() {
 
 export async function getQuestionData(topic, price) {
     return {
-        questionType: "pig-in-poke", // "normal", "pig-in-poke", "auction"
+        questionType: "auction", // "normal", "pig-in-poke", "auction"
         mediaType: "text", // "text", "video", "music", "picture"
         content: "What is the best pone?",
     };

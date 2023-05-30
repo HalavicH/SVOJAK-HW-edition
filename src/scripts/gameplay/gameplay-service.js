@@ -1,6 +1,6 @@
 import { getActivePlayerId, answerQuestion, getQuestionData } from "../service/back-end-com.js";
 import { processPipPlayers } from "./modal/pig-in-poke-modal.js";
-
+import { processAuctionPlayers } from "./modal/auction-modal.js";
 
 export async function processQuestionSelection(event) {
     const question = event.target;
@@ -31,7 +31,7 @@ export async function processQustionDisplay(topic, price) {
     } else if (question.questionType === "pig-in-poke") {
         processPipPlayers(await getActivePlayerId());
     } else if (question.questionType === "auction") {
-        // TODO: schow auction modal
+        processAuctionPlayers(await getActivePlayerId());
     }
 }
 
@@ -93,7 +93,3 @@ export async function updateUserScore(playerId) {
     });
 }
 
-// <div class="player-details">
-//     <p class="player-details-name">HalavicH</p>
-//     <p class="player-details-score">Score: 100</p>
-// </div>
