@@ -1,6 +1,6 @@
 import { fetchPlayers, fetchRound } from "../service/back-end-com.js";
 import { getImagePathOrDefault } from "../service/utils.js";
-import { processCorrectAnswer, processWrongAnswer, processQuestionSelection } from "./gameplay-service.js";
+import { processCorrectAnswer, processWrongAnswer, processQuestionSelection, allowAnswerHandler } from "./gameplay-service.js";
 
 console.log("Gameplay loaded!");
 
@@ -20,7 +20,6 @@ function addButtonEventListeners() {
                 window.location.href = "./index.html";
         });
     });
-    
     document
         .querySelector("#correct-answer-btn")
         .addEventListener("click", processCorrectAnswer);
@@ -28,6 +27,10 @@ function addButtonEventListeners() {
     document
         .querySelector("#wrong-answer-btn")
         .addEventListener("click", processWrongAnswer);
+    
+    document
+        .querySelector("#allow-answer-btn")
+        .addEventListener("click", allowAnswerHandler);
 }
 
 export async function processMainScreenPlayers() {
