@@ -1,4 +1,4 @@
-import { getActivePlayerId, answerQuestion, getQuestionData, allowAnswer, waitForFirstClick } from "../service/back-end-com.js";
+import { getActivePlayerId, answerQuestion, getQuestionData, allowAnswer, waitForFirstClick, isAllowButtonRequired, hasNextQuestion } from "../service/back-end-com.js";
 import { processPipPlayers } from "./modal/pig-in-poke-modal.js";
 import { processAuctionPlayers } from "./modal/auction-modal.js";
 
@@ -47,6 +47,14 @@ export async function processQustionDisplay(topic, price) {
             question.content
     );
 
+    // Disable allow button
+    const button = document.querySelector("#allow-answer-btn");
+    if (await (isAllowButtonRequired()) == true) {
+        button.style.display = "block";
+    } else {
+        button.style.display = "none";
+    }
+
     placeQuestionContent(question);
 
     if (question.questionType === "Normal") {
@@ -84,10 +92,20 @@ export async function processCorrectAnswer() {
     goToRoundScreen();
 }
 
-export function goToRoundScreen() {
+export async function goToRoundScreen() {
     setAllPlayersState("");
-    setActivePlayerBadgeState("topic-selection");
-    displayRoundScreen();
+    
+    if (await hasNextQuestion()) {
+        setActivePlayerBadgeState("topic-selection");
+        displayRoundScreen();    
+    } else {
+        // displayStatsScreen() {
+        //     const roundStats = getRoundStats(); <-- for back
+        // }
+        // // docu
+        // 
+    }
+
 }
 
 export async function processWrongAnswer() {
@@ -102,6 +120,9 @@ export async function processWrongAnswer() {
     // 3. forbidAnswer()
     // 4. listen
 
+    // ifNot
+    // if question not nornal:
+    // return
     // TODO: make player inactive, set answer forbidden
 }
 
