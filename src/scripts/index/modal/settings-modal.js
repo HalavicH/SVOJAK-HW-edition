@@ -1,8 +1,8 @@
-import { openModal, closeModal } from "../../service/modal-common.js";
-import { getSettingsConfig, savePlayers, discoverHub } from "../../service/back-end-com.js";
-import { getImagePathOrDefault } from "../../service/utils.js";
+import {openModal, closeModal} from "../../service/modal-common.js";
+import {getSettingsConfig, savePlayers, discoverHub, discoverTerminals} from "../../service/back-end-com.js";
+import {getImagePathOrDefault} from "../../service/utils.js";
 
-const { invoke } = window.__TAURI__.tauri;
+const {invoke} = window.__TAURI__.tauri;
 
 export async function openSettingsModal() {
     const modalContainer = document.querySelector("#settings-modal");
@@ -147,11 +147,10 @@ function fillPlayersData(newPlayersData) {
     });
 }
 
-export async function discoverTerminals() {
+
+export async function handleDiscoverTerminals() {
     const channelIdObject = document.querySelector("#radio-channel");
-    const terminals = await invoke("discover_terminals", {
-        channelId: parseInt(channelIdObject.value),
-    });
+    const terminals = await discoverTerminals(channelIdObject);
 
     console.info("result = " + terminals);
 
