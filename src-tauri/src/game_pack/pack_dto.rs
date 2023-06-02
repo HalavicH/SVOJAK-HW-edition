@@ -35,7 +35,7 @@ pub struct RightDto {
 pub struct QuestionDto {
     pub scenario: ScenarioDto,
     pub right: RightDto,
-    pub price: u32,
+    pub price: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
