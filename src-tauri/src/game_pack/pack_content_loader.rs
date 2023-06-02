@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use serde_xml_rs::from_str;
 use std::fs;
 
-use crate::game_pack::pack_dto::*;
-use crate::game_pack::pack_entities::*;
-use crate::game_process::game_info::{GamePack, PackLocationData};
+use crate::game_pack::pack_content_dto::*;
+use crate::game_pack::pack_content_entities::*;
+use crate::game_pack::game_pack_entites::{GamePack, PackLocationData};
 
-pub fn load_pack(game_information: &PackLocationData) -> PackContent {
+pub fn load_pack_content(game_information: &PackLocationData) -> PackContent {
     let package_content_file_str = game_information.content_file_path.to_str().unwrap();
     let package: PackageDto = parse_package(package_content_file_str);
 

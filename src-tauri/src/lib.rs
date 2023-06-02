@@ -14,16 +14,13 @@ pub mod core {
 }
 
 pub mod game_pack {
-    mod pack_dto;
-
-    pub mod pack_entities;
-    pub mod pack_loader;
+    mod pack_content_dto;
+    pub mod pack_content_entities;
+    pub mod pack_content_loader;
+    pub mod game_pack_entites;
+    pub mod game_pack_loader;
 }
-
 pub mod hw_comm {
     pub mod api;
 }
-pub mod game_process {
-    pub mod game_info;
-    pub mod game_processor;
-}
+pub mod game_process {}

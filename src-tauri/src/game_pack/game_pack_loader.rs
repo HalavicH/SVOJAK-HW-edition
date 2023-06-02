@@ -2,9 +2,9 @@ use std::fs;
 use std::sync::Arc;
 use tempfile::TempDir;
 use zip::ZipArchive;
+use crate::game_pack::game_pack_entites::*;
 
-use crate::game_pack::pack_loader::load_pack;
-use crate::game_process::game_info::*;
+use crate::game_pack::pack_content_loader::load_pack_content;
 
 fn create_temp_directory() -> Arc<TempDir> {
     let temp_dir = Arc::new(TempDir::new().expect("Failed to create temporary directory"));
@@ -22,7 +22,7 @@ fn unarchive_zip(archive_path: &str, directory_path: &str) {
         .expect("Failed to unpack archive");
 }
 
-pub fn load_game(game_archive_path: &str) -> GamePack {
+pub fn load_game_pack(game_archive_path: &str) -> GamePack {
     let temp_dir = create_temp_directory();
     let temp_dir_path = temp_dir.path();
 
@@ -37,7 +37,7 @@ pub fn load_game(game_archive_path: &str) -> GamePack {
     };
 
     // TODO: Update media with full path
-    let game_package = load_pack(&locations);
+    let game_package = load_pack_content(&locations);
 
     GamePack {
         location: locations.clone(),

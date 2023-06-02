@@ -5,7 +5,7 @@ use crate::hw_comm::api::discover_serial_ports;
 use std::collections::HashMap;
 use std::ops::Deref;
 use crate::api::dto::{PackInfoDto, PlayerGameDto, QuestionDto};
-use crate::game_pack::pack_entities::{PackContent, Question, Round, RoundType};
+use crate::game_pack::pack_content_entities::{PackContent, Question, Round, RoundType};
 
 use super::dto::PlayerSetupDto;
 
@@ -108,7 +108,7 @@ pub fn map_players_to_player_game_dto(players: &HashMap<u8, Player>) -> Vec<Play
 /// ```
 /// use serde::Serialize;
 /// use svoyak_tauri_app::api::mapper::map_round_to_dto;
-/// use svoyak_tauri_app::game_pack::pack_entities::{RoundType, Theme};
+/// use svoyak_tauri_app::game_pack::pack_content_entities::{RoundType, Theme};
 ///
 /// #[derive(Debug, Serialize)]
 /// #[allow(non_snake_case)]
