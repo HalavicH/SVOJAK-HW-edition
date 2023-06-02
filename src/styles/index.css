@@ -21,3 +21,7 @@
 .logo.bronucon:hover {
     filter: drop-shadow(0 0 2em #dbbd24);
 }
+
+#pack-error-info-table .key {
+    width: 20%;
+}

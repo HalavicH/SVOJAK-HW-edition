@@ -1,5 +1,5 @@
-import { openModal, closeModal } from "../../service/modal-common.js";
-import { getPackInfo, saveRoundDuration } from "../../service/back-end-com.js";
+import {openModal, closeModal} from "../../service/modal-common.js";
+import {getPackInfo, saveRoundDuration} from "../../service/back-end-com.js";
 
 const {invoke} = window.__TAURI__.tauri;
 
@@ -7,16 +7,22 @@ export async function openPackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 
     const filePath = "";
-    const packInfo = await getPackInfo(filePath);
+    getPackInfo(filePath)
+        .then((packInfo) => {
+            setPackName(packInfo.packName);
+            setPackAuthor(packInfo.packAuthor);
+            setPackRounds(packInfo.packRounds);
+            setPackTopics(packInfo.packTopics);
+            setPackQuestions(packInfo.packQuestions);
+            setPackTopicList(packInfo.packTopicList);
 
-    setPackName(packInfo.packName);
-    setPackAuthor(packInfo.packAuthor);
-    setPackRounds(packInfo.packRounds);
-    setPackTopics(packInfo.packTopics);
-    setPackQuestions(packInfo.packQuestions);
-    setPackTopicList(packInfo.packTopicList);
-
-    openModal(modalPackInfoContainer);
+            openModal(modalPackInfoContainer);
+        })
+        .catch((error) => {
+            console.error("Promise rejection:", error);
+            // Log the rejection payload or handle the error in any other way
+            openPackErrorModel(error);
+        });
 }
 
 function setPackTopicList(packTopicList) {
@@ -63,12 +69,12 @@ export function closePackInfoModal() {
 
 export function startTheGame() {
     const raundDurationOptions = document
-    .querySelector("#round-duration")
-    .querySelectorAll("option");
+        .querySelector("#round-duration")
+        .querySelectorAll("option");
     let duration = 0;
     raundDurationOptions.forEach((option) => {
         if (option.selected) {
-            duration = parseInt(option.value) 
+            duration = parseInt(option.value)
         }
     });
 
@@ -77,4 +83,15 @@ export function startTheGame() {
     window.location.href = "./gameplay.html";
 }
 
+function openPackErrorModel(error) {
+    let errorModel = document.querySelector("#pack-error-modal");
+    errorModel.querySelector("#pack-path").innerText = error.InvalidPackFileExtension
+    errorModel.querySelector("#pack-error-cause").innerText = "Wrong file extension. Expected '.siq";
 
+    openModal(errorModel);
+}
+
+export async function closePackErrorModal() {
+    let modal = document.querySelector("#pack-error-modal");
+    closeModal(modal);
+}
