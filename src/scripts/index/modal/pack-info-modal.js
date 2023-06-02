@@ -100,8 +100,14 @@ export function startTheGame() {
 
 function openPackErrorModel(error) {
     let errorModel = document.querySelector("#pack-error-modal");
-    errorModel.querySelector("#pack-path").innerText = error.InvalidPackFileExtension
-    errorModel.querySelector("#pack-error-cause").innerText = "Wrong file extension. Expected '.siq";
+    if (error.InvalidPackFileExtension != undefined) {
+        errorModel.querySelector("#pack-error-cause").innerText = "Wrong file extension. Expected '.siq";
+        errorModel.querySelector("#pack-path").innerText = error.InvalidPackFileExtension;
+    } else if (error.InvalidPathToPack != undefined) {
+        errorModel.querySelector("#pack-error-cause").innerText = "Invalid path to pack file";
+        errorModel.querySelector("#pack-path").innerText = error.InvalidPathToPack;
+    }
+
 
     openModal(errorModel);
 }
