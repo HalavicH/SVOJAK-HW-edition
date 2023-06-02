@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::os::unix::thread::RawPthread;
 use serde::Serialize;
 
 // Game entities
