@@ -22,24 +22,25 @@ fn unarchive_zip(archive_path: &str, directory_path: &str) {
         .expect("Failed to unpack archive");
 }
 
-pub fn load_game(game_archive_path: &str) -> GameInstance {
+pub fn load_game(game_archive_path: &str) -> GamePack {
     let temp_dir = create_temp_directory();
     let temp_dir_path = temp_dir.path();
 
     unarchive_zip(game_archive_path, temp_dir_path.to_str().unwrap());
 
-    let game_info = GameInfo {
-        pack_content_dir: temp_dir.clone(),
-        pack_content_file_path: temp_dir_path.join(PACKAGE_CONTENT_FILE_NAME),
-        pack_audio_path: temp_dir_path.join(PACKAGE_AUDIO_DIR_NAME),
-        pack_images_path: temp_dir_path.join(PACKAGE_IMAGES_DIR_NAME),
-        pack_video_path: temp_dir_path.join(PACKAGE_VIDEO_DIR_NAME),
+    let locations = PackLocationData {
+        base_dir: temp_dir.clone(),
+        content_file_path: temp_dir_path.join(PACKAGE_CONTENT_FILE_NAME),
+        audio_path: temp_dir_path.join(PACKAGE_AUDIO_DIR_NAME),
+        images_path: temp_dir_path.join(PACKAGE_IMAGES_DIR_NAME),
+        video_path: temp_dir_path.join(PACKAGE_VIDEO_DIR_NAME),
     };
 
-    let game_package = load_pack(&game_info);
+    // TODO: Update media with full path
+    let game_package = load_pack(&locations);
 
-    GameInstance {
-        information: game_info.clone(),
-        package: game_package.clone(),
+    GamePack {
+        location: locations.clone(),
+        content: game_package.clone(),
     }
 }
