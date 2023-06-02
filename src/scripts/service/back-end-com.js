@@ -31,8 +31,8 @@ export async function saveRoundDuration(roundDurationMinutes) {
     invoke("save_round_duration", {durationMin: roundDurationMinutes});
 }
 
-export async function getPackInfo(pathToPack) {
-    return await invoke("get_pack_info");
+export async function getPackInfo() {
+    return invoke("get_pack_info");
 }
 
 export async function fetchPlayers() {

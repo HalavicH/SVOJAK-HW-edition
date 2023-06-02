@@ -137,3 +137,16 @@ img {
     justify-content: center;
     align-items: center; 
 }
+
+
+.dark-table {
+    background-color: var(--modal-table-background-color);
+    border: solid 1px var(--modal-table-border-color);
+    margin-top: 5px;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.dark-table tr {
+    text-align: center;
+}
