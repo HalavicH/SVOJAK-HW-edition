@@ -4,7 +4,7 @@ use std::fs;
 use crate::game_pack::pack_dto::*;
 use crate::game_pack::pack_entities::*;
 
-use crate::game_process::game_info::GameInfo;
+use crate::game_process::game_info::PackLocationData;
 
 fn parse_package(file_path: &str) -> PackageDto {
     let package_xml =
@@ -13,7 +13,7 @@ fn parse_package(file_path: &str) -> PackageDto {
     from_str(&package_xml).unwrap()
 }
 
-fn map_package(dto: PackageDto) -> Package {
+fn map_package(dto: PackageDto) -> PackContent {
     let map_atoms = |a: &AtomDto| Atom {
         atom_type: {
             match a.r#type {
@@ -67,7 +67,7 @@ fn map_package(dto: PackageDto) -> Package {
         },
     };
 
-    Package {
+    PackContent {
         name: dto.name,
         version: dto.version,
         id: dto.id,
@@ -95,8 +95,8 @@ fn map_package(dto: PackageDto) -> Package {
     }
 }
 
-pub fn load_pack(game_information: &GameInfo) -> Package {
-    let package_content_file_str = game_information.pack_content_file_path.to_str().unwrap();
+pub fn load_pack(pack_location: &PackLocationData) -> PackContent {
+    let package_content_file_str = pack_location.content_file_path.to_str().unwrap();
     let package: PackageDto = parse_package(package_content_file_str);
 
     map_package(package)
