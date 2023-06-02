@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use serde::Serialize;
 
+pub struct PackContentLoaderError {}
+
 // Game entities
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub enum QuestionMediaType {

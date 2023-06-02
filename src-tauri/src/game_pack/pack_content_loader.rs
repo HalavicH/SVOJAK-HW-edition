@@ -1,22 +1,52 @@
-use std::collections::HashMap;
+#[allow(dead_code, unused, unused_imports)]
+use std::{collections::HashMap, io, fmt, error::Error, fs};
+use std::process::Termination;
+
+use error_stack::{IntoReport, Report, Result, ResultExt};
 use serde_xml_rs::from_str;
-use std::fs;
 
 use crate::game_pack::pack_content_dto::*;
 use crate::game_pack::pack_content_entities::*;
 use crate::game_pack::game_pack_entites::{PackLocationData};
 
-pub fn load_pack_content(game_information: &PackLocationData) -> PackContent {
-    let package_content_file_str = game_information.content_file_path.to_str().unwrap();
-    let package: PackageDto = parse_package(package_content_file_str);
+#[derive(Debug)]
+pub struct ParsePackContentError;
 
-    map_package(package)
+impl fmt::Display for ParsePackContentError {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.write_str("Failed to parse content: invalid pack content")
+    }
 }
-fn parse_package(file_path: &str) -> PackageDto {
-    let package_xml =
-        fs::read_to_string(file_path).expect("Should have been able to read the file");
 
-    from_str(&package_xml).unwrap()
+impl Error for ParsePackContentError {}
+
+pub fn load_pack_content(game_information: &PackLocationData) -> Result<PackContent, ParsePackContentError> {
+    let package_content_file_str = game_information.content_file_path.to_str().unwrap();
+    let package: PackageDto = parse_package(package_content_file_str)
+        .attach_printable_lazy(|| {
+            format!("Can't load pack content: parsing failed")
+        })?;
+
+    let content = map_package(package);
+    Ok(content)
+}
+
+fn parse_package(file_path: &str) -> Result<PackageDto, ParsePackContentError> {
+    let package_xml = fs::read_to_string(file_path)
+        .into_report()
+        .attach_printable_lazy(|| {
+            format!("Can't open package content file: '{file_path}'")
+        })
+        .change_context(ParsePackContentError)?;
+
+    let package_dto = from_str(&package_xml)
+        .into_report()
+        .attach_printable_lazy(|| {
+            format!("Can't parse pack content XML file: '{file_path}'")
+        })
+        .change_context(ParsePackContentError)?;
+
+    Ok(package_dto)
 }
 
 fn map_package(dto: PackageDto) -> PackContent {

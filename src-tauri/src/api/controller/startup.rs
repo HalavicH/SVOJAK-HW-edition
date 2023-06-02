@@ -4,7 +4,8 @@ use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_pl
 use crate::core::game_entities::{game_ctx, HubStatus, Player};
 
 use crate::api::dto::PlayerSetupDto;
-use crate::game_pack::game_pack_loader::load_game_pack;
+use crate::game_pack::game_pack_entites::GamePack;
+use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
 
 /// Provide saved game configuration
 #[command]
@@ -59,42 +60,23 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
 
 /// Load game pack into the game
 #[command]
-pub fn get_pack_info() -> PackInfoDto {
-    game_ctx().pack = load_game_pack("/Users/okholiavko/IdeaProjects/rust/svoyak-tauri-app/src-tauri/content.xml").content;
+pub fn get_pack_info() -> Result<PackInfoDto, GamePackLoadingError> {
+    let path = "/Users/okholiavko/Downloads/MLP пак by Maikas.siq";
+    let result = load_game_pack(path);
 
-    let pack_info_dto = map_package_to_pack_info_dto(&game_ctx().pack);
-    println!("Pack info: {:#?}", pack_info_dto);
-    pack_info_dto
-    // PackInfoDto {
-    //     packName: "Ракування 2023".to_string(),
-    //     packAuthor: "Злий репер зеник".to_string(),
-    //     packRounds: 3,
-    //     packTopics: 21,
-    //     packQuestions: 67,
-    //     packTopicList: vec![
-    //         "Кавуни".to_string(),
-    //         "Мемарня".to_string(),
-    //         "Лесь подерв'янський".to_string(),
-    //         "ГМО".to_string(),
-    //         "Срала мазала ліпила".to_string(),
-    //         "Іспанія".to_string(),
-    //         "Орги бронукона".to_string(),
-    //         "Металісти".to_string(),
-    //         "Баба з хуйом".to_string(),
-    //         "Пиво".to_string(),
-    //         "Коломийки".to_string(),
-    //         "Каракулєва шуба".to_string(),
-    //         "Дослідники калу".to_string(),
-    //         "Гамлєт".to_string(),
-    //         "Совок".to_string(),
-    //         "Табуретка".to_string(),
-    //         "Нова Луняшна республіка".to_string(),
-    //         "Кефір - не ряженка".to_string(),
-    //         "Колеса".to_string(),
-    //         "Скайрім".to_string(),
-    //         "Угу".to_string(),
-    //         ],
-    // }
+    match result {
+        Ok(pack) => {
+            game_ctx().pack = pack.content;
+
+            let pack_info_dto = map_package_to_pack_info_dto(&game_ctx().pack);
+            println!("Pack info: {:#?}", pack_info_dto);
+            Ok(pack_info_dto)
+        }
+        Err(err) => {
+            log::error!("\n{err:?}");
+            Err((*err.current_context()).clone())
+        }
+    }
 }
 
 // #[tauri::command]

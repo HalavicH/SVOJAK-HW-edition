@@ -9,6 +9,8 @@ pub static PACKAGE_CONTENT_FILE_NAME: &str = "content.xml";
 pub static PACKAGE_IMAGES_DIR_NAME: &str = "Images";
 pub static PACKAGE_VIDEO_DIR_NAME: &str = "Video";
 
+pub struct PackLoaderError {}
+
 #[derive(Debug, Clone)]
 pub struct PackLocationData {
     // !warning: if you lose this pointer, temp directory will be deleted
