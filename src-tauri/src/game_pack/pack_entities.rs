@@ -52,7 +52,7 @@ pub struct Info {
 }
 
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct Package {
+pub struct PackContent {
     pub name: String,
     pub version: String,
     pub id: String,

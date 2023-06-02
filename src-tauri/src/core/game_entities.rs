@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
-use crate::game_pack::pack_entities::Package;
+use crate::game_pack::pack_entities::PackContent;
 
 #[derive(Debug, Eq, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Player {
@@ -63,7 +63,7 @@ impl HubManager {
 #[derive(Default, Debug)]
 pub struct GameContext {
     pub players: HashMap<u8, Player>,
-    pub pack: Package,
+    pub pack: PackContent,
     pub hub: HubManager,
 }
 
