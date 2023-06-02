@@ -1,4 +1,5 @@
 import { fetchPlayers, fetchRound } from "../service/back-end-com.js";
+import { closeModal, openModal } from "../service/modal-common.js";
 import { getImagePathOrDefault } from "../service/utils.js";
 import { processCorrectAnswer, processWrongAnswer, processQuestionSelection, allowAnswerHandler } from "./gameplay-service.js";
 
@@ -17,9 +18,12 @@ function addButtonEventListeners() {
         .forEach((button) => {
             console.log("Applying handler to button: " + button);
             button.addEventListener("click", () => {
-                window.location.href = "./index.html";
+                const modal = document.querySelector("#exit-dialog-modal");
+                openModal(modal);
+
+            });
         });
-    });
+
     document
         .querySelector("#correct-answer-btn")
         .addEventListener("click", processCorrectAnswer);
@@ -27,11 +31,30 @@ function addButtonEventListeners() {
     document
         .querySelector("#wrong-answer-btn")
         .addEventListener("click", processWrongAnswer);
-    
+
     document
         .querySelector("#allow-answer-btn")
         .addEventListener("click", allowAnswerHandler);
+
+    document
+        .querySelector("#exit-dialog-yes")
+        .addEventListener("click", () => {
+            window.location.href = "./index.html";
+        });
+
+    document
+        .querySelector("#exit-dialog-no")
+        .addEventListener("click", closeExitDialogModal);
 }
+
+
+function closeExitDialogModal() {
+    const modal = document.querySelector("#exit-dialog-modal");
+
+    closeModal(modal);
+}
+
+
 
 export async function processMainScreenPlayers() {
     const players = await fetchPlayers();
@@ -114,7 +137,7 @@ async function processRoundFromBackend() {
             addQuestion(question.price, topicMarker, tr);
         })
     });
-} 
+}
 
 function addQuestion(price, marker, tr) {
     let tdQuestion = document.createElement("td");
