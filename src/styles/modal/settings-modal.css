@@ -31,18 +31,6 @@
 }
 
 /* Terminal table */
-#terminal-data-table {
-    background-color: var(--modal-table-background-color);
-    border: solid 1px var(--modal-table-border-color);
-    margin-top: 5px;
-    padding: 5px;
-    border-radius: 10px;
-}
-
-#terminal-data-table tr {
-    text-align: center;
-}
-
 #terminal-data-labels {
     background-color: var(--modal-table-labels-color);
 }

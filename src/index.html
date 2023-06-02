@@ -86,7 +86,7 @@
                     </div>
                     <div id="hub-data-block">
                         <div>Terminal data:</div>
-                        <table id="terminal-data-table">
+                        <table class="dark-table" id="terminal-data-table">
                             <tr id="terminal-data-labels">
                                 <td>Id</td>
                                 <td>Icon</td>
@@ -218,11 +218,36 @@
                         </div>
                     </div>
 
-                    <div id="action-block">
+                    <div class="action-block">
                         <button id="start-the-game" type="button">Start the game</button>
                     </div>
                 </div>
             </div>
+        <!-- Modal pack-error window -->
+        <div class="modal" id="pack-error-modal">
+            <div class="modal-content" id="pack-error-modal-content">
+                <span class="close" id="pack-error-close-modal">&times;</span>
+                <h2 class="modal-name">Pack opening failed</h2>
+
+                <div class="items-block">
+                    <p class="pack-info-title">Can't open pack:</p>
+                    <table class="grid" id="pack-error-info-table">
+                        <tr>
+                            <td class="key"><div>Cause:</div></td>
+                            <td><div id="pack-error-cause" class="">Яєбу</div></td>
+                        </tr>
+                        <tr>
+                            <td class="key"><div>Pack path:</div></td>
+                            <td><div id="pack-path" class=""></div></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="action-block">
+                    <button id="pack-error-ok-btn" type="submit">Ok</button>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
 
