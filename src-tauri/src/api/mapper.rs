@@ -1,9 +1,7 @@
-#[allow(unused_imports, unused_variables)]
 use crate::api::dto::{ConfigDto, RoundDto, TopicDto};
 use crate::core::game_entities::{game_ctx, Player};
 use crate::hw_comm::api::discover_serial_ports;
 use std::collections::HashMap;
-use std::ops::Deref;
 use crate::api::dto::{PackInfoDto, PlayerGameDto, QuestionDto};
 use crate::game_pack::pack_content_entities::{PackContent, Question, Round, RoundType};
 
