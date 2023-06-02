@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tempfile::TempDir;
 
-use crate::game_pack::pack_entities::PackContent;
+use crate::game_pack::pack_content_entities::PackContent;
 
 pub static PACKAGE_AUDIO_DIR_NAME: &str = "Audio";
 pub static PACKAGE_CONTENT_FILE_NAME: &str = "content.xml";

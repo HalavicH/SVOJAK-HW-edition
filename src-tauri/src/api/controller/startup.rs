@@ -7,8 +7,8 @@ use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_pl
 use crate::core::game_entities::{game_ctx, HubStatus, Player};
 
 use crate::api::dto::PlayerSetupDto;
-use crate::game_pack::pack_loader::load_pack;
-use crate::game_process::game_processor::load_game;
+use crate::game_pack::pack_content_loader::load_pack_content;
+use crate::game_pack::game_pack_loader::load_game_pack;
 
 /// Provide saved game configuration
 #[command]
@@ -64,7 +64,7 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
 /// Load game pack into the game
 #[command]
 pub fn get_pack_info() -> PackInfoDto {
-    game_ctx().pack = load_game("/Users/okholiavko/IdeaProjects/rust/svoyak-tauri-app/src-tauri/content.xml").content;
+    game_ctx().pack = load_game_pack("/Users/okholiavko/IdeaProjects/rust/svoyak-tauri-app/src-tauri/content.xml").content;
 
     let pack_info_dto = map_package_to_pack_info_dto(&game_ctx().pack);
     println!("Pack info: {:#?}", pack_info_dto);
