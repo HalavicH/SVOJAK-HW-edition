@@ -1,7 +1,7 @@
 #[allow(unused_imports, unused_variables)]
 
 use serde::{Serialize, Deserialize};
-use crate::game_pack::pack_entities::QuestionMediaType;
+use crate::game_pack::pack_content_entities::QuestionMediaType;
 
 ////////// Config ///////////
 #[derive(Debug, Serialize)]
