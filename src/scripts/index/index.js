@@ -1,5 +1,5 @@
 import {openSettingsModal, closeSettingsModal, handleDiscoverTerminals, serialPortSelectHandler} from "./modal/settings-modal.js";
-import {openPackInfoModal, closePackInfoModal, startTheGame} from "./modal/pack-info-modal.js";
+import {openPackInfoModal, closePackInfoModal, startTheGame, closePackErrorModal} from "./modal/pack-info-modal.js";
 
 window.addEventListener("DOMContentLoaded", () => {
     // modal processing
@@ -37,6 +37,13 @@ window.addEventListener("DOMContentLoaded", () => {
         .querySelector("#start-the-game")
         .addEventListener("click", startTheGame);
 
+    document
+        .querySelector("#pack-error-ok-btn")
+        .addEventListener("click", closePackErrorModal)
+
+    document
+        .querySelector("#pack-error-close-modal")
+        .addEventListener("click", closePackErrorModal)
 });
 
 
