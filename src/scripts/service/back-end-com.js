@@ -86,3 +86,48 @@ export async function allowAnswer() {
 export async function waitForFirstClick() {
     return 2;
 }
+
+export async function isAllowButtonRequired() {
+    return false;
+}
+
+export async function getRoundStats() {
+    return {
+        roundNumber: 1,
+        questionNumber: 30,
+        normalQuestionNum: 27,
+        pigInPokeQuestionNum: 3,
+        totalCorrectAnswers: 25,
+        totalWrongAnswers: 5,
+        roundTime: "13:54",
+        players: [
+            {
+                id: 1,
+                name: "HalavicH",
+                score: 400,
+                playerIconPath: "",
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            },
+            {
+                id: 2,
+                name: "Button",
+                score: 300,
+                playerIconPath: "",
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            },
+            {
+                id: 3,
+                name: "Minty",
+                score: 200,
+                playerIconPath: "",
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            }
+        ]
+    };
+}

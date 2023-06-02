@@ -14,7 +14,7 @@ export async function processPipPlayers(activePlayerId) {
             console.log("Player with id: '" + activePlayerId + "' removed from pip because he is choosing the victim");
             return;
         }
-        
+ 
         let playerBadge = document.createElement("div");
         playerBadge.className = "player-victim-badge";
         playerBadge.addEventListener("click", processVictimSelection);

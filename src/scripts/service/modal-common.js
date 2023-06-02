@@ -9,7 +9,7 @@ export function openModal(modal) {
 export function closeModal(modal) {
     modal.style.opacity = 0;
 
-    setTimeout(function () {
+    setTimeout(function() {
         modal.style.display = "none";
     }, 500);
 }
