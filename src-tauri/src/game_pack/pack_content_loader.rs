@@ -4,7 +4,7 @@ use std::fs;
 
 use crate::game_pack::pack_content_dto::*;
 use crate::game_pack::pack_content_entities::*;
-use crate::game_pack::game_pack_entites::{GamePack, PackLocationData};
+use crate::game_pack::game_pack_entites::{PackLocationData};
 
 pub fn load_pack_content(game_information: &PackLocationData) -> PackContent {
     let package_content_file_str = game_information.content_file_path.to_str().unwrap();
