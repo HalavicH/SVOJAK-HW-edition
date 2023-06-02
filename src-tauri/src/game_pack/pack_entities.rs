@@ -1,6 +1,10 @@
+use std::collections::HashMap;
+use std::os::unix::thread::RawPthread;
+use serde::Serialize;
+
 // Game entities
-#[derive(Debug, PartialEq, Clone)]
-pub enum AtomType {
+#[derive(Debug, PartialEq, Clone, Serialize)]
+pub enum QuestionMediaType {
     Say,
     Voice,
     Video,
@@ -10,21 +14,27 @@ pub enum AtomType {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Atom {
-    pub atom_type: AtomType,
+    pub atom_type: QuestionMediaType,
     pub content: String,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct Question {
     pub scenario: Vec<Atom>,
     pub right_answer: String,
-    pub price: u32,
+    pub price: i32,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Theme {
     pub name: String,
-    pub questions: Vec<Question>,
+    pub questions: HashMap<i32, Question>,
+}
+
+impl Theme {
+    pub fn pop_question(&mut self, price: &i32) -> Option<Question> {
+        self.questions.remove(price)
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -37,7 +47,15 @@ pub enum RoundType {
 pub struct Round {
     pub name: String,
     pub round_type: RoundType,
-    pub themes: Vec<Theme>,
+    pub themes: HashMap<String, Theme>,
+    pub question_count: i32,
+    pub questions_left: i32,
+}
+
+impl Round {
+    pub fn decrement_round(&mut self) {
+        self.questions_left -= 1;
+    }
 }
 
 // Pack information
