@@ -1,4 +1,3 @@
-#[allow(unused_imports, unused_variables)]
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::collections::HashMap;
@@ -70,7 +69,7 @@ pub struct GameContext {
 impl GameContext {
     pub fn get_current_round(&self) -> &Round {
         let index = self.current_round_index as usize;
-        let mut round = self.pack.rounds.get(index).unwrap();
+        let round = self.pack.rounds.get(index).unwrap();
         println!("Current round: #{index} name: {}", round.name);
         &round
     }
@@ -78,7 +77,7 @@ impl GameContext {
     pub fn pop_question(&mut self, theme: &String, price: &i32) -> Result<(Question, i32), String> {
         println!("Get question from category: {theme}, price: {price}");
         let round = self.get_current_round_mut();
-        let mut theme = round.themes.get_mut(theme).ok_or("Theme not found".to_string())?;
+        let theme = round.themes.get_mut(theme).ok_or("Theme not found".to_string())?;
         let question = theme.pop_question(price).ok_or("Question not found".to_string())?.clone();
         round.questions_left -= 1;
         println!("Question left: {}", round.questions_left);
@@ -93,7 +92,7 @@ impl GameContext {
 
     fn get_current_round_mut(&mut self) -> &mut Round {
         let index = self.current_round_index as usize;
-        let mut round = self.pack.rounds.get_mut(index).unwrap();
+        let round = self.pack.rounds.get_mut(index).unwrap();
         round
     }
 }
