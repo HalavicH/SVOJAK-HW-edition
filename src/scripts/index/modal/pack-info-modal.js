@@ -13,7 +13,7 @@ export async function openPackInfoModal() {
     setPackAuthor(packInfo.packAuthor);
     setPackRounds(packInfo.packRounds);
     setPackTopics(packInfo.packTopics);
-    setPackQuestion(packInfo.packQuestion);
+    setPackQuestions(packInfo.packQuestions);
     setPackTopicList(packInfo.packTopicList);
 
     openModal(modalPackInfoContainer);
@@ -30,7 +30,7 @@ function setPackTopicList(packTopicList) {
     });
 }
 
-function setPackQuestion(packQuestion) {
+function setPackQuestions(packQuestion) {
     const packQuestionElement = document.querySelector("#pack-question-num");
     packQuestionElement.innerText = "Question: " + packQuestion;
 }

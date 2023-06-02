@@ -83,8 +83,8 @@ function addMainscreenPlayer(player, playerList) {
 
 }
 
-function processRoundFromBackend() {
-    const round = fetchRound();
+async function processRoundFromBackend() {
+    const round = await fetchRound();
     const packList = document.querySelector("#round-data-tbody")
     packList.innerHTML = "";
 
@@ -110,11 +110,9 @@ function processRoundFromBackend() {
         tr.appendChild(tdTheme);
 
         ////////// 1-5 questions //////////
-        addQuestion(topic.questions.price1, topicMarker, tr);
-        addQuestion(topic.questions.price2, topicMarker, tr);
-        addQuestion(topic.questions.price3, topicMarker, tr);
-        addQuestion(topic.questions.price4, topicMarker, tr);
-        addQuestion(topic.questions.price5, topicMarker, tr);        
+        topic.questions.forEach((question) => {
+            addQuestion(question.price, topicMarker, tr);
+        })
     });
 } 
 

@@ -18,9 +18,25 @@ export async function processQuestionSelection(event) {
     await processQustionDisplay(topic, price);
 }
 
+function placeQuestionContent(question) {
+    // Meta data
+    document.querySelector("#question-number").innerText = "Question: " + question.number;
+    document.querySelector("#question-category").innerText = "Category: " + question.category;
+    document.querySelector("#question-price").innerText = "Price: " + question.price;
+
+    // TODO: Add proper media handling
+    const questionViewport = document.querySelector(".question-viewport");
+    questionViewport.innerHTML = "";
+
+    const text = document.createElement("p");
+    text.innerText = question.content;
+    text.className = "question-text";
+    questionViewport.appendChild(text);
+}
+
 export async function processQustionDisplay(topic, price) {
     console.log("Retreiving question '" + topic + ":" + price + "'");
-    const question = await getQuestionData(topic, price);
+    const question = await getQuestionData(topic, parseInt(price));
     console.log(
         "Response" +
             ". questionType: " +
@@ -31,11 +47,13 @@ export async function processQustionDisplay(topic, price) {
             question.content
     );
 
-    if (question.questionType === "normal") {
+    placeQuestionContent(question);
+
+    if (question.questionType === "Normal") {
         displayQuestionScreen();
-    } else if (question.questionType === "pig-in-poke") {
+    } else if (question.questionType === "PigInPoke") {
         processPipPlayers(await getActivePlayerId());
-    } else if (question.questionType === "auction") {
+    } else if (question.questionType === "Auction") {
         processAuctionPlayers(await getActivePlayerId());
     }
 }

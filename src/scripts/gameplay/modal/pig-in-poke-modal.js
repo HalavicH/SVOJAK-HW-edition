@@ -46,7 +46,7 @@ async function processVictimSelection(event) {
     const name = victim.querySelector("p").innerText;
     console.log("Victim is: " + name);
     
-    sendPipVictim(name);
+    await sendPipVictim(name);
 
     const modal = document.querySelector("#pig-in-poke-modal");
     closeModal(modal);
