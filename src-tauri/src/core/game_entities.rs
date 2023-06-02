@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
-use crate::game_pack::pack_entities::{PackContent, Question, Round};
+use crate::game_pack::pack_content_entities::{PackContent, Question, Round};
 
 #[derive(Debug, Eq, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Player {
