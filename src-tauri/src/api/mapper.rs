@@ -12,7 +12,7 @@ pub fn get_config_dto() -> ConfigDto {
     let context = game_ctx();
     ConfigDto {
         available_ports: discover_serial_ports(),
-        hub_port: context.hub.port.clone(),
+        hub_port: context.hub.port_name.clone(),
         radio_channel: context.hub.radio_channel,
         players: context
             .players
