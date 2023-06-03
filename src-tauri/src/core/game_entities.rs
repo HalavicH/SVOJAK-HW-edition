@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
+use crate::core::hub_manager::HubManager;
 use crate::game_pack::pack_content_entities::{PackContent, Question, Round};
 
 #[derive(Debug, Eq, Clone, PartialEq, Serialize, Deserialize)]
@@ -40,21 +41,6 @@ pub enum HubStatus {
 impl Default for HubStatus {
     fn default() -> Self {
         HubStatus::NoDevice
-    }
-}
-
-#[derive(Default, Debug)]
-pub struct HubManager {
-    pub port: String,
-    pub status: HubStatus,
-    pub radio_channel: i32,
-    pub baudrate: i32,
-    pub base_timestamp: u32,
-}
-
-impl HubManager {
-    pub fn new(port: String, channel: i32, baudrate: i32, base_timestamp: u32) -> Self {
-        Self { port, status: HubStatus::NoDevice, radio_channel: channel, baudrate, base_timestamp }
     }
 }
 
