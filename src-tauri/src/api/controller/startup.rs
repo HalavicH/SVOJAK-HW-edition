@@ -60,9 +60,10 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
 
 /// Load game pack into the game
 #[command]
-pub fn get_pack_info() -> Result<PackInfoDto, GamePackLoadingError> {
-    let path = "/Users/okholiavko/Downloads/MLP пак by Maikas.siq";
-    let result = load_game_pack(path);
+pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> {
+    log::info!("Obtained package path: {}", path);
+
+    let result = load_game_pack(path.as_str());
 
     match result {
         Ok(pack) => {
