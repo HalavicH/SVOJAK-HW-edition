@@ -4,6 +4,7 @@ use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_pl
 use crate::core::game_entities::{game_ctx, HubStatus, Player};
 
 use crate::api::dto::PlayerSetupDto;
+use crate::core::hub_manager::HubManagerError;
 use crate::game_pack::game_pack_entites::GamePack;
 use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
 
@@ -23,7 +24,14 @@ pub fn fetch_configuration() -> ConfigDto {
 pub fn discover_hub(path: String) -> HubStatus {
     println!("Pretend opening port: {path}");
 
-    game_ctx().hub.probe(&path)
+    let result = game_ctx().hub.probe(&path);
+    match result {
+        Ok(status) => {status}
+        Err(error_stack) => {
+            log::error!("{}", error_stack);
+            HubStatus::NoDevice
+        }
+    }
 }
 
 /// Calls HUB to set specific radio channel, pings all devices on that channel, devices which
