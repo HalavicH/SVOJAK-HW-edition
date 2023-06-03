@@ -79,18 +79,3 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
         }
     }
 }
-
-// #[tauri::command]
-// fn open_file_dialog() -> Result<String, String> {
-//     let path = FileDialogBuilder::new()
-//         .pick_files(|f| {
-//             f.allowed_types(&["*"])
-//         })
-//         .show()
-//         .unwrap()
-//         .into_single()
-//         .ok_or("No file selected")?;
-//
-//     let path_str = path.to_string_lossy().to_string();
-//     Ok(path_str)
-// }
