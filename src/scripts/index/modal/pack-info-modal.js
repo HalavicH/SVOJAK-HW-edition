@@ -2,11 +2,26 @@ import {openModal, closeModal} from "../../service/modal-common.js";
 import {getPackInfo, saveRoundDuration} from "../../service/back-end-com.js";
 
 const {invoke} = window.__TAURI__.tauri;
+const {open} = window.__TAURI__.dialog;
 
 export async function openPackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 
-    const filePath = "";
+    const filePath = await open({
+        multiple: false,
+        filters: [{
+          name: 'Select game package',
+          extensions: ['siq']
+        }]
+      });
+
+    if (filePath === null) {
+        console.error("Game package file wasn't selected");
+        return;
+    } else {
+        console.info("Selected game package path: ", filePath);
+    }
+
     getPackInfo(filePath)
         .then((packInfo) => {
             setPackName(packInfo.packName);
