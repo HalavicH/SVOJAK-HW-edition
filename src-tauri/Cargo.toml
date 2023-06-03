@@ -25,6 +25,7 @@ zip = "0.6.6"
 
 # Hub communication
 serialport = "4.2.0"
+rgb = "0.8"
 
 # Game context holding
 lazy_static = "1.4.0"
