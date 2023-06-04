@@ -52,13 +52,11 @@ function processPlayerDataSaving() {
 
 function setHubStatus(status) {
     const hubStatusElement = document.querySelector("#hub-status-field");
+    console.log("Hub status received: " + status);
 
     if (status === "Detected") {
         hubStatusElement.className = "hub-status detected";
         hubStatusElement.innerText = "Detected";
-    } else if (status === "UnknownDevice") {
-        hubStatusElement.className = "hub-status unknown-device";
-        hubStatusElement.innerText = "Unknown Device";
     } else {
         hubStatusElement.className = "hub-status no-device";
         hubStatusElement.innerText = "No Device";
@@ -174,10 +172,8 @@ export async function serialPortSelectHandler(event) {
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
 
-    const result = discoverHub(selectedOption);
-
-    console.info("serialPortSelectHandler: result = " + result);
-
-    setHubStatus(result);
+    discoverHub(selectedOption)
+        .then(setHubStatus)
+        .catch(setHubStatus);
 }
 

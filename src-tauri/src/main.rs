@@ -9,7 +9,6 @@ use svoyak_tauri_app::core::game_entities::*;
 fn main() {
     env_logger::init();
 
-    concat!("", "", "");
     log_ctx_content();
 
     tauri::Builder::default()

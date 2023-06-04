@@ -34,7 +34,6 @@ impl Default for Player {
 #[derive(Debug, Serialize)]
 pub enum HubStatus {
     Detected,
-    UnknownDevice,
     NoDevice,
 }
 
