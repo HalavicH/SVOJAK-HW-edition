@@ -1,5 +1,5 @@
 import {openModal, closeModal} from "../../service/modal-common.js";
-import {getSettingsConfig, savePlayers, discoverHub, discoverTerminals} from "../../service/back-end-com.js";
+import {getSettingsConfig, savePlayers, probeHub, discoverTerminals} from "../../service/back-end-com.js";
 import {getImagePathOrDefault} from "../../service/utils.js";
 
 const {invoke} = window.__TAURI__.tauri;
@@ -8,6 +8,10 @@ export async function openSettingsModal() {
     const modalContainer = document.querySelector("#settings-modal");
     openModal(modalContainer);
     const config = await getSettingsConfig();
+
+    if (config.hub_port !== "") {
+        discoverHubAndSetStatus(config.hub_port);
+    }
 
     fillSerialPortMenu(config.available_ports, config.hub_port);
     setRadioChannel(config.radio_channel);
@@ -56,10 +60,16 @@ function setHubStatus(status) {
 
     if (status === "Detected") {
         hubStatusElement.className = "hub-status detected";
-        hubStatusElement.innerText = "Detected";
+        hubStatusElement.innerText = "Hub Detected";
+    } else if (status === "SerialPortError") {
+        hubStatusElement.className = "hub-status serial-port-error";
+        hubStatusElement.innerText = "Serial port error";
+    } else if (status === "NoResponseFromHub") {
+        hubStatusElement.className = "hub-status unknown-device";
+        hubStatusElement.innerText = "Unknown Device";
     } else {
-        hubStatusElement.className = "hub-status no-device";
-        hubStatusElement.innerText = "No Device";
+        hubStatusElement.className = "hub-status serial-port-error";
+        hubStatusElement.innerText = "Internal Error";
     }
 }
 
@@ -165,15 +175,18 @@ export async function handleDiscoverTerminals() {
     fillPlayersData(mockPlayers);
 }
 
+function discoverHubAndSetStatus(selectedOption) {
+    probeHub(selectedOption)
+        .then(setHubStatus)
+        .catch(setHubStatus);
+}
+
 export async function serialPortSelectHandler(event) {
     // Get the selected option value
     const selectedOption = event.target.value;
 
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
-
-    discoverHub(selectedOption)
-        .then(setHubStatus)
-        .catch(setHubStatus);
+    discoverHubAndSetStatus(selectedOption);
 }
 

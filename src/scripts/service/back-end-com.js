@@ -4,7 +4,7 @@ export async function getSettingsConfig() {
     return await invoke("fetch_configuration");
 }
 
-export async function discoverHub(selectedOption) {
+export async function probeHub(selectedOption) {
     return await invoke("discover_hub", {path: selectedOption});
 }
 

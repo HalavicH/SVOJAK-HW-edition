@@ -1,6 +1,7 @@
 /// Queries OS for all available serial ports
 pub fn discover_serial_ports() -> Vec<String> {
-    let ports = serialport::available_ports().expect("No ports found!");
+    let ports = serialport::available_ports()
+        .expect("No ports found!");
     let mut ports_vec = Vec::new();
 
     println!("Serial ports: {:?}", ports);
