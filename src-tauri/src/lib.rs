@@ -23,4 +23,5 @@ pub mod game_pack {
 pub mod hw_comm {
     pub mod api;
 }
-pub mod game_process {}
+pub mod tests {
+}
