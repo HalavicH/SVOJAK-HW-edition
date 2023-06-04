@@ -58,6 +58,7 @@ impl HubManager {
         }
 
         log::info!("Try to discover hub at port: {port}");
+        self.port_name = port.to_owned();
 
         let baud_rate = 200_000;
         let serial_port = serialport::new(port, baud_rate).open()
@@ -71,8 +72,6 @@ impl HubManager {
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
 
-        // port_handle.baud_rate()
-        self.port_name = port.to_owned();
         self.init_timestamp()?;
 
         Ok(match self.set_hub_timestamp() {
