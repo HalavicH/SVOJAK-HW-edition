@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use tauri::{command};
 use crate::api::dto::{ConfigDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
@@ -21,15 +22,16 @@ pub fn fetch_configuration() -> ConfigDto {
 
 /// Tries to detect hub at given serial port. If successful saves port name
 #[command]
-pub fn discover_hub(path: String) -> HubStatus {
-    println!("Pretend opening port: {path}");
-
+pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
     let result = game_ctx().hub.probe(&path);
     match result {
-        Ok(status) => {status}
+        Ok(status) => {
+            log::info!("Hub status: {:?}", status);
+            Ok(status)
+        }
         Err(error_stack) => {
-            log::error!("{}", error_stack);
-            HubStatus::NoDevice
+            log::error!("Can't open port: {:?}", error_stack);
+            Err(error_stack.current_context().clone())
         }
     }
 }
@@ -56,8 +58,8 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
                 name: player.name.clone(),
                 term_id: player.termId,
                 is_used: player.isUsed,
-                score: 0
-            } 
+                score: 0,
+            };
         })
         .collect();
 
@@ -83,7 +85,7 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
         }
         Err(err) => {
             log::error!("\n{err:?}");
-            Err((*err.current_context()).clone())
+            Err(err.current_context().clone())
         }
     }
 }

@@ -5,7 +5,7 @@ export async function getSettingsConfig() {
 }
 
 export async function discoverHub(selectedOption) {
-    const result = await invoke("discover_hub", {path: selectedOption});
+    return await invoke("discover_hub", {path: selectedOption});
 }
 
 export async function discoverTerminals(channelIdObject) {
