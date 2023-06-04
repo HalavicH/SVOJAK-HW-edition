@@ -104,26 +104,19 @@ pub fn map_players_to_player_game_dto(players: &HashMap<u8, Player>) -> Vec<Play
 /// # Examples
 ///
 /// ```
+/// use std::collections::HashMap;
 /// use serde::Serialize;
 /// use svoyak_tauri_app::api::mapper::map_round_to_dto;
-/// use svoyak_tauri_app::game_pack::pack_content_entities::{RoundType, Theme};
-///
-/// #[derive(Debug, Serialize)]
-/// #[allow(non_snake_case)]
-/// pub struct Round {
-///     pub name: String,
-///     pub round_type: RoundType,
-///     pub themes: Vec<Theme>,
-/// }
+/// use svoyak_tauri_app::game_pack::pack_content_entities::{Round, RoundType, Theme};
 ///
 /// // Assume proper implementations for RoundType and Theme structs.
 ///
 /// let round = Round {
 ///     name: "1".to_string(),
 ///     round_type: RoundType::Normal,
-///     themes: vec![
-///         // ... populate the themes with your data
-///     ],
+///     themes: HashMap::new(),
+///     question_count: 30,
+///     questions_left: 27,
 /// };
 ///
 /// let round_dto = map_round_to_dto(&round);
