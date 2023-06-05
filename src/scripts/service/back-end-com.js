@@ -86,3 +86,51 @@ export async function allowAnswer() {
 export async function waitForFirstClick() {
     return 2;
 }
+
+export async function getRoundStats() {
+    return {
+        roundNumber: 1, 
+        // заголовок "результат 1 раунду"
+        questionNumber: 30,
+        // к-сть раундів в цілому
+        normalQuestionNum: 27,
+        // нормальні запитання
+        pigInPokeQuestionNum: 3,
+        // кіт в мішку
+        totalCorrectAnswers: 25,
+        // к-сть правильних відповідей
+        totalWrongAnswers: 5,
+        // к-сть не вірних відповідей
+        roundTime: "13:54",
+        // час раунду
+        players: [
+            {
+                id: 1,
+                name: "HalavicH",
+                score: 400,
+                playerIconPath: "",
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            },
+            {
+                id: 2,
+                name: "Button",
+                score: 300,
+                playerIconPath: "",
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            },
+            {
+                id: 3,
+                name: "Minty",
+                score: 200,
+                playerIconPath: "",
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            }
+        ]
+    };
+}

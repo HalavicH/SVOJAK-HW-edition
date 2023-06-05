@@ -1,0 +1,90 @@
+@import "./modal-common.css";
+@import "../general.css";
+
+#stats-modal {
+    display: block;
+    opacity: 1;
+}
+
+#stats-modal-content {
+    background-color: var(--modal-background-color);
+}
+
+#common-stats-top {
+    border: solid 1px black;
+    border-radius: 15px;
+}
+
+#terminal-stats-table-of-content {
+    font-weight: 750;
+}
+
+#items-players-block {
+    border-collapse: collapse;
+    overflow: hidden;
+    outline: solid 1px black;
+    margin: 0px;
+    margin-top: 20px;
+}
+
+.player-image-stats {
+    display: flex;
+    max-width: 30%;
+    height: auto;
+    overflow: hidden;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.stats-label {
+    border-collapse: collapse;
+
+    width: 100%;
+}
+
+.modal-name {
+    margin: 0px;
+    margin-bottom: 20px;
+}
+
+.stats-modal-content {
+    border: 1px solid black;
+    border-radius: 5px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.player-rating-content {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.terminal-data,
+.terminal-stats-data-labels {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+    width: 100px;
+    overflow: hidden;
+}
+
+.stats-text {
+    text-align: center;
+    font-weight: 800;
+    margin: 0px;
+    margin: 10px 0px 10px 0px;
+}
+
+.round-common-stats {
+    display: block;
+    column-count: 2;
+    column-gap: 20px;
+    text-align: center;
+    padding: 0;
+}
+
+.common-list-text {
+    font-size: 15px;
+}
