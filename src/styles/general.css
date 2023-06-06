@@ -131,13 +131,11 @@ img {
     flex-direction: column;
 }
 
-
 .row {
     display: flex;
     justify-content: center;
-    align-items: center; 
+    align-items: center;
 }
-
 
 .dark-table {
     background-color: var(--modal-table-background-color);
@@ -165,4 +163,10 @@ img {
     height: 32px;
     border-radius: 50%;
     cursor: pointer;
+}
+
+.action-block {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
 }
