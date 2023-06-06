@@ -22,7 +22,7 @@ export async function openPackInfoModal() {
         console.info("Selected game package path: ", filePath);
     }
 
-    getPackInfo(filePath)
+    await getPackInfo(filePath)
         .then((packInfo) => {
             setPackName(packInfo.packName);
             setPackAuthor(packInfo.packAuthor);

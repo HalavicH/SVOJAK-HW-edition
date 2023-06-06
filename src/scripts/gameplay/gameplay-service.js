@@ -1,6 +1,7 @@
 import { getActivePlayerId, answerQuestion, getQuestionData, allowAnswer, waitForFirstClick, isAllowButtonRequired, hasNextQuestion } from "../service/back-end-com.js";
 import { processPipPlayers } from "./modal/pig-in-poke-modal.js";
 import { processAuctionPlayers } from "./modal/auction-modal.js";
+import { showRoundStats } from "./modal/round-stats-modal.js";
 
 export async function processQuestionSelection(event) {
     const question = event.target;
@@ -99,13 +100,8 @@ export async function goToRoundScreen() {
         setActivePlayerBadgeState("topic-selection");
         displayRoundScreen();    
     } else {
-        // displayStatsScreen() {
-        //     const roundStats = getRoundStats(); <-- for back
-        // }
-        // // docu
-        // 
+        showRoundStats();
     }
-
 }
 
 export async function processWrongAnswer() {

@@ -1,0 +1,121 @@
+import { fetchRoundStats } from "../../service/back-end-com.js";
+import { closeModal, openModal } from "../../service/modal-common.js";
+import { getImagePathOrDefault } from "../../service/utils.js";
+import { displayRoundScreen } from "../gameplay-service.js";
+import { processRoundFromBackend } from "../setup.js";
+
+export async function showRoundStats() {
+    const modalContainer = document.querySelector("#stats-modal");
+    openModal(modalContainer);
+
+    updateWithNewRoundStats()
+
+
+
+}
+
+export async function updateWithNewRoundStats() {
+    const stats = await fetchRoundStats();
+
+    setRoundNumber(stats.roundNumber);
+    setTotalQuestion(stats.questionNumber);
+    setNormalQuestions(stats.normalQuestionNum);
+    setPigQuestions(stats.pigInPokeQuestionNum);
+    setTotalCorrect(stats.totalCorrectAnswers);
+    setTotalWrong(stats.totalWrongAnswers);
+    setRoundTime(stats.roundTime);
+    fillPlayersStats(stats.players);
+
+
+    // processRoundFromBackend();
+
+
+}
+
+function fillPlayersStats(playerStats) {
+    const roundStatsTbody = document.querySelector("#player-stats-table")
+        .querySelector("tbody");
+    const statsLabel = roundStatsTbody.querySelector(".dark-table-labels");
+    roundStatsTbody.innerHTML = "";
+    roundStatsTbody.appendChild(statsLabel); 
+    
+    playerStats.forEach((stats) => {
+        let tr = document.createElement("tr");
+        roundStatsTbody.appendChild(tr);
+
+        let tdIcon = document.createElement("td");
+        tr.appendChild(tdIcon);
+        
+        let icon = document.createElement("img");
+        icon.src = getImagePathOrDefault(stats.playerIconPath);
+        icon.className = "player-image";
+        tdIcon.appendChild(icon);
+
+        let name = document.createElement("td");
+        name.innerText = stats.name;
+        tr.appendChild(name);
+
+        let score = document.createElement("td");
+        score.innerText = stats.score;
+        tr.appendChild(score); 
+
+        let correct = document.createElement("td");
+        correct.innerText = stats.answeredCorrectly;
+        tr.appendChild(correct); 
+
+        let wrong = document.createElement("td");
+        wrong.innerText = stats.answeredWrong;
+        tr.appendChild(wrong); 
+
+        let total = document.createElement("td");
+        total.innerText = stats.totalAnswers;
+        tr.appendChild(total); 
+
+    });
+}
+
+function setTotalWrong(wrong) {
+    const totalWrongAnswers = document.querySelector("#wrong-answers");
+    totalWrongAnswers.innerText = "Total wrong answers: " + wrong;
+}
+
+function setRoundTime(time) {
+    const roundTime = document.querySelector("#round-time");
+    roundTime.innerText = "roundTime: " + time;
+}
+
+function setTotalCorrect(correct) {
+    const totalCorrectAnswers = document.querySelector("#correct-answers");
+    totalCorrectAnswers.innerText = "Total correct answers: " + correct;
+}
+
+function setPigQuestions(pig) {
+    const pigQuestionsElement = document.querySelector("#normal-question");
+    pigQuestionsElement.innerText = "- pig in poke: " + pig;
+}
+
+
+function setNormalQuestions(normal) {
+    const normalQuestionsElement = document.querySelector("#normal-question");
+    normalQuestionsElement.innerText = "- normal: " + normal;
+}
+
+function setRoundNumber(number) {
+    const roundNumberElement = document.querySelector("#round-number");
+    roundNumberElement.innerText = "Round: " + number;
+}
+
+function setTotalQuestion(total) {
+    const totalQuestionElement = document.querySelector("#total-questions");
+    totalQuestionElement.innerText = "Total questions: " + total; 
+}
+
+export function nextRoundHandler() {
+    const modalContainer = document.querySelector("#stats-modal");
+    closeModal(modalContainer);
+    displayRoundScreen();
+    processRoundFromBackend();
+
+}
+
+
