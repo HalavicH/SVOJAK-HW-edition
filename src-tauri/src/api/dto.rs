@@ -89,6 +89,12 @@ pub struct QuestionDataDto {
     pub category: String,
     pub price: i32,
     pub questionType: QuestionType,
+    pub scenario: Vec<QuestionSceneDto>,
+}
+
+#[derive(Debug, Serialize)]
+#[allow(non_snake_case)]
+pub struct QuestionSceneDto {
     pub mediaType: QuestionMediaType,
     pub content: String,
 }

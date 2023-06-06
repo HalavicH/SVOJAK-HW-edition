@@ -1,8 +1,9 @@
 use crate::api::dto::{PlayerGameDto, PlayerScoreDto, PlayerStatsDto, QuestionDataDto, RoundDto, RoundStatsDto};
 use tauri::command;
 use crate::api::dto::QuestionType::Normal;
-use crate::api::mapper::{map_players_to_player_game_dto, map_round_to_dto};
+use crate::api::mapper::*;
 use crate::core::game_entities::{game_ctx};
+use crate::game_pack::pack_content_entities::Question;
 
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {
@@ -21,25 +22,18 @@ pub fn fetch_round() -> RoundDto {
 pub fn get_question_data(topic: String, price: i32) -> QuestionDataDto {
     let (question, q_num) = game_ctx().pop_question(&topic, &price).unwrap();
 
-    // TODO: Update with flexible scenarios
-    let first_atom = question.scenario.get(0).unwrap();
-    QuestionDataDto {
-        number: q_num,
-        category: topic,
-        price,
-        questionType: Normal,
-        mediaType: first_atom.atom_type.clone(),
-        content: first_atom.content.clone(),
-    }
+    map_question_to_question_dto(topic, price, question, q_num)
 }
 
 #[command]
-pub fn is_last_question() -> bool{
-    game_ctx().is_last_question()
+pub fn has_next_question() -> bool {
+    game_ctx().has_next_question()
 }
 
 #[command]
-pub fn get_fastest_click() {}
+pub fn get_fastest_click() -> i32 {
+    game_ctx().get_fastest_click()
+}
 
 #[command]
 pub fn answer_question(answered_correctly: bool) -> PlayerScoreDto {
@@ -53,7 +47,6 @@ pub fn answer_question(answered_correctly: bool) -> PlayerScoreDto {
 #[command]
 pub fn send_pip_victim(victim_id: i32) {
     println!("Victim id is: {}", victim_id);
-
 }
 
 #[command]
@@ -62,8 +55,7 @@ pub fn get_active_player_id() -> i32 {
 }
 
 #[command]
-pub fn allow_answer() {
-}
+pub fn allow_answer() {}
 
 #[command]
 pub fn wait_for_first_click() -> i32 {
@@ -71,48 +63,45 @@ pub fn wait_for_first_click() -> i32 {
 }
 
 #[command]
-pub fn fetch_round_stats() -> RoundStatsDto {
-    RoundStatsDto {
-        roundNumber: 1,
-        questionNumber: 30,
-        normalQuestionNum: 27,
-        pigInPokeQuestionNum: 3,
-        totalCorrectAnswers: 25,
-        totalWrongAnswers: 5,
-        roundTime: "13:54".to_owned(),
-        players: vec![
-            PlayerStatsDto {
-                id: 1,
-                name: "HalavicH".to_owned(),
-                score: 400,
-                playerIconPath: "".to_owned(),
-                totalAnswers: 5,
-                answeredCorrectly: 3,
-                answeredWrong: 2,
-            },
-            PlayerStatsDto {
-                id: 2,
-                name: "Button".to_owned(),
-                score: 300,
-                playerIconPath: "".to_owned(),
-                totalAnswers: 5,
-                answeredCorrectly: 3,
-                answeredWrong: 2,
-            },
-            PlayerStatsDto {
-                id: 3,
-                name: "Minty".to_owned(),
-                score: 200,
-                playerIconPath: "".to_owned(),
-                totalAnswers: 5,
-                answeredCorrectly: 3,
-                answeredWrong: 2,
-            }
-        ]
-    }
-}
-
-#[command]
-pub fn has_next_question() -> bool {
-    true
+pub fn fetch_round_stats() -> Option<RoundStatsDto> {
+    Some(
+        RoundStatsDto {
+            roundNumber: 1,
+            questionNumber: 30,
+            normalQuestionNum: 27,
+            pigInPokeQuestionNum: 3,
+            totalCorrectAnswers: 25,
+            totalWrongAnswers: 5,
+            roundTime: "13:54".to_owned(),
+            players: vec![
+                PlayerStatsDto {
+                    id: 1,
+                    name: "HalavicH".to_owned(),
+                    score: 400,
+                    playerIconPath: "".to_owned(),
+                    totalAnswers: 5,
+                    answeredCorrectly: 3,
+                    answeredWrong: 2,
+                },
+                PlayerStatsDto {
+                    id: 2,
+                    name: "Button".to_owned(),
+                    score: 300,
+                    playerIconPath: "".to_owned(),
+                    totalAnswers: 5,
+                    answeredCorrectly: 3,
+                    answeredWrong: 2,
+                },
+                PlayerStatsDto {
+                    id: 3,
+                    name: "Minty".to_owned(),
+                    score: 200,
+                    playerIconPath: "".to_owned(),
+                    totalAnswers: 5,
+                    answeredCorrectly: 3,
+                    answeredWrong: 2,
+                },
+            ],
+        }
+    )
 }
