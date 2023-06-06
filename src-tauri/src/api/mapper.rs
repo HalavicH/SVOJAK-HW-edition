@@ -1,4 +1,4 @@
-use crate::api::dto::{ConfigDto, RoundDto, TopicDto};
+use crate::api::dto::{ConfigDto, QuestionDataDto, QuestionSceneDto, QuestionType, RoundDto, TopicDto};
 use crate::core::game_entities::{game_ctx, Player};
 use crate::hw_comm::api::discover_serial_ports;
 use std::collections::HashMap;
@@ -160,3 +160,20 @@ pub fn map_round_to_dto(round: &Round) -> RoundDto {
         roundTopics: round_topics,
     }
 }
+
+pub fn map_question_to_question_dto(topic: String, price: i32, question: Question, q_num: i32) -> QuestionDataDto {
+    QuestionDataDto {
+        number: q_num,
+        category: topic,
+        price,
+        // TODO: Update with random pip
+        questionType: QuestionType::Normal,
+        scenario: question.scenario.iter()
+            .map(|a| QuestionSceneDto {
+                content: a.content.clone(),
+                mediaType: a.atom_type.clone(),
+            })
+            .collect(),
+    }
+}
+
