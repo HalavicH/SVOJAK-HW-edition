@@ -1,7 +1,5 @@
 @import "./modal-common.css";
 
-
-
 /***************************************/
 /*               Elements              */
 /***************************************/
@@ -55,10 +53,4 @@
 #round-duration {
     width: 15%;
     padding: 5px 5px 3px;
-}
-
-.action-block {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
 }
