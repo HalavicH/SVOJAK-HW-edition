@@ -1,7 +1,7 @@
 @import "general.css";
 @import "./modal/pig-in-poke-modal.css";
 @import "./modal/auction-modal.css";
-
+@import "./modal/stats-round-modal.css";
 html,
 body {
     height: 100%;

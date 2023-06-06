@@ -150,3 +150,19 @@ img {
 .dark-table tr {
     text-align: center;
 }
+
+.dark-table-labels {
+    background-color: var(--modal-table-labels-color);
+}
+
+.dark-table-labels td {
+    border-radius: 10px;
+    align-items: center;
+}
+
+.player-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}

@@ -31,15 +31,6 @@
 }
 
 /* Terminal table */
-#terminal-data-labels {
-    background-color: var(--modal-table-labels-color);
-}
-
-#terminal-data-labels td {
-    border-radius: 10px;
-    align-items: center;
-}
-
 .term-name {
     text-align: center;
     width: 100%;
@@ -114,11 +105,4 @@
 
 #hub-data-block {
     margin-top: 10px;
-}
-
-.player-image {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
 }
