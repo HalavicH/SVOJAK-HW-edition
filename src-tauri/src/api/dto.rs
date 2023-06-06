@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use crate::core::game_entities::Player;
 use crate::game_pack::pack_content_entities::QuestionMediaType;
 
 ////////// Config ///////////
@@ -90,4 +91,29 @@ pub struct QuestionDataDto {
     pub questionType: QuestionType,
     pub mediaType: QuestionMediaType,
     pub content: String,
+}
+
+#[derive(Debug, Serialize)]
+#[allow(non_snake_case)]
+pub struct RoundStatsDto {
+    pub roundNumber: i32,
+    pub questionNumber: i32,
+    pub normalQuestionNum: i32,
+    pub pigInPokeQuestionNum: i32,
+    pub totalCorrectAnswers: i32,
+    pub totalWrongAnswers: i32,
+    pub roundTime: String,
+    pub players: Vec<PlayerStatsDto>,
+}
+
+#[derive(Debug, Serialize)]
+#[allow(non_snake_case)]
+pub struct PlayerStatsDto {
+    pub id: i32,
+    pub name: String,
+    pub score: i32,
+    pub playerIconPath: String,
+    pub totalAnswers: i32,
+    pub answeredCorrectly: i32,
+    pub answeredWrong: i32,
 }
