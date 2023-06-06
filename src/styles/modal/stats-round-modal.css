@@ -2,13 +2,8 @@
 @import "../general.css";
 
 #stats-modal {
-    display: block;
+    display: none;
     opacity: 1;
-}
-
-#common-stats-top {
-    border: solid 1px black;
-    border-radius: 15px;
 }
 
 .modal-name {
