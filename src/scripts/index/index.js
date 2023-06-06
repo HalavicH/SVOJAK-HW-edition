@@ -4,6 +4,9 @@ import {openPackInfoModal, closePackInfoModal, startTheGame, closePackErrorModal
 window.addEventListener("DOMContentLoaded", () => {
     // modal processing
 
+    // const settingsBtn = document.querySelector("#settings-button");
+    // settingsBtn.addEventListener("click", openSettingsModal);
+
     document
         .querySelector("#settings-button")
         .addEventListener("click", openSettingsModal);

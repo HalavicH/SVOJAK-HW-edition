@@ -204,25 +204,25 @@
         <!-- Modal round stats -->
         <div class="modal" id="stats-modal">
             <div class="modal-content" id="stats-modal-content">
-                <h2 class="modal-name" id="">Round X-stats:</h2>
+                <h2 class="modal-name" id="round-number">Round: 1</h2>
 
                     <div class="items-block" id="common-stats-top">
                         <p class="stats-text">Common stats</p>
                         <div>
                             <ul class="round-common-stats common-list-text">
-                                <li>Total questions: 30</li>
-                                <li>- normal: 27</li>
-                                <li>- pig in poke: 3</li>
-                                <li>Total correct answers: 25</li>
-                                <li>Total wrong answers: 30</li>
-                                <li>roundTime: "13:54"</li>
+                                <li id="total-questions">Total questions: 30</li>
+                                <li id="normal-question">- normal: 27</li>
+                                <li id="pig-question">- pig in poke: 3</li>
+                                <li id="correct-answers">Total correct answers: 25</li>
+                                <li id="wrong-answers">Total wrong answers: 30</li>
+                                <li id="round-time">roundTime: "13:54"</li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="items-block" id="stats-table-container">
                         <p class="stats-text">Player stats:</p>
-                        <table class="dark-table">
+                        <table class="dark-table" id="player-stats-table">
                             <!--                    <tr>-->
                             <!--                        <td class="stats-text" colspan="6">Player stats:</td>-->
                             <!--                    </tr>-->

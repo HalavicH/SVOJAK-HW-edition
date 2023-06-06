@@ -2,6 +2,7 @@ import { fetchPlayers, fetchRound } from "../service/back-end-com.js";
 import { closeModal, openModal } from "../service/modal-common.js";
 import { getImagePathOrDefault } from "../service/utils.js";
 import { processCorrectAnswer, processWrongAnswer, processQuestionSelection, allowAnswerHandler } from "./gameplay-service.js";
+import { nextRoundHandler } from "./modal/round-stats-modal.js";
 
 console.log("Gameplay loaded!");
 
@@ -23,7 +24,6 @@ function addButtonEventListeners() {
 
             });
         });
-
     document
         .querySelector("#correct-answer-btn")
         .addEventListener("click", processCorrectAnswer);
@@ -45,6 +45,10 @@ function addButtonEventListeners() {
     document
         .querySelector("#exit-dialog-no")
         .addEventListener("click", closeExitDialogModal);
+
+    document
+        .querySelector("#next-round-btn")
+        .addEventListener("click", nextRoundHandler);
 }
 
 
@@ -106,7 +110,7 @@ function addMainscreenPlayer(player, playerList) {
 
 }
 
-async function processRoundFromBackend() {
+export async function processRoundFromBackend() {
     const round = await fetchRound();
     const packList = document.querySelector("#round-data-tbody")
     packList.innerHTML = "";
