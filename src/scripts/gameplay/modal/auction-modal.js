@@ -1,7 +1,6 @@
 import { fetchPlayers, sendPipVictim } from "../../service/back-end-com.js";
 import { closeModal, openModal } from "../../service/modal-common.js";
 import { getImagePathOrDefault } from "../../service/utils.js";
-import { displayQuestionScreen } from "../gameplay-service.js";
 
 
 export async function processAuctionPlayers(activePlayerId) {

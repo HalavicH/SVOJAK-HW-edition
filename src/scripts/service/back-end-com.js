@@ -40,6 +40,7 @@ export async function fetchPlayers() {
 }
 
 export async function fetchRound() {
+    console.log("Getting new round!");
     return await invoke("fetch_round");
 }
 
@@ -48,7 +49,8 @@ export async function getQuestionData(topic, price) {
 }
 
 export async function hasNextQuestion() {
-    return await invoke("has_next_question");
+    return false;
+    // return await invoke("has_next_question");
 }
 
 export async function getFastestClick() {
@@ -91,15 +93,15 @@ export async function isAllowButtonRequired() {
     return false;
 }
 
-export async function getRoundStats() {
+export async function fetchRoundStats() {
     return {
-        roundNumber: 1,
-        questionNumber: 30,
-        normalQuestionNum: 27,
-        pigInPokeQuestionNum: 3,
-        totalCorrectAnswers: 25,
-        totalWrongAnswers: 5,
-        roundTime: "13:54",
+        roundNumber: 2,
+        questionNumber: 40,
+        normalQuestionNum: 20,
+        pigInPokeQuestionNum: 4,
+        totalCorrectAnswers: 27,
+        totalWrongAnswers: 8,
+        roundTime: "13:55",
         players: [
             {
                 id: 1,
