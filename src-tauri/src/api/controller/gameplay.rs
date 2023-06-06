@@ -1,4 +1,4 @@
-use crate::api::dto::{PlayerGameDto, PlayerScoreDto, QuestionDataDto, RoundDto};
+use crate::api::dto::{PlayerGameDto, PlayerScoreDto, PlayerStatsDto, QuestionDataDto, RoundDto, RoundStatsDto};
 use tauri::command;
 use crate::api::dto::QuestionType::Normal;
 use crate::api::mapper::{map_players_to_player_game_dto, map_round_to_dto};
@@ -68,4 +68,51 @@ pub fn allow_answer() {
 #[command]
 pub fn wait_for_first_click() -> i32 {
     4
+}
+
+#[command]
+pub fn fetch_round_stats() -> RoundStatsDto {
+    RoundStatsDto {
+        roundNumber: 1,
+        questionNumber: 30,
+        normalQuestionNum: 27,
+        pigInPokeQuestionNum: 3,
+        totalCorrectAnswers: 25,
+        totalWrongAnswers: 5,
+        roundTime: "13:54".to_owned(),
+        players: vec![
+            PlayerStatsDto {
+                id: 1,
+                name: "HalavicH".to_owned(),
+                score: 400,
+                playerIconPath: "".to_owned(),
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            },
+            PlayerStatsDto {
+                id: 2,
+                name: "Button".to_owned(),
+                score: 300,
+                playerIconPath: "".to_owned(),
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            },
+            PlayerStatsDto {
+                id: 3,
+                name: "Minty".to_owned(),
+                score: 200,
+                playerIconPath: "".to_owned(),
+                totalAnswers: 5,
+                answeredCorrectly: 3,
+                answeredWrong: 2,
+            }
+        ]
+    }
+}
+
+#[command]
+pub fn has_next_question() -> bool {
+    true
 }
