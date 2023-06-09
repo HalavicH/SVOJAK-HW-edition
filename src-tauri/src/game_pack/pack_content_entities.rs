@@ -36,6 +36,10 @@ impl Theme {
     pub fn pop_question(&mut self, price: &i32) -> Option<Question> {
         self.questions.remove(price)
     }
+
+    pub fn get_question(&self, price: &i32) -> Option<&Question> {
+        self.questions.get(price)
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
