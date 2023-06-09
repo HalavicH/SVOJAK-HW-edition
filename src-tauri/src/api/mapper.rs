@@ -84,7 +84,8 @@ pub fn map_players_to_player_game_dto(players: &HashMap<u8, Player>) -> Vec<Play
                 id: player.term_id as i32,
                 playerIconPath: player.icon.clone(),
                 playerName: player.name.clone(),
-                score: player.score,
+                score: player.stats.score,
+                state: player.state.clone()
             }
         })
         .collect()
