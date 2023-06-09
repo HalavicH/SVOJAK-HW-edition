@@ -1,8 +1,7 @@
 #[allow(dead_code, unused, unused_imports)]
 use std::{collections::HashMap, io, fmt, error::Error, fs};
-use std::process::Termination;
 
-use error_stack::{IntoReport, Report, Result, ResultExt};
+use error_stack::{IntoReport, Result, ResultExt};
 use serde_xml_rs::from_str;
 
 use crate::game_pack::pack_content_dto::*;

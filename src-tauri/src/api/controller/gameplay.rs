@@ -1,9 +1,7 @@
 use crate::api::dto::{PlayerGameDto, PlayerScoreDto, PlayerStatsDto, QuestionDataDto, RoundDto, RoundStatsDto};
 use tauri::command;
-use crate::api::dto::QuestionType::Normal;
 use crate::api::mapper::*;
 use crate::core::game_entities::{game_ctx};
-use crate::game_pack::pack_content_entities::Question;
 
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {
