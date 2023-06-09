@@ -131,7 +131,7 @@ pub fn map_round_to_dto(round: &Round) -> RoundDto {
         .themes
         .iter()
         .map(|(_, theme)| {
-            println!("{theme:#?}");
+            log::info!("{theme:#?}");
             let mut game_questions: Vec<Question> = theme.questions
                 .values().cloned().collect::<Vec<Question>>();
             game_questions.sort_by(|q1, q2| { q1.price.cmp(&q2.price) });
