@@ -4,11 +4,11 @@ pub fn discover_serial_ports() -> Vec<String> {
         .expect("No ports found!");
     let mut ports_vec = Vec::new();
 
-    println!("Serial ports: {:?}", ports);
+    log::info!("Serial ports: {:?}", ports);
 
 
     for p in ports {
-        println!("{}", p.port_name);
+        log::info!("{}", p.port_name);
 
         ports_vec.push(p.port_name.clone());
     }

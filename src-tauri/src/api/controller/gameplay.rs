@@ -14,7 +14,7 @@ pub fn fetch_players() -> Vec<PlayerGameDto> {
 #[command]
 pub fn fetch_round() -> RoundDto {
     let round_dto = map_round_to_dto(game_ctx().get_current_round());
-    println!("{round_dto:#?}");
+    log::info!("{round_dto:#?}");
     round_dto
 }
 
@@ -37,7 +37,7 @@ pub fn get_fastest_click() -> i32 {
 
 #[command]
 pub fn answer_question(answered_correctly: bool) -> PlayerScoreDto {
-    println!("Answered correctly: {answered_correctly}");
+    log::info!("Answered correctly: {answered_correctly}");
     PlayerScoreDto {
         id: 2,
         score: 777,
@@ -46,7 +46,7 @@ pub fn answer_question(answered_correctly: bool) -> PlayerScoreDto {
 
 #[command]
 pub fn send_pip_victim(victim_id: i32) {
-    println!("Victim id is: {}", victim_id);
+    log::info!("Victim id is: {}", victim_id);
 }
 
 #[command]

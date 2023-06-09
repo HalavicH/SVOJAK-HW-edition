@@ -12,10 +12,10 @@ use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
 /// Provide saved game configuration
 #[command]
 pub fn fetch_configuration() -> ConfigDto {
-    println!("Fetching config");
+    log::info!("Fetching config");
 
     let config = get_config_dto();
-    println!("Config: {:#?}", config);
+    log::info!("Config: {:#?}", config);
 
     config
 }
@@ -40,7 +40,7 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
 /// replied considered as available and returned as vector
 #[command]
 pub fn discover_terminals(channel_id: i32) -> Vec<u8> {
-    println!("Got channel id: {channel_id}");
+    log::info!("Got channel id: {channel_id}");
 
     game_ctx().hub.discover_terminals(channel_id)
 }
@@ -48,7 +48,7 @@ pub fn discover_terminals(channel_id: i32) -> Vec<u8> {
 /// Saves configuration to game context
 #[command]
 pub fn save_players(players: Vec<PlayerSetupDto>) {
-    println!("Updating game context with new config: {players:#?}");
+    log::info!("Updating game context with new config: {players:#?}");
 
     let player_entities = players
         .iter()
@@ -63,7 +63,7 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
         })
         .collect();
 
-    println!("Converted players: {:#?}", player_entities);
+    log::info!("Converted players: {:#?}", player_entities);
 
     update_players(&player_entities)
 }
@@ -80,7 +80,7 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
             game_ctx().pack = pack.content;
 
             let pack_info_dto = map_package_to_pack_info_dto(&game_ctx().pack);
-            println!("Pack info: {:#?}", pack_info_dto);
+            log::info!("Pack info: {:#?}", pack_info_dto);
             Ok(pack_info_dto)
         }
         Err(err) => {
