@@ -1,7 +1,7 @@
 use crate::api::dto::{PlayerGameDto, PlayerScoreDto, PlayerStatsDto, QuestionDataDto, RoundDto, RoundStatsDto};
 use tauri::command;
 use crate::api::mapper::*;
-use crate::core::game_entities::{game_ctx};
+use crate::core::game_entities::{game_ctx, GameplayError};
 
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {
@@ -18,14 +18,14 @@ pub fn fetch_round() -> RoundDto {
 
 #[command]
 pub fn get_question_data(topic: String, price: i32) -> QuestionDataDto {
-    let (question, q_num) = game_ctx().pop_question(&topic, &price).unwrap();
+    let (question, q_num) = game_ctx().get_question(&topic, &price).unwrap();
 
     map_question_to_question_dto(topic, price, question, q_num)
 }
 
 #[command]
-pub fn has_next_question() -> bool {
-    game_ctx().has_next_question()
+pub fn allow_answer() {
+    game_ctx().allow_answer()
 }
 
 #[command]
@@ -34,12 +34,28 @@ pub fn get_fastest_click() -> i32 {
 }
 
 #[command]
-pub fn answer_question(answered_correctly: bool) -> PlayerScoreDto {
+pub fn answer_question(answered_correctly: bool) -> Result<PlayerScoreDto, GameplayError> {
     log::info!("Answered correctly: {answered_correctly}");
-    PlayerScoreDto {
-        id: 2,
-        score: 777,
+
+    let result = game_ctx().answer_question(answered_correctly);
+    match result {
+        Ok(player) => {
+            Ok(PlayerScoreDto {
+                id: player.term_id as i32,
+                score: player.stats.score,
+            })
+        }
+        Err(report) => {
+            log::error!("Failed to answer question {:?}", report);
+
+            Err(report.current_context().clone())
+        }
     }
+}
+
+#[command]
+pub fn has_next_question() -> bool {
+    game_ctx().has_next_question()
 }
 
 #[command]
@@ -49,15 +65,12 @@ pub fn send_pip_victim(victim_id: i32) {
 
 #[command]
 pub fn get_active_player_id() -> i32 {
-    2
+    game_ctx().get_active_player_id() as i32
 }
 
 #[command]
-pub fn allow_answer() {}
-
-#[command]
 pub fn wait_for_first_click() -> i32 {
-    4
+    game_ctx().get_fastest_click()
 }
 
 #[command]

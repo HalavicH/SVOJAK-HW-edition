@@ -1,5 +1,4 @@
 #[allow(dead_code)]
-
 use std::default::Default;
 use std::error::Error;
 use std::fmt;
@@ -76,8 +75,8 @@ impl HubManager {
         })
     }
 
-    fn init_timestamp(&mut self) -> Result<(), HubManagerError> {
-        Ok(self.base_timestamp = get_epoch_ms()?)
+    pub fn is_alive(&self) -> bool {
+        self.get_hub_timestamp().is_ok()
     }
 
     pub fn get_delta_from_timestamp(&self) -> Result<u32, HubManagerError> {
@@ -91,17 +90,21 @@ impl HubManager {
         vec![1, 2, 3, 4]
     }
 
+    /// ### get hub timestamp
+    /// #### response payload
+    /// `[tid] [status] [response length] [response payload (timestamp)]`
+    pub fn get_hub_timestamp(&self) -> Result<u32, ResponseStatus> {
+        log::info!("Pretend getting timestamp");
+        Ok(100_100_100)
+    }
+
     fn set_hub_timestamp(&self) -> ResponseStatus {
         log::info!("Pretend setting timestamp of {}", self.base_timestamp);
         ResponseStatus::Ok
     }
 
-    /// ### get hub timestamp
-    /// #### response payload
-    /// `[tid] [status] [response length] [response payload (timestamp)]`
-    pub fn get_hub_timestamp() -> u32 {
-        log::info!("Pretend getting timestamp");
-        100_100_100
+    fn init_timestamp(&mut self) -> Result<(), HubManagerError> {
+        Ok(self.base_timestamp = get_epoch_ms()?)
     }
 }
 
@@ -130,11 +133,11 @@ impl HubRequest {
 }
 
 pub enum ResponseStatus {
-    Ok,
+    Ok = 0x00,
     // 0x00 command ok
-    InternalError,
+    InternalError = 0x80,
     // 0x80 general error
-    DeviceNotResponding, // 0x90 device is not responding (probably off or absent)
+    DeviceNotResponding = 0x90, // 0x90 device is not responding (probably off or absent)
 }
 
 fn get_epoch_ms() -> Result<u32, HubManagerError> {
