@@ -106,6 +106,6 @@ mod game_entities_test {
     #[test]
     fn test_fastest_click() {
         let i = GameContext::default().get_fastest_click();
-        println!("Fastest click from: {i}");
+        log::info!("Fastest click from: {i}");
     }
 }
