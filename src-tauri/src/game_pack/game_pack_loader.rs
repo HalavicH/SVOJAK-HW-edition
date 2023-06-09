@@ -15,7 +15,6 @@ pub enum GamePackLoadingError {
     CorruptedPack(String),
     InternalError,
 }
-// pub struct GamePackLoadingError;
 
 impl fmt::Display for GamePackLoadingError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {

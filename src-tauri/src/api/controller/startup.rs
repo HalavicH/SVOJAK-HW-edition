@@ -1,7 +1,7 @@
 use tauri::{command};
 use crate::api::dto::{ConfigDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
-use crate::core::game_entities::{game_ctx, HubStatus, Player};
+use crate::core::game_entities::{game_ctx, HubStatus, Player, PlayerState};
 
 use crate::api::dto::PlayerSetupDto;
 use crate::core::hub_manager::HubManagerError;
@@ -37,10 +37,14 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
 /// Calls HUB to set specific radio channel, pings all devices on that channel, devices which
 /// replied considered as available and returned as vector
 #[command]
-pub fn discover_terminals(channel_id: i32) -> Vec<u8> {
+pub fn discover_terminals(channel_id: i32) -> Result<Vec<u8>, HubManagerError> {
     log::info!("Got channel id: {channel_id}");
 
-    game_ctx().hub.discover_terminals(channel_id)
+    if !game_ctx().hub.is_alive() {
+        return Err(HubManagerError::NoResponseFromHub);
+    }
+
+    Ok(game_ctx().hub.discover_terminals(channel_id))
 }
 
 /// Saves configuration to game context
@@ -56,7 +60,8 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
                 name: player.name.clone(),
                 term_id: player.termId,
                 is_used: player.isUsed,
-                score: 0,
+                state: PlayerState::Idle,
+                stats: Default::default(),
             };
         })
         .collect();
@@ -86,4 +91,13 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
             Err(err.current_context().clone())
         }
     }
+}
+
+#[command]
+pub fn is_enough_players() -> bool {
+    if game_ctx().players.len() < 2 {
+        log::info!("Not enough players to run the game.");
+        return false;
+    }
+    return true;
 }
