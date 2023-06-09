@@ -10,6 +10,7 @@ pub mod api {
 
 pub mod core {
     pub mod game_entities;
+    pub mod game_logic;
     pub mod hub_manager;
 }
 

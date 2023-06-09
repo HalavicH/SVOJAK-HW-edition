@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use crate::core::game_entities::Player;
 use crate::game_pack::pack_content_entities::QuestionMediaType;
 
 ////////// Config ///////////
