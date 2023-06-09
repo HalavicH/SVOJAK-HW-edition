@@ -1,3 +1,5 @@
+#[allow(dead_code)]
+
 use std::default::Default;
 use std::error::Error;
 use std::fmt;
@@ -5,9 +7,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use error_stack::{IntoReport, ResultExt, Result};
-use log::error;
-use rgb::{RGB, RGB8};
-use serialport::{ErrorKind, SerialPort};
+use rgb::{RGB8};
+use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
 
 #[derive(Debug, Clone, Serialize)]
@@ -67,11 +68,6 @@ impl HubManager {
             .attach_printable(format!("Can't open port {port}"))?;
 
         self.port_handle = Some(serial_port);
-        let start = SystemTime::now();
-        let since_the_epoch = start
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-
         self.init_timestamp()?;
 
         Ok(match self.set_hub_timestamp() {

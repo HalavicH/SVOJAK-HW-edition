@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use tauri::{command};
 use crate::api::dto::{ConfigDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
@@ -6,7 +5,6 @@ use crate::core::game_entities::{game_ctx, HubStatus, Player};
 
 use crate::api::dto::PlayerSetupDto;
 use crate::core::hub_manager::HubManagerError;
-use crate::game_pack::game_pack_entites::GamePack;
 use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
 
 /// Provide saved game configuration
