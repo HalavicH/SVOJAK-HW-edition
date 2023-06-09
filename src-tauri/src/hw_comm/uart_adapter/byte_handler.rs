@@ -78,14 +78,14 @@ trait Hello1 {
 
 impl Hello for String {
     fn hello(&self) -> &Self {
-        println!("Hello from string");
+        log::info!("Hello from string");
         self
     }
 }
 
 impl Hello1 for String {
     fn hello(&self) -> &Self {
-        println!("Hello from string");
+        log::info!("Hello from string");
         self
     }
 }

@@ -89,7 +89,7 @@ impl HubManager {
     }
 
     pub fn discover_terminals(&mut self, radio_channel: i32) -> Vec<u8> {
-        println!("Pretend terminals discovery at: {radio_channel}");
+        log::info!("Pretend terminals discovery at: {radio_channel}");
 
         self.radio_channel = radio_channel;
         vec![1, 2, 3, 4]
@@ -104,7 +104,7 @@ impl HubManager {
     /// #### response payload
     /// `[tid] [status] [response length] [response payload (timestamp)]`
     pub fn get_hub_timestamp() -> u32 {
-        println!("Pretend getting timestamp");
+        log::info!("Pretend getting timestamp");
         100_100_100
     }
 }

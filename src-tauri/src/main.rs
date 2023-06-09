@@ -38,7 +38,7 @@ fn main() {
      *
      * let game: GameInstance = load_game("path/to/game_package.siq");
      *
-     * println!("{:#?}", game);
+     * log::info!("{:#?}", game);
      *
      * Before using such modules should be included:
      *
@@ -66,5 +66,5 @@ fn main() {
 
 fn log_ctx_content() {
     let context = game_ctx();
-    println!("default context: {context:#?}");
+    log::info!("default context: {context:#?}");
 }
