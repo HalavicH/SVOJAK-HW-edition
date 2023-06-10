@@ -5,7 +5,7 @@ use std::fmt;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
-use error_stack::{IntoReport, ResultExt, Result};
+use error_stack::{IntoReport, ResultExt, Result, Report};
 use rgb::{RGB8};
 use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
@@ -30,9 +30,10 @@ pub struct HubManager {
     pub port_name: String,
     pub port_handle: Option<Box<dyn SerialPort>>,
     pub baudrate: i32,
-    pub status: HubStatus,
     pub radio_channel: i32,
     pub base_timestamp: u32,
+    pub allow_answer_timestamp: u32,
+    pub last_status: HubStatus,
 }
 
 // Life
@@ -41,10 +42,11 @@ impl Default for HubManager {
         Self {
             port_name: String::default(),
             port_handle: None,
-            status: HubStatus::NoDevice,
+            last_status: HubStatus::NoDevice,
             radio_channel: 0,
             baudrate: 200_000,
             base_timestamp: 0,
+            allow_answer_timestamp: 0,
         }
     }
 }
@@ -70,8 +72,14 @@ impl HubManager {
         self.init_timestamp()?;
 
         Ok(match self.set_hub_timestamp() {
-            ResponseStatus::Ok => { HubStatus::Detected }
-            _ => { HubStatus::NoDevice }
+            ResponseStatus::Ok => {
+                self.last_status = HubStatus::Detected;
+                HubStatus::Detected
+            }
+            _ => {
+                self.last_status = HubStatus::NoDevice;
+                HubStatus::NoDevice
+            }
         })
     }
 
@@ -93,9 +101,14 @@ impl HubManager {
     /// ### get hub timestamp
     /// #### response payload
     /// `[tid] [status] [response length] [response payload (timestamp)]`
-    pub fn get_hub_timestamp(&self) -> Result<u32, ResponseStatus> {
+    pub fn get_hub_timestamp(&self) -> Result<u32, HubManagerError> {
         log::info!("Pretend getting timestamp");
-        Ok(100_100_100)
+
+        if self.last_status == HubStatus::Detected {
+            Ok(100_100_100)
+        } else {
+            Err(Report::new(HubManagerError::NoResponseFromHub))
+        }
     }
 
     fn set_hub_timestamp(&self) -> ResponseStatus {
@@ -140,11 +153,13 @@ pub enum ResponseStatus {
     DeviceNotResponding = 0x90, // 0x90 device is not responding (probably off or absent)
 }
 
-fn get_epoch_ms() -> Result<u32, HubManagerError> {
+pub fn get_epoch_ms() -> Result<u32, HubManagerError> {
     let now = SystemTime::now();
     let since_the_epoch = now
         .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
+        .into_report()
+        .attach_printable("Can't get unix time")
+        .change_context(HubManagerError::InternalError)?;
 
     let milliseconds_since_base: u32 = since_the_epoch
         .as_secs()
@@ -156,7 +171,7 @@ fn get_epoch_ms() -> Result<u32, HubManagerError> {
         .and_then(|ms| ms.try_into().ok())
         .ok_or(HubManagerError::InternalError)
         .into_report()
-        .attach_printable("Can't convert ")?;
+        .attach_printable("Can't process UNIX time to timestamp")?;
 
     Ok(milliseconds_since_base)
 }

@@ -101,3 +101,8 @@ pub fn is_enough_players() -> bool {
     }
     return true;
 }
+
+#[command]
+pub fn save_round_duration(round_minutes: i32) {
+    log::info!("Round duration is {round_minutes}");
+}
