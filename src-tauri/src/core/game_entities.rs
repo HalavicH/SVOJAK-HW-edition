@@ -48,7 +48,7 @@ impl Player {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 pub enum HubStatus {
     Detected,
     NoDevice,
@@ -85,7 +85,7 @@ pub struct GameContext {
 #[derive(Default, Debug)]
 pub struct CurrentContext {
     pub round_index: i32,
-    pub player_id: u8,
+    pub active_player_id: u8,
     pub answer_allowed: bool,
     pub question_theme: String,
     pub question_price: i32,
@@ -100,11 +100,16 @@ pub enum GameplayError {
 
 impl fmt::Display for GameplayError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.write_str("Failed perform game operation:")
+        let error = match self {
+            GameplayError::PackElementNotPresent => {"Pack element not present"}
+            GameplayError::PlayerNotPresent => {"Player is not present"}
+            GameplayError::HubOperationError => {"HUB operation failed"}
+        };
+        fmt.write_str(&format!("Gameplay error: {}", error))
     }
 }
 
-impl std::error::Error for GameplayError {}
+impl Error for GameplayError {}
 
 lazy_static::lazy_static! {
     static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::default()));
