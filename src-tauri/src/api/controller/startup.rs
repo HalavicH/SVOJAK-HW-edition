@@ -50,7 +50,7 @@ pub fn discover_terminals(channel_id: i32) -> Result<Vec<u8>, HubManagerError> {
 /// Saves configuration to game context
 #[command]
 pub fn save_players(players: Vec<PlayerSetupDto>) {
-    log::info!("Updating game context with new config: {players:#?}");
+    log::debug!("Updating game context with new config: {players:#?}");
 
     let player_entities = players
         .iter()

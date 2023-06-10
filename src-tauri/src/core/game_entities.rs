@@ -46,6 +46,10 @@ impl Player {
             ..Default::default()
         }
     }
+
+    pub fn allowed_to_click(&self) -> bool {
+        self.state != PlayerState::Dead && self.state != PlayerState::Inactive
+    }
 }
 
 #[derive(Debug, Serialize, PartialEq)]
@@ -84,11 +88,21 @@ pub struct GameContext {
 
 #[derive(Default, Debug)]
 pub struct CurrentContext {
-    pub round_index: i32,
-    pub active_player_id: u8,
+    pub round_index: usize,
+    active_player_id: u8,
     pub answer_allowed: bool,
     pub question_theme: String,
     pub question_price: i32,
+}
+
+impl CurrentContext {
+    pub fn get_active_player_id(&self) -> u8 {
+        self.active_player_id
+    }
+
+    pub fn set_active_player_id(&mut self, new_id: u8) {
+        self.active_player_id = new_id
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -121,11 +135,16 @@ pub fn game_ctx() -> std::sync::MutexGuard<'static, GameContext> {
 
 #[cfg(test)]
 mod game_entities_test {
-    use crate::core::game_entities::GameContext;
+    use crate::core::game_entities::{GameContext, Player};
 
     #[test]
     fn test_fastest_click() {
-        let i = GameContext::default().get_fastest_click();
+        let mut ctx = GameContext::default();
+        ctx.players.insert(1, Player::default());
+        ctx.players.insert(2, Player::default());
+        ctx.players.insert(3, Player::default());
+        ctx.players.insert(4, Player::default());
+        let i = ctx.get_fastest_click().unwrap();
         log::info!("Fastest click from: {i}");
     }
 }
