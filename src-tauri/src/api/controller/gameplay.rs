@@ -2,6 +2,7 @@ use crate::api::dto::{PlayerGameDto, PlayerScoreDto, PlayerStatsDto, QuestionDat
 use tauri::command;
 use crate::api::mapper::*;
 use crate::core::game_entities::{game_ctx, GameplayError};
+use crate::core::hub_manager::HubManagerError;
 
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {
@@ -24,13 +25,22 @@ pub fn get_question_data(topic: String, price: i32) -> QuestionDataDto {
 }
 
 #[command]
-pub fn allow_answer() {
+pub fn allow_answer() -> Result<(), HubManagerError> {
     game_ctx().allow_answer()
+        .map_err(|e| {
+            log::error!("{:?}", e);
+            e.current_context().clone()
+        })
 }
 
 #[command]
-pub fn get_fastest_click() -> i32 {
-    game_ctx().get_fastest_click()
+pub fn get_fastest_click() -> Result<i32, GameplayError> {
+    let id = game_ctx().get_fastest_click()
+        .map_err(|e| {
+            log::error!("{:?}", e);
+            e.current_context().clone()
+        })?;
+    Ok(id as i32)
 }
 
 #[command]
@@ -66,11 +76,6 @@ pub fn send_pip_victim(victim_id: i32) {
 #[command]
 pub fn get_active_player_id() -> i32 {
     game_ctx().get_active_player_id() as i32
-}
-
-#[command]
-pub fn wait_for_first_click() -> i32 {
-    game_ctx().get_fastest_click()
 }
 
 #[command]
