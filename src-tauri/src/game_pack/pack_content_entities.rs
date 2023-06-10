@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use serde::Serialize;
+use crate::api::dto::QuestionType;
 
 pub struct PackContentLoaderError {}
 
@@ -23,6 +24,7 @@ pub struct Atom {
 pub struct Question {
     pub scenario: Vec<Atom>,
     pub right_answer: String,
+    pub question_type: QuestionType,
     pub price: i32,
 }
 
