@@ -1,7 +1,17 @@
-import { getActivePlayerId, answerQuestion, getQuestionData, allowAnswer, waitForFirstClick, isAllowButtonRequired, hasNextQuestion } from "../service/back-end-com.js";
-import { processPipPlayers } from "./modal/pig-in-poke-modal.js";
-import { processAuctionPlayers } from "./modal/auction-modal.js";
-import { showRoundStats } from "./modal/round-stats-modal.js";
+import {
+    getActivePlayerId,
+    answerQuestion,
+    getQuestionData,
+    allowAnswer,
+    waitForFirstClick,
+    isAllowAnswerRequired,
+    hasNextQuestion,
+    fetchPlayers
+} from "../service/back-end-com.js";
+import {processPipPlayers} from "./modal/pig-in-poke-modal.js";
+import {processAuctionPlayers} from "./modal/auction-modal.js";
+import {showRoundStats} from "./modal/round-stats-modal.js";
+import {displayPlayers} from "./setup.js";
 
 export async function processQuestionSelection(event) {
     const question = event.target;
@@ -16,7 +26,7 @@ export async function processQuestionSelection(event) {
 
     question.className = "round-td-price used";
 
-    await processQustionDisplay(topic, price);
+    await processQuestionDisplay(topic, price);
 }
 
 function placeQuestionContent(question) {
@@ -30,30 +40,34 @@ function placeQuestionContent(question) {
     questionViewport.innerHTML = "";
 
     const text = document.createElement("p");
-    text.innerText = question.content;
+    text.innerText = question.scenario[0].content;
     text.className = "question-text";
     questionViewport.appendChild(text);
 }
 
-export async function processQustionDisplay(topic, price) {
+export async function processQuestionDisplay(topic, price) {
     console.log("Retreiving question '" + topic + ":" + price + "'");
     const question = await getQuestionData(topic, parseInt(price));
     console.log(
         "Response" +
-            ". questionType: " +
-            question.questionType +
-            ", mediaType: " +
-            question.mediaType +
-            ", content: " +
-            question.content
+        ". questionType: " +
+        question.questionType +
+        ", mediaType: " +
+        question.scenario[0].mediaType +
+        ", content: " +
+        question.scenario[0].content
     );
 
     // Disable allow button
     const button = document.querySelector("#allow-answer-btn");
-    if (await (isAllowButtonRequired()) == true) {
+    if (await (isAllowAnswerRequired()) == true) {
         button.style.display = "block";
+        document.querySelector("#correct-answer-btn").className = "inactive";
+        document.querySelector("#wrong-answer-btn").className = "inactive";
     } else {
         button.style.display = "none";
+        document.querySelector("#correct-answer-btn").className = "";
+        document.querySelector("#wrong-answer-btn").className = "";
     }
 
     placeQuestionContent(question);
@@ -88,17 +102,23 @@ export function displayRoundScreen() {
 }
 
 export async function processCorrectAnswer() {
+    console.log("Correct answer pressed");
     const player = await answerQuestion(true);
     updateUserScore(player);
+
+    // await setActivePlayerBadgeState("wrong-answer");
+    updatePlayers();
+
     goToRoundScreen();
 }
 
 export async function goToRoundScreen() {
     setAllPlayersState("");
-    
+
     if (await hasNextQuestion()) {
-        setActivePlayerBadgeState("topic-selection");
-        displayRoundScreen();    
+        // setActivePlayerBadgeState("topic-selection");
+        updatePlayers();
+        displayRoundScreen();
     } else {
         showRoundStats();
     }
@@ -110,6 +130,8 @@ export async function processWrongAnswer() {
     const player = await answerQuestion(false);
     updateUserScore(player.id);
 
+    updatePlayers();
+    // await setActivePlayerBadgeState("wrong-answer");
     // TODO: set active player badge
     // 1. getActivePlayerId()
     // 2. .className = "player-badge inactive"
@@ -125,10 +147,13 @@ export async function processWrongAnswer() {
 export async function allowAnswerHandler() {
     allowAnswer();
     await waitForFirstClick();
-    setActivePlayerBadgeState("first-response");
+    updatePlayers();
+    // setActivePlayerBadgeState("first-response");
+    document.querySelector("#correct-answer-btn").className = "";
+    document.querySelector("#wrong-answer-btn").className = "";
 }
 
-export async function updateUserScore(responcePlayer) {
+export function updateUserScore(responcePlayer) {
     const playerBadges = document.querySelector("#player-list").querySelectorAll(".player-badge");
 
     playerBadges.forEach((player) => {
@@ -158,4 +183,9 @@ export async function setActivePlayerBadgeState(state) {
             player.className = "player-badge " + state;
         }
     });
+}
+
+export function updatePlayers() {
+    console.log("Updating players view");
+    displayPlayers();
 }

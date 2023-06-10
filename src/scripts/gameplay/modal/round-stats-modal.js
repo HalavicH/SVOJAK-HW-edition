@@ -2,7 +2,7 @@ import { fetchRoundStats } from "../../service/back-end-com.js";
 import { closeModal, openModal } from "../../service/modal-common.js";
 import { getImagePathOrDefault } from "../../service/utils.js";
 import { displayRoundScreen } from "../gameplay-service.js";
-import { processRoundFromBackend } from "../setup.js";
+import { loadRoundFromBackend } from "../setup.js";
 
 export async function showRoundStats() {
     const modalContainer = document.querySelector("#stats-modal");
@@ -114,7 +114,7 @@ export function nextRoundHandler() {
     const modalContainer = document.querySelector("#stats-modal");
     closeModal(modalContainer);
     displayRoundScreen();
-    processRoundFromBackend();
+    loadRoundFromBackend();
 
 }
 

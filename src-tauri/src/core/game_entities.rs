@@ -5,6 +5,7 @@ use std::error::Error;
 use std::fmt;
 
 use serde::{Serialize, Deserialize};
+use crate::api::dto::QuestionType;
 use crate::core::hub_manager::HubManager;
 use crate::game_pack::pack_content_entities::{PackContent};
 
@@ -17,7 +18,7 @@ pub enum PlayerState {
     Inactive,
     Dead,
     AnsweredCorrectly,
-    AnsweredWrong
+    AnsweredWrong,
 }
 
 #[derive(Default, Debug, Eq, Clone, PartialEq, Serialize, Deserialize)]
@@ -90,9 +91,12 @@ pub struct GameContext {
 pub struct CurrentContext {
     pub round_index: usize,
     active_player_id: u8,
+    game_state: GameState,
+    pub click_for_answer_allowed: bool,
     pub answer_allowed: bool,
     pub question_theme: String,
     pub question_price: i32,
+    pub question_type: QuestionType,
 }
 
 impl CurrentContext {
@@ -103,21 +107,31 @@ impl CurrentContext {
     pub fn set_active_player_id(&mut self, new_id: u8) {
         self.active_player_id = new_id
     }
+    pub fn game_state(&self) -> &GameState {
+        &self.game_state
+    }
+    pub fn set_game_state(&mut self, game_state: GameState) {
+        self.game_state = game_state;
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub enum GameplayError {
+    AnswerForbidden,
     PackElementNotPresent,
     PlayerNotPresent,
     HubOperationError,
+    OperationForbidden,
 }
 
 impl fmt::Display for GameplayError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         let error = match self {
-            GameplayError::PackElementNotPresent => {"Pack element not present"}
-            GameplayError::PlayerNotPresent => {"Player is not present"}
-            GameplayError::HubOperationError => {"HUB operation failed"}
+            GameplayError::PackElementNotPresent => { "Pack element not present" }
+            GameplayError::PlayerNotPresent => { "Player is not present" }
+            GameplayError::HubOperationError => { "HUB operation failed" }
+            GameplayError::AnswerForbidden => { "Answer forbidden" }
+            GameplayError::OperationForbidden => { "Operation forbidden" }
         };
         fmt.write_str(&format!("Gameplay error: {}", error))
     }
@@ -131,6 +145,18 @@ lazy_static::lazy_static! {
 
 pub fn game_ctx() -> std::sync::MutexGuard<'static, GameContext> {
     CONTEXT.lock().unwrap()
+}
+
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub enum GameState {
+    #[default]
+    SetupAndLoading,
+    QuestionSelection,
+    AnswerAllowed,
+    AnswerGiven,
+    AnswerWrong,
+    AnswerCorrect,
+    NoPlayersToAnswerLeft,
 }
 
 #[cfg(test)]

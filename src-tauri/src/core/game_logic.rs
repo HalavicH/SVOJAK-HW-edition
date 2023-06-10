@@ -1,8 +1,10 @@
 use std::thread::sleep;
 use std::time::Duration;
 use error_stack::{IntoReport, ResultExt, Result, Report};
+use log::log;
 use rand::Rng;
-use crate::core::game_entities::{GameContext, GamePackError, GameplayError, Player, PlayerState};
+use crate::api::dto::QuestionType;
+use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
 use crate::core::hub_manager::{get_epoch_ms, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
 
@@ -10,6 +12,7 @@ impl GameContext {
     pub fn get_question(&mut self, theme: &String, price: &i32) -> Result<(Question, i32), GamePackError> {
         log::info!("Get question from category: {theme}, price: {price}");
         let round = self.get_current_round_mut();
+        let question_number = round.question_count - round.questions_left;
 
         let theme = round.themes.get_mut(theme)
             .ok_or(GamePackError::ThemeNotPresent).into_report()
@@ -20,7 +23,10 @@ impl GameContext {
             .attach_printable(format!("Can't find question with price {price:?} in theme: {theme:?}"))?
             .clone();
 
-        let question_number = round.question_count - round.questions_left;
+        self.current.question_theme = theme.name.clone();
+        self.current.question_type = question.question_type.clone();
+        self.current.question_price = question.price.clone();
+
         Ok((question, question_number))
     }
 
@@ -49,8 +55,8 @@ impl GameContext {
         self.hub.allow_answer_timestamp = timestamp;
         log::info!("Current answer base timestamp: {timestamp}");
 
-        self.inactivate_players_who_answered_wrong();
-        self.current.answer_allowed = true;
+        self.update_non_target_player_states();
+        self.current.click_for_answer_allowed = true;
         Ok(())
     }
 
@@ -62,6 +68,12 @@ impl GameContext {
             .map(|(id, _)| id.clone())
             .collect::<Vec<u8>>();
 
+        if keys.is_empty() {
+            let report = Report::new(GameplayError::OperationForbidden)
+                .attach_printable("Can't get first click: No players allowed to click left.");
+            return Err(report);
+        }
+
         log::info!("Users participating in the click race: {:?}", keys);
 
         sleep(Duration::from_millis(200));
@@ -70,7 +82,8 @@ impl GameContext {
         let fastest_player_id = keys[fastest_click_index];
 
         log::info!("Fastest click from user: {}", fastest_player_id);
-        self.current.answer_allowed = false;
+        self.current.click_for_answer_allowed = false;
+        self.current.answer_allowed = true;
         self.current.set_active_player_id(fastest_player_id);
 
         self.players.get_mut(&fastest_player_id)
@@ -86,7 +99,14 @@ impl GameContext {
     }
 
     pub fn answer_question(&mut self, answered_correctly: bool) -> Result<Player, GameplayError> {
+        if self.current.answer_allowed == false {
+            return Err(Report::new(GameplayError::AnswerForbidden))
+        }
+
+        self.current.answer_allowed = false;
+
         let active_player_id = self.get_active_player_id();
+        log::info!("Active player id: {}. Player ids: {:?}", active_player_id,self.get_player_keys());
 
         let response_player = {
             let active_player = self.players.get_mut(&active_player_id)
@@ -103,6 +123,8 @@ impl GameContext {
             active_player.stats.total_tries += 1;
             active_player.clone()
         };
+
+        log::info!("Current player stats: {:?}", response_player);
 
         let theme = self.current.question_theme.clone();
         let price = self.current.question_price.clone();
@@ -128,6 +150,12 @@ impl GameContext {
         &round
     }
 
+    fn get_player_keys(&self) -> Vec<u8> {
+        self.players.keys()
+            .map(|k| k.clone())
+            .collect()
+    }
+
     fn get_current_round_mut(&mut self) -> &mut Round {
         let index = self.current.round_index;
         let round = self.pack.rounds.get_mut(index).unwrap();
@@ -143,12 +171,16 @@ impl GameContext {
         players_left == 0
     }
 
-    fn inactivate_players_who_answered_wrong(&mut self) {
+    fn update_non_target_player_states(&mut self) {
+        let game_state = self.current.game_state();
         self.players.iter_mut().for_each(|(id, p)| {
-            let current_state = &p.state;
-            if *current_state == PlayerState::AnsweredWrong {
+            if p.state == PlayerState::AnsweredWrong {
                 log::info!("Player with id {} becomes inactive", id);
                 p.state = PlayerState::Inactive;
+            }
+            if *game_state == GameState::QuestionSelection && p.state == PlayerState::AnsweredCorrectly {
+                log::info!("Player with id {} becomes idle", id);
+                p.state = PlayerState::Idle;
             }
         });
     }
