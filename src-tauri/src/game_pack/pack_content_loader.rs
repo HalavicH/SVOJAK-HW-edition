@@ -3,6 +3,7 @@ use std::{collections::HashMap, io, fmt, error::Error, fs};
 
 use error_stack::{IntoReport, Result, ResultExt};
 use serde_xml_rs::from_str;
+use crate::api::dto::QuestionType;
 
 use crate::game_pack::pack_content_dto::*;
 use crate::game_pack::pack_content_entities::*;
@@ -103,6 +104,8 @@ fn map_question(q: &QuestionDto) -> Question {
                 .collect::<Vec<Atom>>()
         },
         right_answer: q.right.answer.clone(),
+        // TODO: Set random pip
+        question_type: QuestionType::Normal,
     }
 }
 

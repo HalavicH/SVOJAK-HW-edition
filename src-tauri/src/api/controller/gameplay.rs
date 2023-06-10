@@ -1,4 +1,4 @@
-use crate::api::dto::{PlayerGameDto, PlayerScoreDto, PlayerStatsDto, QuestionDataDto, RoundDto, RoundStatsDto};
+use crate::api::dto::{PlayerGameDto, PlayerScoreDto, PlayerStatsDto, QuestionDataDto, QuestionType, RoundDto, RoundStatsDto};
 use tauri::command;
 use crate::api::mapper::*;
 use crate::core::game_entities::{game_ctx, GameplayError};
@@ -7,7 +7,9 @@ use crate::core::hub_manager::HubManagerError;
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {
     let players = &game_ctx().players;
-    map_players_to_player_game_dto(players)
+    let vec = map_players_to_player_game_dto(players);
+    log::info!("Players: {:#?}", vec);
+    vec
 }
 
 #[command]
@@ -21,7 +23,7 @@ pub fn fetch_round() -> RoundDto {
 pub fn get_question_data(topic: String, price: i32) -> QuestionDataDto {
     let (question, q_num) = game_ctx().get_question(&topic, &price).unwrap();
 
-    map_question_to_question_dto(topic, price, question, q_num)
+    map_question_to_question_dto(topic, question, q_num)
 }
 
 #[command]
@@ -76,6 +78,11 @@ pub fn send_pip_victim(victim_id: i32) {
 #[command]
 pub fn get_active_player_id() -> i32 {
     game_ctx().get_active_player_id() as i32
+}
+
+#[command]
+pub fn is_allow_answer_required() -> bool {
+    game_ctx().current.question_type == QuestionType::Normal
 }
 
 #[command]

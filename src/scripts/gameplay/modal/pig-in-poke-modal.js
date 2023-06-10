@@ -1,7 +1,12 @@
 import { fetchPlayers, sendPipVictim } from "../../service/back-end-com.js";
 import { closeModal, openModal } from "../../service/modal-common.js";
 import { getImagePathOrDefault } from "../../service/utils.js";
-import { displayQuestionScreen, setActivePlayerBadgeState, setAllPlayersState } from "../gameplay-service.js";
+import {
+    displayQuestionScreen,
+    setActivePlayerBadgeState,
+    setAllPlayersState,
+    updatePlayers
+} from "../gameplay-service.js";
 
 
 export async function processPipPlayers(activePlayerId) {
@@ -51,7 +56,8 @@ async function processVictimSelection(event) {
     const modal = document.querySelector("#pig-in-poke-modal");
     closeModal(modal);
 
-    setPipPlayersSelection();
+    // setPipPlayersSelection();
+    updatePlayers();
     displayQuestionScreen();
 }
 

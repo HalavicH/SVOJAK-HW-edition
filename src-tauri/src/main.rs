@@ -27,7 +27,8 @@ fn main() {
             get_fastest_click,
             answer_question,
             send_pip_victim,
-            allow_answer
+            allow_answer,
+            is_allow_answer_required
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

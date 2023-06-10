@@ -1,16 +1,21 @@
-import { fetchPlayers, fetchRound } from "../service/back-end-com.js";
-import { closeModal, openModal } from "../service/modal-common.js";
-import { getImagePathOrDefault } from "../service/utils.js";
-import { processCorrectAnswer, processWrongAnswer, processQuestionSelection, allowAnswerHandler } from "./gameplay-service.js";
-import { nextRoundHandler } from "./modal/round-stats-modal.js";
+import {fetchPlayers, fetchRound} from "../service/back-end-com.js";
+import {closeModal, openModal} from "../service/modal-common.js";
+import {getImagePathOrDefault} from "../service/utils.js";
+import {
+    processCorrectAnswer,
+    processWrongAnswer,
+    processQuestionSelection,
+    allowAnswerHandler
+} from "./gameplay-service.js";
+import {nextRoundHandler} from "./modal/round-stats-modal.js";
 
 console.log("Gameplay loaded!");
 
 // SETUP //
 window.addEventListener("DOMContentLoaded", () => {
     addButtonEventListeners();
-    processMainScreenPlayers();
-    processRoundFromBackend();
+    displayPlayers();
+    loadRoundFromBackend();
 });
 
 function addButtonEventListeners() {
@@ -51,28 +56,51 @@ function addButtonEventListeners() {
         .addEventListener("click", nextRoundHandler);
 }
 
-
 function closeExitDialogModal() {
     const modal = document.querySelector("#exit-dialog-modal");
 
     closeModal(modal);
 }
 
-
-
-export async function processMainScreenPlayers() {
+export async function displayPlayers() {
     const players = await fetchPlayers();
     const playerList = document.querySelector("#player-list");
     playerList.innerHTML = "";
 
     players.forEach((player) => {
-        addMainscreenPlayer(player, playerList)
+        addMainScreenPlayer(player, playerList)
     });
 }
 
-function addMainscreenPlayer(player, playerList) {
+function mapPlayerStateToClass(state) {
+    if (state === "Idle") {
+        return "";
+    }
+    if (state === "Target") {
+        return "target-player";
+    }
+    if (state === "FirstResponse") {
+        return "first-response";
+    }
+    if (state === "Inactive") {
+        return "inactive";
+    }
+    if (state === "Dead") {
+        return "game-over";
+    }
+    if (state === "AnsweredCorrectly") {
+        return "correct-answer";
+    }
+    if (state === "AnsweredWrong") {
+        return "wrong-answer";
+    }
+}
+
+function addMainScreenPlayer(player, playerList) {
+    let stateClass = mapPlayerStateToClass(player.state);
+
     let playerBadge = document.createElement("div");
-    playerBadge.className = "player-badge";
+    playerBadge.className = "player-badge " + stateClass;
     playerList.appendChild(playerBadge);
 
     let playerIcon = document.createElement("div");
@@ -110,7 +138,7 @@ function addMainscreenPlayer(player, playerList) {
 
 }
 
-export async function processRoundFromBackend() {
+export async function loadRoundFromBackend() {
     const round = await fetchRound();
     const packList = document.querySelector("#round-data-tbody")
     packList.innerHTML = "";

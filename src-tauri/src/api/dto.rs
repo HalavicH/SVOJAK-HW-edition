@@ -75,9 +75,10 @@ pub struct QuestionDto {
 }
 
 ////////// Round ///////////
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize)]
 #[allow(non_snake_case)]
 pub enum QuestionType {
+    #[default]
     Normal,
     PigInPoke,
     Auction,

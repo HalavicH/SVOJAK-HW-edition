@@ -53,23 +53,8 @@ export async function hasNextQuestion() {
     // return await invoke("has_next_question");
 }
 
-export async function getFastestClick() {
-    return await invoke("get_fastest_click");
-
-    return {
-        newUpdatesPresent: true,
-        userWithFastestClick: "Button",
-    };
-}
-
 export async function answerQuestion(answeredCorrectly) {
     return await invoke("answer_question", {answeredCorrectly: answeredCorrectly});
-
-    return {
-        // TODO: Add id and check by id
-        id: 1,
-        newScore: 666,
-    };
 }
 
 export async function sendPipVictim(victimId) {
@@ -82,15 +67,15 @@ export async function getActivePlayerId() {
 }
 
 export async function allowAnswer() {
-
+    return await invoke("allow_answer");
 }
 
 export async function waitForFirstClick() {
-    return 2;
+    return await invoke("get_fastest_click");
 }
 
-export async function isAllowButtonRequired() {
-    return false;
+export async function isAllowAnswerRequired() {
+    return await invoke("is_allow_answer_required");
 }
 
 export async function fetchRoundStats() {
