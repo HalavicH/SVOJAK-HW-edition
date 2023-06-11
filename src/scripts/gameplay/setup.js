@@ -76,6 +76,9 @@ function mapPlayerStateToClass(state) {
     if (state === "Idle") {
         return "";
     }
+    if (state === "QuestionChooser") {
+        return "question-chooser";
+    }
     if (state === "Target") {
         return "target-player";
     }

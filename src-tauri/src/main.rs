@@ -19,16 +19,21 @@ fn main() {
             discover_terminals,
             save_players,
             get_pack_info,
+            save_round_duration,
+            get_pack_info,
+            start_the_game,
             // Gameplay API
             fetch_players,
             fetch_round,
-            get_active_player_id,
             get_question_data,
+            allow_answer,
             get_fastest_click,
             answer_question,
+            has_next_question,
             send_pip_victim,
-            allow_answer,
-            is_allow_answer_required
+            get_active_player_id,
+            is_allow_answer_required,
+            fetch_round_stats
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -65,6 +70,6 @@ fn main() {
 }
 
 fn log_ctx_content() {
-    let context = game_ctx();
+    let context = game();
     log::info!("default context: {context:#?}");
 }

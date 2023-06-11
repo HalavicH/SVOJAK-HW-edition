@@ -1,7 +1,7 @@
 use tauri::{command};
 use crate::api::dto::{ConfigDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
-use crate::core::game_entities::{game_ctx, HubStatus, Player, PlayerState};
+use crate::core::game_entities::{game, GameplayError, HubStatus, Player, PlayerState};
 
 use crate::api::dto::PlayerSetupDto;
 use crate::core::hub_manager::HubManagerError;
@@ -21,7 +21,7 @@ pub fn fetch_configuration() -> ConfigDto {
 /// Tries to detect hub at given serial port. If successful saves port name
 #[command]
 pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
-    let result = game_ctx().hub.probe(&path);
+    let result = game().hub.probe(&path);
     match result {
         Ok(status) => {
             log::info!("Hub status: {:?}", status);
@@ -40,11 +40,11 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
 pub fn discover_terminals(channel_id: i32) -> Result<Vec<u8>, HubManagerError> {
     log::info!("Got channel id: {channel_id}");
 
-    if !game_ctx().hub.is_alive() {
+    if !game().hub.is_alive() {
         return Err(HubManagerError::NoResponseFromHub);
     }
 
-    Ok(game_ctx().hub.discover_terminals(channel_id))
+    Ok(game().hub.discover_terminals(channel_id))
 }
 
 /// Saves configuration to game context
@@ -80,9 +80,9 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
 
     match result {
         Ok(pack) => {
-            game_ctx().pack = pack.content;
+            game().pack = pack.content;
 
-            let pack_info_dto = map_package_to_pack_info_dto(&game_ctx().pack);
+            let pack_info_dto = map_package_to_pack_info_dto(&game().pack);
             log::info!("Pack info: {:#?}", pack_info_dto);
             Ok(pack_info_dto)
         }
@@ -94,15 +94,15 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
 }
 
 #[command]
-pub fn is_enough_players() -> bool {
-    if game_ctx().players.len() < 2 {
-        log::info!("Not enough players to run the game.");
-        return false;
-    }
-    return true;
+pub fn save_round_duration(round_minutes: i32) {
+    log::info!("Round duration is {round_minutes}");
 }
 
 #[command]
-pub fn save_round_duration(round_minutes: i32) {
-    log::info!("Round duration is {round_minutes}");
+pub fn start_the_game() -> Result<(), GameplayError> {
+    log::info!("Triggered the game start");
+    game().start_the_game().map_err(|e|{
+        log::error!("{:#?}", e);
+        e.current_context().clone()
+    })
 }

@@ -1,5 +1,5 @@
-use crate::api::dto::{ConfigDto, QuestionDataDto, QuestionSceneDto, QuestionType, RoundDto, TopicDto};
-use crate::core::game_entities::{game_ctx, Player};
+use crate::api::dto::{ConfigDto, QuestionDataDto, QuestionSceneDto, RoundDto, TopicDto};
+use crate::core::game_entities::{game, Player};
 use crate::hw_comm::api::discover_serial_ports;
 use std::collections::HashMap;
 use crate::api::dto::{PackInfoDto, PlayerGameDto, QuestionDto};
@@ -9,7 +9,7 @@ use super::dto::PlayerSetupDto;
 
 /// Takes whole game context and maps to config which contains only required elements
 pub fn get_config_dto() -> ConfigDto {
-    let context = game_ctx();
+    let context = game();
     ConfigDto {
         available_ports: discover_serial_ports(),
         hub_port: context.hub.port_name.clone(),
@@ -37,7 +37,7 @@ pub fn get_config_dto() -> ConfigDto {
 
 /// Takes whole game context and maps to config which contains only required elements
 pub fn update_players(players: &Vec<Player>) {
-    let mut context = game_ctx();
+    let mut context = game();
 
     context.players = players.iter()
         .fold(HashMap::new(), |mut map, player| {
