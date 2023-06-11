@@ -26,13 +26,17 @@ export async function savePlayers(playersList) {
     await invoke("save_players", {players: playersList});
 }
 
+export async function getPackInfo(path) {
+    return invoke("get_pack_info", {path: path});
+}
+
 export async function saveRoundDuration(roundDurationMinutes) {
     console.log("Round duration: " + roundDurationMinutes);
     invoke("save_round_duration", {durationMin: roundDurationMinutes});
 }
 
-export async function getPackInfo(path) {
-    return invoke("get_pack_info", {path: path});
+export function startTheGame() {
+    invoke("start_the_game");
 }
 
 export async function fetchPlayers() {
@@ -49,12 +53,15 @@ export async function getQuestionData(topic, price) {
 }
 
 export async function hasNextQuestion() {
-    return false;
-    // return await invoke("has_next_question");
+    return await invoke("has_next_question");
 }
 
 export async function answerQuestion(answeredCorrectly) {
     return await invoke("answer_question", {answeredCorrectly: answeredCorrectly});
+}
+
+export async function hasNoPlayerToAnswer() {
+    return await invoke("has_no_player_to_answer");
 }
 
 export async function sendPipVictim(victimId) {

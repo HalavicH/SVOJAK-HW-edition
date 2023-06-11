@@ -6,7 +6,7 @@ import {
     waitForFirstClick,
     isAllowAnswerRequired,
     hasNextQuestion,
-    fetchPlayers
+    fetchPlayers, hasNoPlayerToAnswer
 } from "../service/back-end-com.js";
 import {processPipPlayers} from "./modal/pig-in-poke-modal.js";
 import {processAuctionPlayers} from "./modal/auction-modal.js";
@@ -45,6 +45,20 @@ function placeQuestionContent(question) {
     questionViewport.appendChild(text);
 }
 
+async function setAnswerButtonsAccordingToQuestionType() {
+    // Disable allow button
+    const button = document.querySelector("#allow-answer-btn");
+    if (await (isAllowAnswerRequired()) === true) {
+        button.style.display = "block";
+        document.querySelector("#correct-answer-btn").className = "inactive";
+        document.querySelector("#wrong-answer-btn").className = "inactive";
+    } else {
+        button.style.display = "none";
+        document.querySelector("#correct-answer-btn").className = "";
+        document.querySelector("#wrong-answer-btn").className = "";
+    }
+}
+
 export async function processQuestionDisplay(topic, price) {
     console.log("Retreiving question '" + topic + ":" + price + "'");
     const question = await getQuestionData(topic, parseInt(price));
@@ -58,17 +72,7 @@ export async function processQuestionDisplay(topic, price) {
         question.scenario[0].content
     );
 
-    // Disable allow button
-    const button = document.querySelector("#allow-answer-btn");
-    if (await (isAllowAnswerRequired()) == true) {
-        button.style.display = "block";
-        document.querySelector("#correct-answer-btn").className = "inactive";
-        document.querySelector("#wrong-answer-btn").className = "inactive";
-    } else {
-        button.style.display = "none";
-        document.querySelector("#correct-answer-btn").className = "";
-        document.querySelector("#wrong-answer-btn").className = "";
-    }
+    await setAnswerButtonsAccordingToQuestionType();
 
     placeQuestionContent(question);
 
@@ -103,45 +107,30 @@ export function displayRoundScreen() {
 
 export async function processCorrectAnswer() {
     console.log("Correct answer pressed");
-    const player = await answerQuestion(true);
-    updateUserScore(player);
+    await answerQuestion(true);
 
-    // await setActivePlayerBadgeState("wrong-answer");
     updatePlayers();
-
     goToRoundScreen();
 }
 
-export async function goToRoundScreen() {
-    setAllPlayersState("");
+export async function processWrongAnswer() {
+    await setAnswerButtonsAccordingToQuestionType();
 
+    let retry = await answerQuestion(false);
+    updatePlayers();
+
+    if (!retry) {
+        goToRoundScreen();
+    }
+}
+
+export async function goToRoundScreen() {
+    updatePlayers();
     if (await hasNextQuestion()) {
-        // setActivePlayerBadgeState("topic-selection");
-        updatePlayers();
         displayRoundScreen();
     } else {
         showRoundStats();
     }
-}
-
-export async function processWrongAnswer() {
-    console.log("Activeeeee!!!!!!!!!!!!!");
-
-    const player = await answerQuestion(false);
-    updateUserScore(player.id);
-
-    updatePlayers();
-    // await setActivePlayerBadgeState("wrong-answer");
-    // TODO: set active player badge
-    // 1. getActivePlayerId()
-    // 2. .className = "player-badge inactive"
-    // 3. forbidAnswer()
-    // 4. listen
-
-    // ifNot
-    // if question not nornal:
-    // return
-    // TODO: make player inactive, set answer forbidden
 }
 
 export async function allowAnswerHandler() {
