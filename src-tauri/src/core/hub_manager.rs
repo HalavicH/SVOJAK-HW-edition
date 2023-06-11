@@ -132,6 +132,7 @@ pub enum HubRequest {
 }
 
 impl HubRequest {
+    #[allow(dead_code)]
     fn to_command(&self) -> u8 {
         match self {
             HubRequest::SetTimestamp(_) => 0x80,

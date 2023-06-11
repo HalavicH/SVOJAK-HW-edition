@@ -13,6 +13,7 @@ use crate::game_pack::pack_content_entities::{PackContent};
 pub enum PlayerState {
     #[default]
     Idle,
+    QuestionChooser,
     Target,
     FirstResponse,
     Inactive,
@@ -100,7 +101,7 @@ pub struct CurrentContext {
 }
 
 impl CurrentContext {
-    pub fn get_active_player_id(&self) -> u8 {
+    pub fn active_player_id(&self) -> u8 {
         self.active_player_id
     }
 
@@ -143,7 +144,7 @@ lazy_static::lazy_static! {
     static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::default()));
 }
 
-pub fn game_ctx() -> std::sync::MutexGuard<'static, GameContext> {
+pub fn game() -> std::sync::MutexGuard<'static, GameContext> {
     CONTEXT.lock().unwrap()
 }
 
@@ -151,9 +152,10 @@ pub fn game_ctx() -> std::sync::MutexGuard<'static, GameContext> {
 pub enum GameState {
     #[default]
     SetupAndLoading,
-    QuestionSelection,
+    QuestionChoosing,
+    QuestionSelected,
     AnswerAllowed,
-    AnswerGiven,
+    AnswerRequested,
     AnswerWrong,
     AnswerCorrect,
     NoPlayersToAnswerLeft,
@@ -170,7 +172,7 @@ mod game_entities_test {
         ctx.players.insert(2, Player::default());
         ctx.players.insert(3, Player::default());
         ctx.players.insert(4, Player::default());
-        let i = ctx.get_fastest_click().unwrap();
+        let i = ctx.get_fastest_click_player_id().unwrap();
         log::info!("Fastest click from: {i}");
     }
 }

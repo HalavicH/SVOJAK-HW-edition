@@ -1,35 +1,28 @@
-import { fetchRoundStats } from "../../service/back-end-com.js";
-import { closeModal, openModal } from "../../service/modal-common.js";
-import { getImagePathOrDefault } from "../../service/utils.js";
-import { displayRoundScreen } from "../gameplay-service.js";
-import { loadRoundFromBackend } from "../setup.js";
+import {fetchRoundStats} from "../../service/back-end-com.js";
+import {closeModal, openModal} from "../../service/modal-common.js";
+import {getImagePathOrDefault} from "../../service/utils.js";
+import {displayRoundScreen} from "../gameplay-service.js";
+import {loadRoundFromBackend} from "../setup.js";
 
-export async function showRoundStats() {
+export function showRoundStats() {
     const modalContainer = document.querySelector("#stats-modal");
     openModal(modalContainer);
 
     updateWithNewRoundStats()
-
-
-
 }
 
-export async function updateWithNewRoundStats() {
-    const stats = await fetchRoundStats();
-
-    setRoundNumber(stats.roundNumber);
-    setTotalQuestion(stats.questionNumber);
-    setNormalQuestions(stats.normalQuestionNum);
-    setPigQuestions(stats.pigInPokeQuestionNum);
-    setTotalCorrect(stats.totalCorrectAnswers);
-    setTotalWrong(stats.totalWrongAnswers);
-    setRoundTime(stats.roundTime);
-    fillPlayersStats(stats.players);
-
-
-    // processRoundFromBackend();
-
-
+export function updateWithNewRoundStats() {
+    fetchRoundStats()
+        .then(stats => {
+            setRoundNumber(stats.roundNumber);
+            setTotalQuestion(stats.questionNumber);
+            setNormalQuestions(stats.normalQuestionNum);
+            setPigQuestions(stats.pigInPokeQuestionNum);
+            setTotalCorrect(stats.totalCorrectAnswers);
+            setTotalWrong(stats.totalWrongAnswers);
+            setRoundTime(stats.roundTime);
+            fillPlayersStats(stats.players);
+        });
 }
 
 function fillPlayersStats(playerStats) {
@@ -37,15 +30,15 @@ function fillPlayersStats(playerStats) {
         .querySelector("tbody");
     const statsLabel = roundStatsTbody.querySelector(".dark-table-labels");
     roundStatsTbody.innerHTML = "";
-    roundStatsTbody.appendChild(statsLabel); 
-    
+    roundStatsTbody.appendChild(statsLabel);
+
     playerStats.forEach((stats) => {
         let tr = document.createElement("tr");
         roundStatsTbody.appendChild(tr);
 
         let tdIcon = document.createElement("td");
         tr.appendChild(tdIcon);
-        
+
         let icon = document.createElement("img");
         icon.src = getImagePathOrDefault(stats.playerIconPath);
         icon.className = "player-image";
@@ -57,19 +50,19 @@ function fillPlayersStats(playerStats) {
 
         let score = document.createElement("td");
         score.innerText = stats.score;
-        tr.appendChild(score); 
+        tr.appendChild(score);
 
         let correct = document.createElement("td");
         correct.innerText = stats.answeredCorrectly;
-        tr.appendChild(correct); 
+        tr.appendChild(correct);
 
         let wrong = document.createElement("td");
         wrong.innerText = stats.answeredWrong;
-        tr.appendChild(wrong); 
+        tr.appendChild(wrong);
 
         let total = document.createElement("td");
         total.innerText = stats.totalAnswers;
-        tr.appendChild(total); 
+        tr.appendChild(total);
 
     });
 }
@@ -107,7 +100,7 @@ function setRoundNumber(number) {
 
 function setTotalQuestion(total) {
     const totalQuestionElement = document.querySelector("#total-questions");
-    totalQuestionElement.innerText = "Total questions: " + total; 
+    totalQuestionElement.innerText = "Total questions: " + total;
 }
 
 export function nextRoundHandler() {

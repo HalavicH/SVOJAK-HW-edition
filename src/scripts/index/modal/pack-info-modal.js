@@ -1,5 +1,5 @@
 import {openModal, closeModal} from "../../service/modal-common.js";
-import {getPackInfo, saveRoundDuration} from "../../service/back-end-com.js";
+import {getPackInfo, saveRoundDuration, startTheGame} from "../../service/back-end-com.js";
 
 const {invoke} = window.__TAURI__.tauri;
 const {open} = window.__TAURI__.dialog;
@@ -82,12 +82,13 @@ export function closePackInfoModal() {
     closeModal(modalPackInfoContainer);
 }
 
-export function startTheGame() {
-    const raundDurationOptions = document
+export function handleStartTheGame() {
+    const roundDurationOptions = document
         .querySelector("#round-duration")
         .querySelectorAll("option");
+
     let duration = 0;
-    raundDurationOptions.forEach((option) => {
+    roundDurationOptions.forEach((option) => {
         if (option.selected) {
             duration = parseInt(option.value)
         }
@@ -95,15 +96,16 @@ export function startTheGame() {
 
     saveRoundDuration(duration);
 
+    startTheGame();
     window.location.href = "./gameplay.html";
 }
 
 function openPackErrorModel(error) {
     let errorModel = document.querySelector("#pack-error-modal");
-    if (error.InvalidPackFileExtension != undefined) {
+    if (error.InvalidPackFileExtension !== undefined) {
         errorModel.querySelector("#pack-error-cause").innerText = "Wrong file extension. Expected '.siq";
         errorModel.querySelector("#pack-path").innerText = error.InvalidPackFileExtension;
-    } else if (error.InvalidPathToPack != undefined) {
+    } else if (error.InvalidPathToPack !== undefined) {
         errorModel.querySelector("#pack-error-cause").innerText = "Invalid path to pack file";
         errorModel.querySelector("#pack-path").innerText = error.InvalidPathToPack;
     }
