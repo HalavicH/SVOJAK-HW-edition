@@ -1,8 +1,7 @@
 export function isImageExisting(imagePath) {
     return false;
 
-    tauri.promisified.fs
-        .exists(imagePath)
+    tauri.promisified.fs.exists(imagePath)
         .then((exists) => {
             if (exists) {
                 console.log("Image exists!");

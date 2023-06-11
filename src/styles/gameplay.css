@@ -131,12 +131,12 @@ body {
     box-shadow: 0 0 0.5em #243fdb;
 }
 
-/*.player-badge.topic-selection {*/
-/*    color: #ffffff;*/
-/*    background: rgba(56, 143, 146, 0.8);*/
-/*    border: 1px solid #18afb9;*/
-/*    box-shadow: 0 0 0.5em #2dd1dd;*/
-/*}*/
+.player-badge.question-chooser {
+    color: #ffffff;
+    background: rgba(56, 143, 146, 0.8);
+    border: 1px solid #18afb9;
+    box-shadow: 0 0 0.5em #2dd1dd;
+}
 
 .player-badge.target-player {
     color: #ffffff;
