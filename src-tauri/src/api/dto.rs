@@ -104,12 +104,13 @@ pub struct QuestionSceneDto {
 #[derive(Debug, Serialize)]
 #[allow(non_snake_case)]
 pub struct RoundStatsDto {
-    pub roundNumber: i32,
+    pub roundName: String,
     pub questionNumber: i32,
     pub normalQuestionNum: i32,
     pub pigInPokeQuestionNum: i32,
     pub totalCorrectAnswers: i32,
     pub totalWrongAnswers: i32,
+    pub totalTries: i32,
     pub roundTime: String,
     pub players: Vec<PlayerStatsDto>,
 }

@@ -56,6 +56,10 @@ export async function hasNextQuestion() {
     return await invoke("has_next_question");
 }
 
+export async function initNextRound() {
+    return await invoke("init_next_round");
+}
+
 export async function answerQuestion(answeredCorrectly) {
     return await invoke("answer_question", {answeredCorrectly: answeredCorrectly});
 }
@@ -86,6 +90,7 @@ export async function isAllowAnswerRequired() {
 }
 
 export async function fetchRoundStats() {
+    return await invoke("fetch_round_stats");
     return {
         roundNumber: 2,
         questionNumber: 40,

@@ -1,4 +1,4 @@
-import {fetchRoundStats} from "../../service/back-end-com.js";
+import {fetchRoundStats, initNextRound} from "../../service/back-end-com.js";
 import {closeModal, openModal} from "../../service/modal-common.js";
 import {getImagePathOrDefault} from "../../service/utils.js";
 import {displayRoundScreen} from "../gameplay-service.js";
@@ -14,12 +14,13 @@ export function showRoundStats() {
 export function updateWithNewRoundStats() {
     fetchRoundStats()
         .then(stats => {
-            setRoundNumber(stats.roundNumber);
+            setRoundNumber(stats.roundName);
             setTotalQuestion(stats.questionNumber);
             setNormalQuestions(stats.normalQuestionNum);
-            setPigQuestions(stats.pigInPokeQuestionNum);
+            setPipQuestions(stats.pigInPokeQuestionNum);
             setTotalCorrect(stats.totalCorrectAnswers);
             setTotalWrong(stats.totalWrongAnswers);
+            // setTotalTries(stats.totalTries);
             setRoundTime(stats.roundTime);
             fillPlayersStats(stats.players);
         });
@@ -74,7 +75,7 @@ function setTotalWrong(wrong) {
 
 function setRoundTime(time) {
     const roundTime = document.querySelector("#round-time");
-    roundTime.innerText = "roundTime: " + time;
+    roundTime.innerText = "Round time: " + time;
 }
 
 function setTotalCorrect(correct) {
@@ -82,15 +83,14 @@ function setTotalCorrect(correct) {
     totalCorrectAnswers.innerText = "Total correct answers: " + correct;
 }
 
-function setPigQuestions(pig) {
-    const pigQuestionsElement = document.querySelector("#normal-question");
-    pigQuestionsElement.innerText = "- pig in poke: " + pig;
+function setPipQuestions(pip) {
+    const pigQuestionsElement = document.querySelector("#pip-question");
+    pigQuestionsElement.innerText = "Pig in poke questions: " + pip;
 }
-
 
 function setNormalQuestions(normal) {
     const normalQuestionsElement = document.querySelector("#normal-question");
-    normalQuestionsElement.innerText = "- normal: " + normal;
+    normalQuestionsElement.innerText = "Normal: " + normal;
 }
 
 function setRoundNumber(number) {
@@ -107,8 +107,10 @@ export function nextRoundHandler() {
     const modalContainer = document.querySelector("#stats-modal");
     closeModal(modalContainer);
     displayRoundScreen();
-    loadRoundFromBackend();
-
+    initNextRound()
+        .then(async () => {
+            await loadRoundFromBackend();
+        })
 }
 
 
