@@ -98,6 +98,9 @@ pub struct CurrentContext {
     pub question_theme: String,
     pub question_price: i32,
     pub question_type: QuestionType,
+    pub total_correct_answers: i32,
+    pub total_wrong_answers: i32,
+    pub total_tries: i32,
 }
 
 impl CurrentContext {

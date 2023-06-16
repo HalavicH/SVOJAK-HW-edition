@@ -30,6 +30,7 @@ fn main() {
             get_fastest_click,
             answer_question,
             has_next_question,
+            init_next_round,
             send_pip_victim,
             get_active_player_id,
             is_allow_answer_required,

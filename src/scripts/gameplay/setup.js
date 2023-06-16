@@ -138,7 +138,6 @@ function addMainScreenPlayer(player, playerList) {
     score.className = "player-details-score-value";
     score.innerText = player.score;
     playerDetailsScore.appendChild(score);
-
 }
 
 export async function loadRoundFromBackend() {

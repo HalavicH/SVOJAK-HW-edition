@@ -61,6 +61,11 @@ pub fn has_next_question() -> bool {
 }
 
 #[command]
+pub fn init_next_round() {
+    game().init_next_round();
+}
+
+#[command]
 pub fn send_pip_victim(victim_id: i32) {
     log::info!("Victim id is: {}", victim_id);
 }
@@ -76,45 +81,6 @@ pub fn is_allow_answer_required() -> bool {
 }
 
 #[command]
-pub fn fetch_round_stats() -> Option<RoundStatsDto> {
-    Some(
-        RoundStatsDto {
-            roundNumber: 1,
-            questionNumber: 30,
-            normalQuestionNum: 27,
-            pigInPokeQuestionNum: 3,
-            totalCorrectAnswers: 25,
-            totalWrongAnswers: 5,
-            roundTime: "13:54".to_owned(),
-            players: vec![
-                PlayerStatsDto {
-                    id: 1,
-                    name: "HalavicH".to_owned(),
-                    score: 400,
-                    playerIconPath: "".to_owned(),
-                    totalAnswers: 5,
-                    answeredCorrectly: 3,
-                    answeredWrong: 2,
-                },
-                PlayerStatsDto {
-                    id: 2,
-                    name: "Button".to_owned(),
-                    score: 300,
-                    playerIconPath: "".to_owned(),
-                    totalAnswers: 5,
-                    answeredCorrectly: 3,
-                    answeredWrong: 2,
-                },
-                PlayerStatsDto {
-                    id: 3,
-                    name: "Minty".to_owned(),
-                    score: 200,
-                    playerIconPath: "".to_owned(),
-                    totalAnswers: 5,
-                    answeredCorrectly: 3,
-                    answeredWrong: 2,
-                },
-            ],
-        }
-    )
+pub fn fetch_round_stats() -> RoundStatsDto {
+    game().fetch_round_stats()
 }
