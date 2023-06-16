@@ -56,6 +56,8 @@ pub struct Round {
     pub round_type: RoundType,
     pub themes: HashMap<String, Theme>,
     pub question_count: i32,
+    pub normal_question_count: i32,
+    pub pip_question_count: i32,
     pub questions_left: i32,
 }
 

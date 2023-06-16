@@ -143,6 +143,8 @@ fn map_round(r: &RoundDto) -> Round {
         },
         questions_left: -1,
         question_count: -1,
+        normal_question_count: -1,
+        pip_question_count: -1,
     };
     let vec = Vec::from_iter(round.themes.values());
     round.question_count = vec.iter()
@@ -150,5 +152,7 @@ fn map_round(r: &RoundDto) -> Round {
         .sum::<i32>();
 
     round.questions_left = round.question_count;
+    round.normal_question_count = round.question_count;
+    round.pip_question_count = 0;
     round
 }

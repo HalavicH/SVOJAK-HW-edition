@@ -3,6 +3,7 @@ use std::thread::sleep;
 use std::time::Duration;
 use error_stack::{IntoReport, ResultExt, Result, Report};
 use rand::Rng;
+use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
 use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
 use crate::core::hub_manager::{get_epoch_ms, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
@@ -66,6 +67,7 @@ impl GameContext {
     }
 
     pub fn has_next_question(&self) -> bool {
+        // self.current.has_next_question
         let has_new_question = self.get_current_round().questions_left > 0;
         log::info!("Has new question: {}", has_new_question);
         has_new_question
@@ -127,6 +129,7 @@ impl GameContext {
                 .ok_or(GameplayError::PlayerNotPresent)?;
             if answered_correctly {
                 active_player.stats.correct_num += 1;
+                self.current.total_correct_answers += 1;
                 active_player.stats.score += self.current.question_price;
                 active_player.state = PlayerState::AnsweredCorrectly;
             } else {
@@ -134,11 +137,17 @@ impl GameContext {
                 active_player.stats.score -= self.current.question_price;
                 active_player.state = PlayerState::AnsweredWrong;
             }
+            self.current.total_tries += 1;
             active_player.stats.total_tries += 1;
             active_player.clone()
         };
 
         log::info!("Current player stats: {:?}", response_player);
+
+        if self.no_players_to_answer_left() {
+            log::info!("Nobody answered question correctly");
+            self.current.total_wrong_answers += 1;
+        }
 
         let theme = self.current.question_theme.clone();
         let price = self.current.question_price.clone();
@@ -154,12 +163,6 @@ impl GameContext {
 
             self.remove_question(&theme, &price)
                 .change_context(GameplayError::PackElementNotPresent)?;
-
-            if !self.has_next_question() {
-                log::info!("No question left for round {}. Initializing new round",
-                    self.get_current_round().name);
-                self.init_next_round()
-            }
         }
 
         Ok(retry)
@@ -171,6 +174,62 @@ impl GameContext {
         &round
     }
 
+    pub fn no_players_to_answer_left(&self) -> bool {
+        let players_left = self.players.iter()
+            .filter(|(_, &ref p)| {
+                p.state != PlayerState::Inactive
+                    && p.state != PlayerState::Dead
+                    && p.state != PlayerState::AnsweredWrong
+            })
+            .count();
+        log::debug!("Players to answer left: {}", players_left);
+        players_left == 0
+    }
+
+    pub fn init_next_round(&mut self) {
+        if (self.pack.rounds.len() - 1) == self.current.round_index as usize {
+            log::error!("Already final round");
+            return;
+        }
+        self.current.round_index += 1;
+        let round: &Round = self.pack.rounds.get(self.current.round_index).expect("Round should be present");
+        log::info!("Next round name {}", round.name);
+
+        self.current.total_tries = 0;
+        self.current.total_wrong_answers = 0;
+        self.current.total_correct_answers = 0;
+
+        if round.round_type == RoundType::Final {
+            self.kill_players_with_negative_balance();
+        }
+    }
+
+    pub fn fetch_round_stats(&self) -> RoundStatsDto {
+        let round = self.get_current_round();
+        RoundStatsDto {
+            roundName: round.name.to_owned(),
+            questionNumber: round.question_count,
+            normalQuestionNum: round.normal_question_count,
+            pigInPokeQuestionNum: round.pip_question_count,
+            totalCorrectAnswers: self.current.total_correct_answers,
+            totalWrongAnswers: self.current.total_wrong_answers,
+            totalTries: self.current.total_tries,
+            roundTime: "Not tracked".to_owned(),
+            players: self.players.values()
+                .map(|p| {
+                    PlayerStatsDto {
+                        id: p.term_id as i32,
+                        name: p.name.to_owned(),
+                        score: p.stats.score,
+                        playerIconPath: p.icon.to_owned(),
+                        totalAnswers: p.stats.total_tries,
+                        answeredCorrectly: p.stats.correct_num,
+                        answeredWrong: p.stats.wrong_num,
+                    }
+                })
+                .collect(),
+        }
+    }
     fn update_game_state(&mut self, new_state: GameState) {
         log::info!("Game state {:?} -> {:?}", self.current.game_state(), new_state);
         self.current.set_game_state(new_state);
@@ -225,18 +284,6 @@ impl GameContext {
         round
     }
 
-        pub fn no_players_to_answer_left(&self) -> bool {
-        let players_left = self.players.iter()
-            .filter(|(_, &ref p)| {
-                p.state != PlayerState::Inactive
-                    && p.state != PlayerState::Dead
-                    && p.state != PlayerState::AnsweredWrong
-            })
-            .count();
-        log::debug!("Players to answer left: {}", players_left);
-        players_left == 0
-    }
-
     fn update_non_target_player_states(&mut self) {
         let game_state = self.current.game_state();
         let active_id = self.get_active_player_id();
@@ -259,20 +306,6 @@ impl GameContext {
                 p.state = PlayerState::Idle;
             }
         });
-    }
-
-    fn init_next_round(&mut self) {
-        if (self.pack.rounds.len() - 1) == self.current.round_index as usize {
-            log::error!("Already final round");
-            return;
-        }
-        self.current.round_index += 1;
-        let round: &Round = self.pack.rounds.get(self.current.round_index).expect("Round should be present");
-        log::info!("Next round name {}", round.name);
-
-        if round.round_type == RoundType::Final {
-            self.kill_players_with_negative_balance();
-        }
     }
 
     fn kill_players_with_negative_balance(&mut self) {
