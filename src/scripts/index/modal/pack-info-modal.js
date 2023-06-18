@@ -108,6 +108,12 @@ function openPackErrorModel(error) {
     } else if (error.InvalidPathToPack !== undefined) {
         errorModel.querySelector("#pack-error-cause").innerText = "Invalid path to pack file";
         errorModel.querySelector("#pack-path").innerText = error.InvalidPathToPack;
+    } else if (error.CorruptedPack !== undefined) {
+        errorModel.querySelector("#pack-error-cause").innerText = "Corrupted pack";
+        errorModel.querySelector("#pack-path").innerText = error.CorruptedPack;
+    } else {
+        errorModel.querySelector("#pack-error-cause").innerText = "Unknown error";
+        errorModel.querySelector("#pack-path").innerText = error;
     }
 
 
