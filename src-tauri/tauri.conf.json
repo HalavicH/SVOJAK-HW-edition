@@ -20,6 +20,19 @@
       "dialog": {
         "all": false,
         "open": true
+      },
+      "fs": {
+        "all": true,
+        "scope": [
+          "**"
+        ]
+      },
+      "protocol": {
+        "assetScope": [
+          "**"
+        ],
+        "all": true,
+        "asset": true
       }
     },
     "bundle": {
@@ -35,7 +48,7 @@
       "targets": "all"
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
     },
     "updater": {
       "active": false

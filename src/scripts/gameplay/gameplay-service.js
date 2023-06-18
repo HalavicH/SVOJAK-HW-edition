@@ -1,12 +1,13 @@
+const {convertFileSrc} = window.__TAURI__.tauri;
+
 import {
-    getActivePlayerId,
-    answerQuestion,
-    getQuestionData,
     allowAnswer,
-    waitForFirstClick,
-    isAllowAnswerRequired,
+    answerQuestion,
+    getActivePlayerId,
+    getQuestionData,
     hasNextQuestion,
-    fetchPlayers, hasNoPlayerToAnswer
+    isAllowAnswerRequired,
+    waitForFirstClick
 } from "../service/back-end-com.js";
 import {processPipPlayers} from "./modal/pig-in-poke-modal.js";
 import {processAuctionPlayers} from "./modal/auction-modal.js";
@@ -35,15 +36,152 @@ function placeQuestionContent(question) {
     document.querySelector("#question-category").innerText = "Category: " + question.category;
     document.querySelector("#question-price").innerText = "Price: " + question.price;
 
-    // TODO: Add proper media handling
-    const questionViewport = document.querySelector(".question-viewport");
+    const questionViewport = document.querySelector("#question-slider");
+    if (questionViewport.currentSlider !== undefined) {
+        questionViewport.currentSlider.destroy();
+    }
     questionViewport.innerHTML = "";
 
-    const text = document.createElement("p");
-    text.innerText = question.scenario[0].content;
-    text.className = "question-text";
-    questionViewport.appendChild(text);
+    const slider = new Slider(question.scenario, questionViewport);
+    questionViewport.currentSlider = slider;
+    slider.init();
 }
+
+class Slider {
+    constructor(scenario, questionViewport) {
+        this.scenario = scenario;
+        this.questionViewport = questionViewport;
+        this.currentIndex = 0;
+        this.currentSlide = null;
+    }
+
+    init() {
+        this.showSlide(this.currentIndex);
+
+        const prevButton = document.querySelector("#prev-button");
+        const nextButton = document.querySelector("#next-button");
+
+        prevButton.addEventListener("click", this.prevSlide.bind(this));
+        nextButton.addEventListener("click", this.nextSlide.bind(this));
+
+        document.addEventListener("keydown", this.handleKeyDown.bind(this));
+
+        if (this.scenario.length <= 1) {
+            prevButton.style.display = "none";
+            nextButton.style.display = "none";
+        } else {
+            prevButton.style.display = "unset";
+            nextButton.style.display = "unset";
+        }
+    }
+
+    destroy() {
+        console.log("destruction called")
+        const prevButton = document.querySelector("#prev-button");
+        const nextButton = document.querySelector("#next-button");
+
+        prevButton.removeEventListener("click", this.prevSlide.bind(this));
+        nextButton.removeEventListener("click", this.nextSlide.bind(this));
+
+        document.removeEventListener("keydown", this.handleKeyDown.bind(this));
+    }
+
+    handleKeyDown(event) {
+        if (event.key === "ArrowLeft") {
+            this.prevSlide();
+        } else if (event.key === "ArrowRight") {
+            this.nextSlide();
+        } else if (event.key === " ") {
+            event.preventDefault(); // Prevent scrolling the page
+
+            if (!this.currentSlide) {
+                return;
+            }
+
+            if (this.currentSlide.mediaType === "Video") {
+                const video = this.currentSlide.element;
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            }
+
+            if (this.currentSlide.mediaType === "Voice") {
+                const audio = this.currentSlide.element;
+                if (audio.paused) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+            }
+        }
+    }
+
+    showSlide(index) {
+        this.questionViewport.innerHTML = "";
+
+        const slide = this.scenario[index];
+        console.log("Processing scenario: " + slide.mediaType + ":" + slide.content);
+
+        if (slide.mediaType === "Say") {
+            const text = document.createElement("p");
+            text.innerText = slide.content;
+            text.className = "question-text";
+            this.questionViewport.appendChild(text);
+            slide.element = text;
+        } else if (slide.mediaType === "Voice") {
+            const audio = document.createElement("audio");
+            audio.src = convertFileSrc(slide.content);
+            audio.controls = true;
+            audio.className = "question-audio";
+            this.questionViewport.appendChild(audio);
+            slide.element = audio;
+        } else if (slide.mediaType === "Video") {
+            const video = document.createElement("video");
+            video.src = convertFileSrc(slide.content);
+            video.controls = true;
+            video.className = "question-video";
+            this.questionViewport.appendChild(video);
+            slide.element = video;
+        } else if (slide.mediaType === "Image") {
+            const image = document.createElement("img");
+            image.src = convertFileSrc(slide.content);
+            image.alt = "Question Image";
+            image.className = "question-image";
+            this.questionViewport.appendChild(image);
+            slide.element = video;
+        } else {
+            console.log("Not supported format");
+
+            // Display content as text anyway
+            const element = document.createElement("p");
+            element.innerText = slide.content;
+            element.className = "question-text";
+            this.questionViewport.appendChild(element);
+            slide.element = element;
+        }
+
+        this.currentSlide = slide; // Update the current slide reference
+    }
+
+    prevSlide() {
+        this.currentIndex--;
+        if (this.currentIndex < 0) {
+            this.currentIndex = this.scenario.length - 1;
+        }
+        this.showSlide(this.currentIndex);
+    }
+
+    nextSlide() {
+        this.currentIndex++;
+        if (this.currentIndex >= this.scenario.length) {
+            this.currentIndex = 0;
+        }
+        this.showSlide(this.currentIndex);
+    }
+}
+
 
 async function setAnswerButtonsAccordingToQuestionType() {
     // Disable allow button
