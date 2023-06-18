@@ -1,16 +1,17 @@
 #[allow(dead_code, unused, unused_imports)]
 use std::{collections::HashMap, io, fmt, error::Error, fs};
-use std::ops::Deref;
 use std::path::Path;
 
 use error_stack::{IntoReport, Result, ResultExt};
 use serde_xml_rs::from_str;
 use urlencoding::encode;
+use unic_normal::StrNormalForm;
 
 use crate::api::dto::QuestionType;
 use crate::game_pack::pack_content_dto::*;
 use crate::game_pack::pack_content_entities::*;
 use crate::game_pack::game_pack_entites::{PackLocationData};
+use crate::game_pack::game_pack_loader::GamePackLoadingError;
 
 #[derive(Debug)]
 pub struct ParsePackContentError;
@@ -23,28 +24,36 @@ impl fmt::Display for ParsePackContentError {
 
 impl Error for ParsePackContentError {}
 
-pub fn load_pack_content(pack_location_data: &PackLocationData) -> Result<PackContent, ParsePackContentError> {
-    let package_content_file_str = pack_location_data.content_file_path.to_str().unwrap();
+pub fn load_pack_content(pack_location_data: &PackLocationData) -> Result<PackContent, GamePackLoadingError> {
+    let package_content_file_str = pack_location_data.content_file_path.to_str()
+        .ok_or(GamePackLoadingError::InvalidPathToPack("Can't get content file path".to_string()))
+        .into_report()
+        .attach_printable("Can't get content file path. Check pack location data validity")?;
+
     let package: PackageDto = parse_package(package_content_file_str)
+        .change_context(GamePackLoadingError::CorruptedPack("Can't parse package".to_string()))
         .attach_printable_lazy(|| {
             format!("Can't load pack content: parsing failed")
         })?;
 
     let mut mapped_content = map_package(package);
-    expand_and_validate_package_paths(&mut mapped_content, pack_location_data);
+    expand_and_validate_package_paths(&mut mapped_content, pack_location_data)?;
     Ok(mapped_content)
 }
 
-fn expand_and_validate_package_paths(pack: &mut PackContent, locations: &PackLocationData) {
+fn expand_and_validate_package_paths(pack: &mut PackContent, locations: &PackLocationData) -> Result<(), GamePackLoadingError> {
+    let mut result = Ok(());
+
     pack.rounds.iter_mut().for_each(|r| {
         r.themes.iter_mut().for_each(|(_, theme)| {
             theme.questions.iter_mut().for_each(|(_, q)| {
                 q.scenario.iter_mut().for_each(|a| {
+                    log::debug!("Atom {:?} before mapping: {}", a.atom_type, a.content);
                     match a.atom_type {
                         QuestionMediaType::Say => {}
                         QuestionMediaType::Voice => {
                             a.content = locations.audio_path.join(to_url_filename(a)).to_str()
-                                .unwrap_or_default().to_owned()
+                                .unwrap_or_default().to_owned();
                         }
                         QuestionMediaType::Video => {
                             a.content = locations.video_path.join(to_url_filename(a)).to_str()
@@ -56,14 +65,20 @@ fn expand_and_validate_package_paths(pack: &mut PackContent, locations: &PackLoc
                                 .unwrap_or_default().to_owned()
                         }
                     }
-                    log::debug!("Atom after mapping: {:#?}", a);
+                    log::debug!("Atom {:?} after mapping: {}", a.atom_type, a.content);
                     if is_atom_media(&a.atom_type) && !Path::new(&a.content).exists() {
-                        log::error!("Path '{}' for atom {:?} is not valid", a.content, a.atom_type)
+                        let err_msg = format!("Atom corrupted! Round: {}, theme: {}, question: {}, atom {:?}",
+                                              r.name, theme.name, q.price, a);
+                        log::error!("{}", err_msg);
+                        result = Err(GamePackLoadingError::CorruptedPack(err_msg.clone())).into_report()
+                            .attach_printable(err_msg);
                     }
                 })
             })
         })
     });
+
+    result
 }
 
 fn is_atom_media(qmt: &QuestionMediaType) -> bool {
@@ -73,8 +88,11 @@ fn is_atom_media(qmt: &QuestionMediaType) -> bool {
 }
 
 fn to_url_filename(a: &mut Atom) -> String {
-    a.content[1..].replace(" ", "%20").to_owned()
-    // encode(a.content[1..].to_owned().as_str()).deref().to_owned()
+    let orig_path = &a.content[1..].to_owned();
+
+    let normalized_filename = orig_path.nfkd().collect::<String>();
+
+    encode(&normalized_filename).to_string()
 }
 
 fn parse_package(file_path: &str) -> Result<PackageDto, ParsePackContentError> {
