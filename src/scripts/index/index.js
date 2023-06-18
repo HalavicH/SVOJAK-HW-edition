@@ -1,5 +1,6 @@
 import {openSettingsModal, closeSettingsModal, handleDiscoverTerminals, serialPortSelectHandler} from "./modal/settings-modal.js";
 import {openPackInfoModal, closePackInfoModal, handleStartTheGame, closePackErrorModal} from "./modal/pack-info-modal.js";
+const { convertFileSrc } = window.__TAURI__.tauri;
 
 window.addEventListener("DOMContentLoaded", () => {
     // modal processing

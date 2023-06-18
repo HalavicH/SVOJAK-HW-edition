@@ -38,7 +38,7 @@ pub fn load_game_pack(game_archive_path: &str) -> Result<GamePack, GamePackLoadi
     unarchive_zip(game_archive_path, tmp_dir_path_str)?;
 
     let locations = PackLocationData {
-        base_dir: temp_dir.clone(),
+        base_dir: Some(temp_dir.clone()),
         content_file_path: temp_dir_path.join(PACKAGE_CONTENT_FILE_NAME),
         audio_path: temp_dir_path.join(PACKAGE_AUDIO_DIR_NAME),
         images_path: temp_dir_path.join(PACKAGE_IMAGES_DIR_NAME),

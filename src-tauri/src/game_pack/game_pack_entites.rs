@@ -11,17 +11,17 @@ pub static PACKAGE_VIDEO_DIR_NAME: &str = "Video";
 
 pub struct PackLoaderError {}
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct PackLocationData {
     // !warning: if you lose this pointer, temp directory will be deleted
-    pub base_dir: Arc<TempDir>,
+    pub base_dir: Option<Arc<TempDir>>,
     pub content_file_path: PathBuf,
     pub video_path: PathBuf,
     pub images_path: PathBuf,
     pub audio_path: PathBuf,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct GamePack {
     pub location: PackLocationData,
     pub content: PackContent,
