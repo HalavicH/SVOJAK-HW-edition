@@ -80,9 +80,9 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
 
     match result {
         Ok(pack) => {
-            game().pack = pack.content;
+            game().game_pack = pack;
 
-            let pack_info_dto = map_package_to_pack_info_dto(&game().pack);
+            let pack_info_dto = map_package_to_pack_info_dto(&game().game_pack.content);
             log::info!("Pack info: {:#?}", pack_info_dto);
             Ok(pack_info_dto)
         }
