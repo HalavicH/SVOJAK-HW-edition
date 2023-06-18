@@ -1,10 +1,13 @@
 #[allow(dead_code, unused, unused_imports)]
 use std::{collections::HashMap, io, fmt, error::Error, fs};
+use std::ops::Deref;
+use std::path::Path;
 
 use error_stack::{IntoReport, Result, ResultExt};
 use serde_xml_rs::from_str;
-use crate::api::dto::QuestionType;
+use urlencoding::encode;
 
+use crate::api::dto::QuestionType;
 use crate::game_pack::pack_content_dto::*;
 use crate::game_pack::pack_content_entities::*;
 use crate::game_pack::game_pack_entites::{PackLocationData};
@@ -20,15 +23,58 @@ impl fmt::Display for ParsePackContentError {
 
 impl Error for ParsePackContentError {}
 
-pub fn load_pack_content(game_information: &PackLocationData) -> Result<PackContent, ParsePackContentError> {
-    let package_content_file_str = game_information.content_file_path.to_str().unwrap();
+pub fn load_pack_content(pack_location_data: &PackLocationData) -> Result<PackContent, ParsePackContentError> {
+    let package_content_file_str = pack_location_data.content_file_path.to_str().unwrap();
     let package: PackageDto = parse_package(package_content_file_str)
         .attach_printable_lazy(|| {
             format!("Can't load pack content: parsing failed")
         })?;
 
-    let content = map_package(package);
-    Ok(content)
+    let mut mapped_content = map_package(package);
+    expand_and_validate_package_paths(&mut mapped_content, pack_location_data);
+    Ok(mapped_content)
+}
+
+fn expand_and_validate_package_paths(pack: &mut PackContent, locations: &PackLocationData) {
+    pack.rounds.iter_mut().for_each(|r| {
+        r.themes.iter_mut().for_each(|(_, theme)| {
+            theme.questions.iter_mut().for_each(|(_, q)| {
+                q.scenario.iter_mut().for_each(|a| {
+                    match a.atom_type {
+                        QuestionMediaType::Say => {}
+                        QuestionMediaType::Voice => {
+                            a.content = locations.audio_path.join(to_url_filename(a)).to_str()
+                                .unwrap_or_default().to_owned()
+                        }
+                        QuestionMediaType::Video => {
+                            a.content = locations.video_path.join(to_url_filename(a)).to_str()
+                                .unwrap_or_default().to_owned()
+                        }
+                        QuestionMediaType::Marker => {}
+                        QuestionMediaType::Image => {
+                            a.content = locations.images_path.join(to_url_filename(a)).to_str()
+                                .unwrap_or_default().to_owned()
+                        }
+                    }
+                    log::debug!("Atom after mapping: {:#?}", a);
+                    if is_atom_media(&a.atom_type) && !Path::new(&a.content).exists() {
+                        log::error!("Path '{}' for atom {:?} is not valid", a.content, a.atom_type)
+                    }
+                })
+            })
+        })
+    });
+}
+
+fn is_atom_media(qmt: &QuestionMediaType) -> bool {
+    *qmt == QuestionMediaType::Image
+        || *qmt == QuestionMediaType::Voice
+        || *qmt == QuestionMediaType::Video
+}
+
+fn to_url_filename(a: &mut Atom) -> String {
+    a.content[1..].replace(" ", "%20").to_owned()
+    // encode(a.content[1..].to_owned().as_str()).deref().to_owned()
 }
 
 fn parse_package(file_path: &str) -> Result<PackageDto, ParsePackContentError> {

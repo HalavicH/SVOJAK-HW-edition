@@ -7,7 +7,7 @@ use std::fmt;
 use serde::{Serialize, Deserialize};
 use crate::api::dto::QuestionType;
 use crate::core::hub_manager::HubManager;
-use crate::game_pack::pack_content_entities::{PackContent};
+use crate::game_pack::game_pack_entites::GamePack;
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum PlayerState {
@@ -83,7 +83,7 @@ impl Error for GamePackError {}
 #[derive(Default, Debug)]
 pub struct GameContext {
     pub players: HashMap<u8, Player>,
-    pub pack: PackContent,
+    pub game_pack: GamePack,
     pub hub: HubManager,
     pub current: CurrentContext,
 }
