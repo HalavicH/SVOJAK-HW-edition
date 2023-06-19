@@ -13,6 +13,7 @@ pub const END_BYTE: u8 = 0xCF;
 const ESCAPE_BYTE: u8 = 0xC1;
 const ESCAPE_MASK: u8 = 0xC0;
 
+#[derive(Debug)]
 pub struct ByteHandler {
     state: ByteHandlerState,
     framebuf: RawFrame,
@@ -27,28 +28,12 @@ impl ByteHandler {
             fsm_frame_tx,
         }
     }
+
     pub fn handle_byte(&mut self, byte: u8) {
         log::debug!("Received byte: {byte:#X}");
         match self.state {
             ByteHandlerState::Byte => {
-                match byte {
-                    ESCAPE_BYTE => {
-                        self.state = ByteHandlerState::Escape;
-                        log::debug!("Got escape byte. Set state: {:?}", self.state);
-                    }
-                    START_BYTE => {
-                        self.state = ByteHandlerState::Byte;
-                        log::debug!("Got start byte. Set state: {:?}", self.state);
-                    }
-                    END_BYTE => {
-                        self.state = ByteHandlerState::Byte;
-                        log::debug!("Got end byte. Set state: {:?}", self.state);
-
-                        self.send_uart_frame();
-                        self.framebuf.clear();
-                    }
-                    _ => self.framebuf.push(byte),
-                }
+                self.handle_clean_byte(byte);
             }
             ByteHandlerState::Escape => {
                 self.state = ByteHandlerState::Byte;
@@ -57,6 +42,27 @@ impl ByteHandler {
                 log::debug!("Recovered byte: {byte}");
                 self.framebuf.push(original_byte);
             }
+        }
+    }
+
+    fn handle_clean_byte(&mut self, byte: u8) {
+        match byte {
+            ESCAPE_BYTE => {
+                self.state = ByteHandlerState::Escape;
+                log::debug!("Got escape byte. Set state: {:?}", self.state);
+            }
+            START_BYTE => {
+                self.state = ByteHandlerState::Byte;
+                log::debug!("Got start byte. Set state: {:?}", self.state);
+            }
+            END_BYTE => {
+                self.state = ByteHandlerState::Byte;
+                log::debug!("Got end byte. Set state: {:?}", self.state);
+
+                self.send_uart_frame();
+                self.framebuf.clear();
+            }
+            _ => self.framebuf.push(byte),
         }
     }
 

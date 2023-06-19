@@ -29,17 +29,17 @@ pub enum TerminalButtonState {
 
 #[derive(Debug)]
 pub struct UartResponse {
-    id: u8,
-    status: ResponseStatus,
-    payload_len: u8,
-    payload: Vec<u8>,
+    pub id: u8,
+    pub status: ResponseStatus,
+    pub payload_len: u8,
+    pub payload: Vec<u8>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum ResponseStatus {
     Ok = 0x00,
     GenericError = 0x80,
-    DeviceNotResponding = 0x90,
+    TerminalNotResponding = 0x90,
     UnknownError,
 }
 
@@ -48,7 +48,7 @@ impl From<u8> for ResponseStatus {
         match value {
             0x00 => ResponseStatus::Ok,
             0x80 => ResponseStatus::GenericError,
-            0x90 => ResponseStatus::DeviceNotResponding,
+            0x90 => ResponseStatus::TerminalNotResponding,
             _ => ResponseStatus::UnknownError,
         }
     }

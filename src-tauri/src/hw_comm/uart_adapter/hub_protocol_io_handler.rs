@@ -1,15 +1,20 @@
 use std::io::Read;
 use std::sync::{Arc, mpsc, Mutex};
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, RecvTimeoutError};
 use std::thread;
 use std::thread::JoinHandle;
+use std::time::Duration;
 use error_stack::{ResultExt, Result, Report, IntoReport};
 use serialport::SerialPort;
+use crate::core::hub_manager::HubRequest;
 use crate::hw_comm::api::{HubIoError, ResponseStatus, UartResponse};
 use crate::hw_comm::api::ProtocolVersion::V3;
 use crate::hw_comm::uart_adapter::byte_handler::ByteHandler;
 
-struct HubProtocolIoHandler {
+const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100);
+
+#[derive(Debug)]
+pub struct HubProtocolIoHandler {
     fsm_byte_handler: Arc<Mutex<ByteHandler>>,
     fsm_frame_rx: Receiver<Vec<u8>>,
     port_handle: Arc<Mutex<Box<dyn SerialPort>>>,
@@ -36,9 +41,11 @@ impl HubProtocolIoHandler {
             loop {
                 let mut byte: [u8; 1] = [0];
                 let mut port_handle = port_handle_ptr.lock().unwrap();
+                // Читає байт
                 port_handle.read_exact(&mut byte).unwrap();
 
                 let mut byte_handler = byte_handler_ptr.lock().unwrap();
+                // Хендлить його. Як збереться фрейм byte_handler відправить його в fsm_frame_rx (64 строчка)
                 byte_handler.handle_byte(byte[0]);
             }
         });
@@ -46,25 +53,15 @@ impl HubProtocolIoHandler {
         self.listening_thread = Some(handle);
     }
 
-    pub fn send_command(&mut self, cmd: u8, payload: Vec<u8>) -> Result<UartResponse, HubIoError> {
-        let frame = Self::assemble_frame(cmd, payload);
+    // Accept HubRequest -> HubResponse. Convert internally
+    pub fn send_command(&self, cmd: HubRequest, payload: Vec<u8>) -> Result<UartResponse, HubIoError> {
+        let frame = Self::assemble_frame(cmd.value(), payload);
         let stuffed_frame = Self::stuff_bytes(&frame);
 
-        let mut port_handle = self.port_handle.lock()
-            .map_err(|_| {
-                // Report::new(e.).change_context(HubIoError::InternalError)
-                Report::new(HubIoError::InternalError)
-            })?;
-        port_handle.write_all(&stuffed_frame).into_report()
-            .change_context(HubIoError::SerialPortError)?;
+        let mut port_handle = self.port_handle.lock().unwrap();
+        port_handle.write_all(&stuffed_frame).unwrap();
 
-        let curr_frame: Vec<u8> = match self.fsm_frame_rx.recv() {
-            Ok(x) => x,
-            Err(_) => {
-                log::warn!("Can't receive the frame");
-                return Err(HubIoError::InternalError).into_report();
-            },
-        };
+        let curr_frame = self.fsm_frame_rx.recv_timeout(HUB_CMD_TIMEOUT).unwrap();
 
         let id = curr_frame[1];
         let status = ResponseStatus::from(curr_frame[2]);
