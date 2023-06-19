@@ -1,5 +1,4 @@
 use std::sync::mpsc::Sender;
-use simplelog::*;
 
 pub type RawFrame = Vec<u8>;
 
@@ -29,21 +28,21 @@ impl ByteHandler {
         }
     }
     pub fn handle_byte(&mut self, byte: u8) {
-        debug!("Received byte: {byte:#X}");
+        log::debug!("Received byte: {byte:#X}");
         match self.state {
             ByteHandlerState::Byte => {
                 match byte {
                     ESCAPE_BYTE => {
                         self.state = ByteHandlerState::Escape;
-                        debug!("Got escape byte. Set state: {:?}", self.state);
+                        log::debug!("Got escape byte. Set state: {:?}", self.state);
                     }
                     START_BYTE => {
                         self.state = ByteHandlerState::Byte;
-                        debug!("Got start byte. Set state: {:?}", self.state);
+                        log::debug!("Got start byte. Set state: {:?}", self.state);
                     }
                     END_BYTE => {
                         self.state = ByteHandlerState::Byte;
-                        debug!("Got end byte. Set state: {:?}", self.state);
+                        log::debug!("Got end byte. Set state: {:?}", self.state);
 
                         self.send_uart_frame();
                         self.framebuf.clear();
@@ -53,39 +52,16 @@ impl ByteHandler {
             }
             ByteHandlerState::Escape => {
                 self.state = ByteHandlerState::Byte;
-                debug!("!!! During escape state. Set state: {:?}", self.state);
+                log::debug!("!!! During escape state. Set state: {:?}", self.state);
                 let original_byte = byte | ESCAPE_MASK;
-                debug!("Recovered byte: {byte}");
+                log::debug!("Recovered byte: {byte}");
                 self.framebuf.push(original_byte);
             }
         }
     }
 
     fn send_uart_frame(&mut self) {
-        debug!("Sending frame: {:?}", self.framebuf);
+        log::debug!("Sending frame: {:?}", self.framebuf);
         let _ = self.fsm_frame_tx.send(self.framebuf.clone());
-        let str = String::new();
-    }
-}
-
-trait Hello {
-    fn hello(&self) -> &Self;
-}
-
-trait Hello1 {
-    fn hello(&self) -> &Self;
-}
-
-impl Hello for String {
-    fn hello(&self) -> &Self {
-        log::info!("Hello from string");
-        self
-    }
-}
-
-impl Hello1 for String {
-    fn hello(&self) -> &Self {
-        log::info!("Hello from string");
-        self
     }
 }
