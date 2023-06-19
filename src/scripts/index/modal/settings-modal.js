@@ -64,7 +64,7 @@ function setHubStatus(status) {
     } else if (status === "SerialPortError") {
         hubStatusElement.className = "hub-status serial-port-error";
         hubStatusElement.innerText = "Serial port error";
-    } else if (status === "NoResponseFromHub") {
+    } else if (status === "NoResponseFromHub" || status === "NoDevice") {
         hubStatusElement.className = "hub-status unknown-device";
         hubStatusElement.innerText = "Unknown Device";
     } else {

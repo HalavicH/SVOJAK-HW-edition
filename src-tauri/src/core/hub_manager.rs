@@ -6,9 +6,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use error_stack::{IntoReport, ResultExt, Result, Report};
-use rgb::{RGB8};
 use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
+use crate::hw_comm::api::{HubIoError, ResponseStatus};
+use crate::hw_comm::uart_adapter::hub_protocol_io_handler::HubProtocolIoHandler;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HubManagerError {
@@ -30,7 +31,8 @@ impl Error for HubManagerError {}
 pub struct HubManager {
     pub port_name: String,
     pub port_handle: Option<Box<dyn SerialPort>>,
-    pub baudrate: i32,
+    pub hub_io_handler: Option<HubProtocolIoHandler>,
+    pub baudrate: u32,
     pub radio_channel: i32,
     pub base_timestamp: u32,
     pub allow_answer_timestamp: u32,
@@ -48,6 +50,7 @@ impl Default for HubManager {
             baudrate: 200_000,
             base_timestamp: 0,
             allow_answer_timestamp: 0,
+            hub_io_handler: None,
         }
     }
 }
@@ -55,25 +58,29 @@ impl Default for HubManager {
 // API
 impl HubManager {
     pub fn probe(&mut self, port: &str) -> Result<HubStatus, HubManagerError> {
-        if self.port_handle.is_some() {
-            log::info!("Previous port handle found: {:?}", self.port_handle);
-            self.port_handle = None;
+        if self.hub_io_handler.is_some() {
+            log::info!("Previous HUB io handle found: {:?}. Erasing", self.hub_io_handler.as_ref().unwrap());
+            self.hub_io_handler = None;
         }
 
         log::info!("Try to discover hub at port: {port}");
         self.port_name = port.to_owned();
 
-        let baud_rate = 200_000;
-        let serial_port = serialport::new(port, baud_rate).open()
+        let serial_port = serialport::new(port, self.baudrate).open()
             .into_report()
             .change_context(HubManagerError::SerialPortError)
             .attach_printable(format!("Can't open port {port}"))?;
 
-        self.port_handle = Some(serial_port);
+        self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port));
+
         self.init_timestamp()?;
 
         let result = self.set_hub_timestamp()?;
-        Ok(result)
+        let status = match result {
+            ResponseStatus::Ok => { HubStatus::Detected }
+            _ => { HubStatus::NoDevice }
+        };
+        Ok(status)
     }
 
     pub fn is_alive(&self) -> bool {
@@ -97,45 +104,76 @@ impl HubManager {
     pub fn get_hub_timestamp(&self) -> Result<u32, HubManagerError> {
         log::info!("Pretend getting timestamp");
 
-        if self.last_status == HubStatus::Detected {
-            Ok(100_100_100)
-        } else {
-            Err(Report::new(HubManagerError::NoResponseFromHub))
+        let handle = self.get_hub_handle_or_err()?;
+
+        let response = handle.send_command(HubRequest::GetTimestamp, vec![])
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        if response.status != ResponseStatus::Ok {
+            return Err(Report::new(HubManagerError::InternalError));
         }
+
+        let timestamp = parse_u32_from_vec(&response.payload)
+            .change_context(HubManagerError::InternalError)
+            .attach_printable(format!("Can't parse payload. {:?}", response.payload))?;
+
+        log::info!("Got HUB timestamp: {}", timestamp);
+
+        Ok(timestamp)
     }
 
-    fn set_hub_timestamp(&mut self) -> Result<HubStatus, HubManagerError> {
-        log::info!("Setting timestamp of {}", self.base_timestamp);
+    fn set_hub_timestamp(&self) -> Result<ResponseStatus, HubManagerError> {
+        log::info!("Setting timestamp of 0x{:X?}", self.base_timestamp);
+        let handle = self.get_hub_handle_or_err()?;
 
-        // let response = self.send_command(HubRequest::SetTimestamp(0).to_command(), vec![])?;
-        Ok(HubStatus::Detected)
+        let payload = self.base_timestamp.to_be_bytes().to_vec();
+        let response = handle.send_command(HubRequest::SetTimestamp, payload)
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        Ok(response.status)
+    }
+
+    fn hub_io_to_hub_mgr_error(e: Report<HubIoError>) -> Report<HubManagerError> {
+        match e.current_context() {
+            HubIoError::NoResponseFromHub => {
+                e.change_context(HubManagerError::NoResponseFromHub)
+            }
+            _ => {
+                e.change_context(HubManagerError::InternalError)
+            }
+        }
     }
 
     fn init_timestamp(&mut self) -> Result<(), HubManagerError> {
         Ok(self.base_timestamp = get_epoch_ms()?)
     }
+
+    fn get_hub_handle_or_err(&self) -> Result<&HubProtocolIoHandler, HubManagerError> {
+        let connection = self.hub_io_handler.as_ref()
+            .ok_or(HubManagerError::NotInitializedError)?;
+        Ok(connection)
+    }
 }
 
 pub enum HubRequest {
-    SetTimestamp(u32),
+    SetTimestamp,
     GetTimestamp,
-    SetRadioChannel(u8),
-    PingDevice(u8),
-    SetLightState(u8, RGB8),
-    SetFeedbackLed(u8, bool),
+    SetRadioChannel,
+    PingDevice,
+    SetLightState,
+    SetFeedbackLed,
     ReadEventQueue,
 }
 
 impl HubRequest {
-    #[allow(dead_code)]
-    fn to_command(&self) -> u8 {
+    pub fn value(&self) -> u8 {
         match self {
-            HubRequest::SetTimestamp(_) => 0x80,
+            HubRequest::SetTimestamp => 0x80,
             HubRequest::GetTimestamp => 0x81,
-            HubRequest::SetRadioChannel(_) => 0x82,
-            HubRequest::PingDevice(_) => 0x90,
-            HubRequest::SetLightState(_, _) => 0x91,
-            HubRequest::SetFeedbackLed(_, _) => 0x92,
+            HubRequest::SetRadioChannel => 0x82,
+            HubRequest::PingDevice => 0x90,
+            HubRequest::SetLightState => 0x91,
+            HubRequest::SetFeedbackLed => 0x92,
             HubRequest::ReadEventQueue => 0xA0,
         }
     }
@@ -164,9 +202,33 @@ pub fn get_epoch_ms() -> Result<u32, HubManagerError> {
     Ok(milliseconds_since_base)
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct ParseU32Error {}
+
+impl fmt::Display for ParseU32Error {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.write_str("Failed to parse u32 value:")
+    }
+}
+
+impl Error for ParseU32Error {}
+
+
+fn parse_u32_from_vec(vec: &Vec<u8>) -> Result<u32, ParseU32Error> {
+    if vec.len() != 4 {
+        return Err(ParseU32Error {}).into_report();
+    }
+    let mut result: u32 = 0;
+
+    for &byte in vec {
+        result = (result << 8) | byte as u32;
+    }
+
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
-    use std::ptr::null;
     use std::thread::sleep;
     use std::time::Duration;
     use super::*;
