@@ -23,6 +23,10 @@ pub mod game_pack {
 }
 pub mod hw_comm {
     pub mod api;
+    pub mod uart_adapter {
+        pub mod hub_protocol_io_handler;
+        pub mod byte_handler;
+    }
 }
 pub mod tests {
 }

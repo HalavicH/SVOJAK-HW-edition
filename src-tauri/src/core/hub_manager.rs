@@ -12,6 +12,7 @@ use crate::core::game_entities::HubStatus;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HubManagerError {
+    NotInitializedError,
     SerialPortError,
     NoResponseFromHub,
     InternalError,
@@ -71,16 +72,8 @@ impl HubManager {
         self.port_handle = Some(serial_port);
         self.init_timestamp()?;
 
-        Ok(match self.set_hub_timestamp() {
-            ResponseStatus::Ok => {
-                self.last_status = HubStatus::Detected;
-                HubStatus::Detected
-            }
-            _ => {
-                self.last_status = HubStatus::NoDevice;
-                HubStatus::NoDevice
-            }
-        })
+        let result = self.set_hub_timestamp()?;
+        Ok(result)
     }
 
     pub fn is_alive(&self) -> bool {
@@ -111,9 +104,11 @@ impl HubManager {
         }
     }
 
-    fn set_hub_timestamp(&self) -> ResponseStatus {
-        log::info!("Pretend setting timestamp of {}", self.base_timestamp);
-        ResponseStatus::Ok
+    fn set_hub_timestamp(&mut self) -> Result<HubStatus, HubManagerError> {
+        log::info!("Setting timestamp of {}", self.base_timestamp);
+
+        // let response = self.send_command(HubRequest::SetTimestamp(0).to_command(), vec![])?;
+        Ok(HubStatus::Detected)
     }
 
     fn init_timestamp(&mut self) -> Result<(), HubManagerError> {
@@ -144,14 +139,6 @@ impl HubRequest {
             HubRequest::ReadEventQueue => 0xA0,
         }
     }
-}
-
-pub enum ResponseStatus {
-    Ok = 0x00,
-    // 0x00 command ok
-    InternalError = 0x80,
-    // 0x80 general error
-    DeviceNotResponding = 0x90, // 0x90 device is not responding (probably off or absent)
 }
 
 pub fn get_epoch_ms() -> Result<u32, HubManagerError> {
@@ -233,7 +220,7 @@ mod tests {
     #[test]
     fn test_probe() {
         let mut hub = HubManager::default();
-        hub.probe("/dev/tty.Bluetooth-Incoming-Port");
+        hub.probe("/dev/tty.Bluetooth-Incoming-Port").unwrap();
         assert_eq!(hub.base_timestamp, get_epoch_ms().unwrap());
 
         sleep(Duration::from_secs(1));
