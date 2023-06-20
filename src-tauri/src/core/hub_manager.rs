@@ -6,6 +6,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use error_stack::{IntoReport, ResultExt, Result, Report};
+use rgb::RGB8;
 use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
 use crate::hw_comm::api::{HubIoError, ResponseStatus};
@@ -106,7 +107,7 @@ impl HubManager {
 
         let handle = self.get_hub_handle_or_err()?;
 
-        let response = handle.send_command(HubRequest::GetTimestamp, vec![])
+        let response = handle.send_command(HubRequest::GetTimestamp)
             .map_err(Self::hub_io_to_hub_mgr_error)?;
 
         if response.status != ResponseStatus::Ok {
@@ -126,8 +127,7 @@ impl HubManager {
         log::info!("Setting timestamp of 0x{:X?}", self.base_timestamp);
         let handle = self.get_hub_handle_or_err()?;
 
-        let payload = self.base_timestamp.to_be_bytes().to_vec();
-        let response = handle.send_command(HubRequest::SetTimestamp, payload)
+        let response = handle.send_command(HubRequest::SetTimestamp(self.base_timestamp))
             .map_err(Self::hub_io_to_hub_mgr_error)?;
 
         Ok(response.status)
@@ -156,25 +156,40 @@ impl HubManager {
 }
 
 pub enum HubRequest {
-    SetTimestamp,
+    SetTimestamp(u32),
     GetTimestamp,
-    SetRadioChannel,
-    PingDevice,
-    SetLightState,
-    SetFeedbackLed,
+    SetHubRadioChannel(u8),
+    SetTermRadioChannel(u8, u8),
+    PingDevice(u8),
+    SetLightColor(u8, RGB8),
+    SetFeedbackLed(u8, bool),
     ReadEventQueue,
 }
 
 impl HubRequest {
-    pub fn value(&self) -> u8 {
+    pub fn cmd(&self) -> u8 {
         match self {
-            HubRequest::SetTimestamp => 0x80,
+            HubRequest::SetTimestamp(_) => 0x80,
             HubRequest::GetTimestamp => 0x81,
-            HubRequest::SetRadioChannel => 0x82,
-            HubRequest::PingDevice => 0x90,
-            HubRequest::SetLightState => 0x91,
-            HubRequest::SetFeedbackLed => 0x92,
+            HubRequest::SetHubRadioChannel(_) => 0x82,
+            HubRequest::SetTermRadioChannel(_, _) => 0x82,
+            HubRequest::PingDevice(_) => 0x90,
+            HubRequest::SetLightColor(_, _) => 0x91,
+            HubRequest::SetFeedbackLed(_, _) => 0x92,
             HubRequest::ReadEventQueue => 0xA0,
+        }
+    }
+
+    pub fn payload(&self) -> Vec<u8> {
+        match self {
+            HubRequest::SetTimestamp(timestamp) => timestamp.to_be_bytes().to_vec(),
+            HubRequest::GetTimestamp => vec![],
+            HubRequest::SetHubRadioChannel(channel_num) => vec![*channel_num],
+            HubRequest::SetTermRadioChannel(term_id, channel_num) => vec![*term_id, *channel_num],
+            HubRequest::PingDevice(term_id) => vec![*term_id],
+            HubRequest::SetLightColor(term_id, color) => vec![*term_id, color.r, color.g, color.b],
+            HubRequest::SetFeedbackLed(term_id, state) => vec![*term_id, *state as u8],
+            HubRequest::ReadEventQueue => vec![],
         }
     }
 }

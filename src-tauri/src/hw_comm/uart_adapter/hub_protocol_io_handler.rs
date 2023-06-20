@@ -54,8 +54,8 @@ impl HubProtocolIoHandler {
     }
 
     // Accept HubRequest -> HubResponse. Convert internally
-    pub fn send_command(&self, cmd: HubRequest, payload: Vec<u8>) -> Result<UartResponse, HubIoError> {
-        let frame = Self::assemble_frame(cmd.value(), payload);
+    pub fn send_command(&self, request: HubRequest) -> Result<UartResponse, HubIoError> {
+        let frame = Self::assemble_frame(request.cmd(), request.payload());
         let stuffed_frame = Self::stuff_bytes(&frame);
 
         let mut port_handle = self.port_handle.lock().unwrap();
@@ -143,3 +143,17 @@ mod tests {
         assert_eq!(result, goal);
     }
 }
+
+// send_request():
+//     uart.write()  // <-- same uart handle
+//     let msg_from_reader = rx.recv();
+//
+// reader_thread():
+//     loop {
+//         let byte = uart.read_byte(); // <-- same uart handle
+//         if byte == END_BYTE:
+//             tx.send(msg_from_reader)
+//         else:
+//             msg_from_reader.push(byte)
+//     }
+//     ...
