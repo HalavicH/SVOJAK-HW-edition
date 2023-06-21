@@ -9,7 +9,7 @@ pub enum ByteHandlerState {
 }
 
 pub const START_BYTE: u8 = 0xC0;
-pub const END_BYTE: u8 = 0xCF;
+pub const STOP_BYTE: u8 = 0xCF;
 const ESCAPE_BYTE: u8 = 0xC1;
 const ESCAPE_MASK: u8 = 0xC0;
 
@@ -55,7 +55,7 @@ impl ByteHandler {
                 self.state = ByteHandlerState::Byte;
                 log::debug!("Got start byte. Set state: {:?}", self.state);
             }
-            END_BYTE => {
+            STOP_BYTE => {
                 self.state = ByteHandlerState::Byte;
                 log::debug!("Got end byte. Set state: {:?}", self.state);
 
