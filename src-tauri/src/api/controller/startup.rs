@@ -40,11 +40,15 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
 pub fn discover_terminals(channel_id: i32) -> Result<Vec<u8>, HubManagerError> {
     log::info!("Got channel id: {channel_id}");
 
-    if !game().hub.is_alive() {
+    if !game().hub.is_hub_alive() {
         return Err(HubManagerError::NoResponseFromHub);
     }
 
-    Ok(game().hub.discover_terminals(channel_id))
+    game().hub.discover_terminals(channel_id)
+        .map_err(|e|{
+            log::error!("{:#?}", e);
+            e.current_context().clone()
+        })
 }
 
 /// Saves configuration to game context
