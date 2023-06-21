@@ -22,11 +22,6 @@ impl fmt::Display for HubIoError {
 
 impl Error for HubIoError {}
 
-pub enum TerminalButtonState {
-    Pressed,
-    Released,
-}
-
 #[derive(Debug)]
 pub struct UartResponse {
     pub id: u8,
@@ -102,6 +97,14 @@ pub enum FramePositions {
     Payload = 4,
 }
 
-// struct HubConnection {
-//
-// }
+pub struct TermEvent {
+    pub term_id: u8,
+    pub timestamp: u32,
+    pub state: TermButtonState,
+}
+
+pub enum TermButtonState {
+    Pressed,
+    Released,
+}
+

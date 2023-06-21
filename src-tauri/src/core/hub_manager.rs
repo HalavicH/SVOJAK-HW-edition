@@ -9,7 +9,7 @@ use error_stack::{IntoReport, ResultExt, Result, Report};
 use rgb::RGB8;
 use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
-use crate::hw_comm::api::{HubIoError, ResponseStatus};
+use crate::hw_comm::api::{HubIoError, ResponseStatus, TermEvent};
 use crate::hw_comm::uart_adapter::hub_protocol_io_handler::HubProtocolIoHandler;
 
 #[derive(Debug, Clone, Serialize)]
@@ -17,6 +17,7 @@ pub enum HubManagerError {
     NotInitializedError,
     SerialPortError,
     NoResponseFromHub,
+    NoResponseFromTerminal,
     InternalError,
 }
 
@@ -73,18 +74,12 @@ impl HubManager {
             .attach_printable(format!("Can't open port {port}"))?;
 
         self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port));
-
         self.init_timestamp()?;
-
-        let result = self.set_hub_timestamp()?;
-        let status = match result {
-            ResponseStatus::Ok => { HubStatus::Detected }
-            _ => { HubStatus::NoDevice }
-        };
-        Ok(status)
+        self.set_hub_timestamp(self.base_timestamp)?;
+        Ok(HubStatus::Detected)
     }
 
-    pub fn is_alive(&self) -> bool {
+    pub fn is_hub_alive(&self) -> bool {
         self.get_hub_timestamp().is_ok()
     }
 
@@ -92,19 +87,30 @@ impl HubManager {
         Ok(get_epoch_ms()? - self.base_timestamp)
     }
 
-    pub fn discover_terminals(&mut self, radio_channel: i32) -> Vec<u8> {
+    pub fn discover_terminals(&mut self, radio_channel: i32) -> Result<Vec<u8>, HubManagerError> {
         log::info!("Pretend terminals discovery at: {radio_channel}");
+        let mut terminals = vec![];
 
         self.radio_channel = radio_channel;
-        vec![1, 2, 3, 4]
+        self.set_hub_radio_channel(radio_channel as u8)?;
+
+        // TODO: Check radio channel
+
+        for term_id in 1..128 {
+            if self.ping_terminal(term_id).is_ok() {
+                log::debug!("Terminal #{} is alive", term_id);
+                terminals.push(term_id);
+            }
+        }
+
+        Ok(terminals)
     }
 
     /// ### get hub timestamp
     /// #### response payload
     /// `[tid] [status] [response length] [response payload (timestamp)]`
     pub fn get_hub_timestamp(&self) -> Result<u32, HubManagerError> {
-        log::info!("Pretend getting timestamp");
-
+        log::info!("Reading current HUB base timestamp");
         let handle = self.get_hub_handle_or_err()?;
 
         let response = handle.send_command(HubRequest::GetTimestamp)
@@ -123,14 +129,83 @@ impl HubManager {
         Ok(timestamp)
     }
 
-    fn set_hub_timestamp(&self) -> Result<ResponseStatus, HubManagerError> {
-        log::info!("Setting timestamp of 0x{:X?}", self.base_timestamp);
+    fn set_hub_timestamp(&self, timestamp: u32) -> Result<(), HubManagerError> {
+        log::info!("Setting timestamp of 0x{:X?}", timestamp);
         let handle = self.get_hub_handle_or_err()?;
 
-        let response = handle.send_command(HubRequest::SetTimestamp(self.base_timestamp))
+        let request = HubRequest::SetTimestamp(timestamp);
+        let response = handle.send_command(request)
             .map_err(Self::hub_io_to_hub_mgr_error)?;
 
-        Ok(response.status)
+        map_status_to_result(response.status)
+    }
+
+    fn set_hub_radio_channel(&self, channel_num: u8) -> Result<(), HubManagerError> {
+        log::info!("Setting hub radio channel to: {}", channel_num);
+        let handle = self.get_hub_handle_or_err()?;
+
+        let request = HubRequest::SetHubRadioChannel(channel_num);
+        let response = handle.send_command(request)
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        map_status_to_result(response.status)
+    }
+
+    fn set_term_radio_channel(&self, term_id: u8, channel_num: u8) -> Result<(), HubManagerError> {
+        log::info!("Setting terminal radio channel to: {} for {}", channel_num, term_id);
+        let handle = self.get_hub_handle_or_err()?;
+
+        let request = HubRequest::SetTermRadioChannel(term_id, channel_num);
+        let response = handle.send_command(request)
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        map_status_to_result(response.status)
+    }
+
+    fn ping_terminal(&self, term_id: u8) -> Result<(), HubManagerError> {
+        log::info!("Pinging terminal with id: #{}", term_id);
+        let handle = self.get_hub_handle_or_err()?;
+
+        let request = HubRequest::PingDevice(term_id);
+        let response = handle.send_command(request)
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        map_status_to_result(response.status)
+    }
+
+    fn set_term_light_color(&self, term_id: u8, color: RGB8) -> Result<(), HubManagerError> {
+        log::info!("Setting terminal #{} light color to: {:?}", term_id, color);
+        let handle = self.get_hub_handle_or_err()?;
+
+        let request = HubRequest::SetLightColor(term_id, color);
+        let response = handle.send_command(request)
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        map_status_to_result(response.status)
+    }
+
+    fn set_feedback_led(&self, term_id: u8, state: bool) -> Result<(), HubManagerError> {
+        log::info!("Setting terminal #{} feedback light to: {}", term_id, state);
+        let handle = self.get_hub_handle_or_err()?;
+
+        let request = HubRequest::SetFeedbackLed(term_id, state);
+        let response = handle.send_command(request)
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        map_status_to_result(response.status)
+    }
+
+    fn read_event_queue(&self) -> Result<Vec<TermEvent>, HubManagerError> {
+        log::info!("Reading event queue");
+        let handle = self.get_hub_handle_or_err()?;
+
+        let request = HubRequest::ReadEventQueue;
+        let response = handle.send_command(request)
+            .map_err(Self::hub_io_to_hub_mgr_error)?;
+
+        map_status_to_result(response.status)?;
+
+        Ok(vec![])
     }
 
     fn hub_io_to_hub_mgr_error(e: Report<HubIoError>) -> Report<HubManagerError> {
@@ -138,9 +213,7 @@ impl HubManager {
             HubIoError::NoResponseFromHub => {
                 e.change_context(HubManagerError::NoResponseFromHub)
             }
-            _ => {
-                e.change_context(HubManagerError::InternalError)
-            }
+            _ => { e.change_context(HubManagerError::InternalError) }
         }
     }
 
@@ -152,6 +225,24 @@ impl HubManager {
         let connection = self.hub_io_handler.as_ref()
             .ok_or(HubManagerError::NotInitializedError)?;
         Ok(connection)
+    }
+}
+
+// NotInitializedError,
+// SerialPortError,
+// NoResponseFromHub,
+// InternalError,
+
+fn map_status_to_result(status: ResponseStatus) -> Result<(), HubManagerError> {
+    match status {
+        ResponseStatus::Ok => {
+            Ok(())}
+        ResponseStatus::TerminalNotResponding => {
+            Err(Report::new(HubManagerError::NoResponseFromTerminal))
+        }
+        _ => {
+            Err(Report::new(HubManagerError::InternalError))
+        }
     }
 }
 
