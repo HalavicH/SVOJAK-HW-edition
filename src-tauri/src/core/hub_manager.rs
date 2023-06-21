@@ -32,7 +32,7 @@ impl Error for HubManagerError {}
 pub struct HubManager {
     pub port_name: String,
     pub port_handle: Option<Box<dyn SerialPort>>,
-    pub hub_io_handler: Option<HubProtocolIoHandler>,
+    pub hub_io_handler: Option<HubProtocolIoHandler<dyn SerialPort>>,
     pub baudrate: u32,
     pub radio_channel: i32,
     pub base_timestamp: u32,
@@ -148,7 +148,7 @@ impl HubManager {
         Ok(self.base_timestamp = get_epoch_ms()?)
     }
 
-    fn get_hub_handle_or_err(&self) -> Result<&HubProtocolIoHandler, HubManagerError> {
+    fn get_hub_handle_or_err(&self) -> Result<&HubProtocolIoHandler<dyn SerialPort>, HubManagerError> {
         let connection = self.hub_io_handler.as_ref()
             .ok_or(HubManagerError::NotInitializedError)?;
         Ok(connection)
