@@ -45,7 +45,7 @@ impl From<u8> for ResponseStatus {
             0x00 => ResponseStatus::Ok,
             0x80 => ResponseStatus::GenericError,
             0x90 => ResponseStatus::TerminalNotResponding,
-            0xFF | _ => ResponseStatus::UnknownError,
+            | _ => ResponseStatus::UnknownError,
         }
     }
 }
@@ -134,7 +134,7 @@ pub enum MyParseError {
 
 impl fmt::Display for MyParseError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.write_str(&format!("Invalid TermButtonState value: {}", self))
+        fmt.write_str("Invalid TermButtonState value")
     }
 }
 

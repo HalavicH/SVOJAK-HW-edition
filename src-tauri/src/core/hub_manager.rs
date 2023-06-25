@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 use std::default::Default;
 use std::error::Error;
 use std::fmt;
@@ -246,7 +246,8 @@ impl HubManager {
     }
 
     fn init_timestamp(&mut self) -> Result<(), HubManagerError> {
-        Ok(self.base_timestamp = get_epoch_ms()?)
+        self.base_timestamp = get_epoch_ms()?;
+        Ok(())
     }
 
     fn get_hub_handle_or_err(&self) -> Result<&HubProtocolIoHandler, HubManagerError> {
@@ -364,7 +365,10 @@ mod tests {
 
         // Check the result
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), expected_milliseconds_since_base);
+        let execution_offset = 50;
+        let timestamp = result.unwrap();
+        assert!(timestamp > expected_milliseconds_since_base &&
+            timestamp < (expected_milliseconds_since_base + execution_offset));
     }
 
     #[test]

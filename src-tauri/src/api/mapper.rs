@@ -64,7 +64,7 @@ pub fn map_package_to_pack_info_dto(package: &PackContent) -> PackInfoDto {
     let topic_list: Vec<String> = package
         .rounds
         .iter()
-        .flat_map(|round| round.themes.iter().map(|(_, theme)| theme.name.clone()))
+        .flat_map(|round| round.themes.values().map(|theme| theme.name.clone()))
         .collect();
 
     PackInfoDto {
@@ -131,9 +131,7 @@ pub fn map_round_to_dto(round: &Round) -> RoundDto {
     };
 
     let round_topics: Vec<TopicDto> = round
-        .themes
-        .iter()
-        .map(|(_, theme)| {
+        .themes.values().map(|theme| {
             log::info!("{theme:#?}");
             let mut game_questions: Vec<Question> = theme.questions
                 .values().cloned().collect::<Vec<Question>>();
