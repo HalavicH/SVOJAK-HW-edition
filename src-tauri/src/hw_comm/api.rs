@@ -90,12 +90,12 @@ impl ProtocolVersion {
     }
 }
 
-pub enum FramePositions {
-    ProtocolVersion = 0,
-    Tid = 1,
-    Command = 2,
-    PayloadLen = 3,
-    Payload = 4,
+pub mod hub_frame_pos {
+    pub const PROTOCOL_VERSION: usize = 0;
+    pub const TID: usize = 1;
+    pub const COMMAND_OR_STATUS: usize = 2;
+    pub const PAYLOAD_LEN: usize = 3;
+    pub const PAYLOAD: usize = 4;
 }
 
 pub struct TermEvent {
