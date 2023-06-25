@@ -9,7 +9,7 @@ use error_stack::{IntoReport, ResultExt, Result, Report};
 use rgb::RGB8;
 use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
-use crate::hw_comm::api::{HubIoError, ResponseStatus, TermEvent};
+use crate::hw_comm::api::{HubIoError, ResponseStatus, TermButtonState, TermEvent};
 use crate::hw_comm::uart_adapter::hub_protocol_io_handler::HubProtocolIoHandler;
 
 #[derive(Debug, Clone, Serialize)]
@@ -129,7 +129,7 @@ impl HubManager {
         Ok(timestamp)
     }
 
-    fn set_hub_timestamp(&self, timestamp: u32) -> Result<(), HubManagerError> {
+    pub fn set_hub_timestamp(&self, timestamp: u32) -> Result<(), HubManagerError> {
         log::info!("Setting timestamp of 0x{:X?}", timestamp);
         let handle = self.get_hub_handle_or_err()?;
 
@@ -140,7 +140,7 @@ impl HubManager {
         map_status_to_result(response.status)
     }
 
-    fn set_hub_radio_channel(&self, channel_num: u8) -> Result<(), HubManagerError> {
+    pub fn set_hub_radio_channel(&self, channel_num: u8) -> Result<(), HubManagerError> {
         log::info!("Setting hub radio channel to: {}", channel_num);
         let handle = self.get_hub_handle_or_err()?;
 
@@ -151,7 +151,7 @@ impl HubManager {
         map_status_to_result(response.status)
     }
 
-    fn set_term_radio_channel(&self, term_id: u8, channel_num: u8) -> Result<(), HubManagerError> {
+    pub fn set_term_radio_channel(&self, term_id: u8, channel_num: u8) -> Result<(), HubManagerError> {
         log::info!("Setting terminal radio channel to: {} for {}", channel_num, term_id);
         let handle = self.get_hub_handle_or_err()?;
 
@@ -162,7 +162,7 @@ impl HubManager {
         map_status_to_result(response.status)
     }
 
-    fn ping_terminal(&self, term_id: u8) -> Result<(), HubManagerError> {
+    pub fn ping_terminal(&self, term_id: u8) -> Result<(), HubManagerError> {
         log::info!("Pinging terminal with id: #{}", term_id);
         let handle = self.get_hub_handle_or_err()?;
 
@@ -173,7 +173,7 @@ impl HubManager {
         map_status_to_result(response.status)
     }
 
-    fn set_term_light_color(&self, term_id: u8, color: RGB8) -> Result<(), HubManagerError> {
+    pub fn set_term_light_color(&self, term_id: u8, color: RGB8) -> Result<(), HubManagerError> {
         log::info!("Setting terminal #{} light color to: {:?}", term_id, color);
         let handle = self.get_hub_handle_or_err()?;
 
@@ -184,18 +184,18 @@ impl HubManager {
         map_status_to_result(response.status)
     }
 
-    fn set_feedback_led(&self, term_id: u8, state: bool) -> Result<(), HubManagerError> {
-        log::info!("Setting terminal #{} feedback light to: {}", term_id, state);
+    pub fn set_term_feedback_led(&self, term_id: u8, state: &TermButtonState) -> Result<(), HubManagerError> {
+        log::info!("Setting terminal #{} feedback light to: {:?}", term_id, state);
         let handle = self.get_hub_handle_or_err()?;
 
-        let request = HubRequest::SetFeedbackLed(term_id, state);
+        let request = HubRequest::SetFeedbackLed(term_id, state.to_bool());
         let response = handle.send_command(request)
             .map_err(Self::hub_io_to_hub_mgr_error)?;
 
         map_status_to_result(response.status)
     }
 
-    fn read_event_queue(&self) -> Result<Vec<TermEvent>, HubManagerError> {
+    pub fn read_event_queue(&self) -> Result<Vec<TermEvent>, HubManagerError> {
         log::info!("Reading event queue");
         let handle = self.get_hub_handle_or_err()?;
 
@@ -205,7 +205,29 @@ impl HubManager {
 
         map_status_to_result(response.status)?;
 
-        Ok(vec![])
+        let mut events = vec![];
+        for chunk in response.payload.chunks_exact(std::mem::size_of::<TermEvent>()) {
+            // Convert each chunk of bytes to a `TermEvent`
+            let term_id = chunk[0];
+            let timestamp = u32::from_ne_bytes(chunk[1..5].try_into().unwrap());
+            let state_byte = chunk[5];
+            let state = TermButtonState::try_from(state_byte)
+                .into_report()
+                .change_context(HubManagerError::InternalError)
+                .attach_printable(format!("Can't parse TermButtonState for terminal {}", term_id))?;
+
+            // Create a `TermEvent` struct
+            let event = TermEvent {
+                term_id,
+                timestamp,
+                state,
+            };
+
+            // Add the `TermEvent` to the events vector
+            events.push(event);
+        }
+
+        Ok(events)
     }
 
     fn hub_io_to_hub_mgr_error(e: Report<HubIoError>) -> Report<HubManagerError> {
