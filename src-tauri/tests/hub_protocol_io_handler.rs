@@ -3,11 +3,9 @@ use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
 use serialport::{SerialPort, TTYPort};
-use svoyak_tauri_app::core::hub_manager::HubRequest;
 use svoyak_tauri_app::core::hub_manager::HubRequest::*;
 use svoyak_tauri_app::hw_comm::api::{HubResponse, ResponseStatus};
-use svoyak_tauri_app::hw_comm::api::ProtocolVersion::Version;
-use svoyak_tauri_app::hw_comm::uart_adapter::byte_handler::{ByteHandler, START_BYTE};
+use svoyak_tauri_app::hw_comm::uart_adapter::byte_handler::{ByteHandler};
 use svoyak_tauri_app::hw_comm::uart_adapter::hub_protocol_io_handler::{format_bytes_hex, HubProtocolIoHandler, stuff_bytes};
 
 const MOCK_ID: u8 = 6;
@@ -73,7 +71,7 @@ fn test_send_request_timeout() {
 
 #[test_log::test]
 fn test_get_timestamp_command() {
-    let (host_handle, mut device_handle) = prepare_ports();
+    let (host_handle, device_handle) = prepare_ports();
     let hub_handler: HubProtocolIoHandler = HubProtocolIoHandler::new(device_handle);
 
     start_hub_mock(Box::new(host_handle));
@@ -93,7 +91,7 @@ fn test_get_timestamp_command() {
 
 #[test_log::test]
 fn test_get_events() {
-    let (host_handle, mut device_handle) = prepare_ports();
+    let (host_handle, device_handle) = prepare_ports();
     let hub_handler: HubProtocolIoHandler = HubProtocolIoHandler::new(device_handle);
 
     start_hub_mock(Box::new(host_handle));
@@ -113,7 +111,7 @@ fn test_get_events() {
 
 #[test_log::test]
 fn test_ping_device() {
-    let (host_handle, mut device_handle) = prepare_ports();
+    let (host_handle, device_handle) = prepare_ports();
     let hub_handler: HubProtocolIoHandler = HubProtocolIoHandler::new(device_handle);
 
     start_hub_mock(Box::new(host_handle));
@@ -220,8 +218,6 @@ fn process_request_frame(raw_frame: Vec<u8>) -> Vec<u8> {
 
 #[allow(non_snake_case)]
 mod test {
-    use svoyak_tauri_app::hw_comm::api::ProtocolVersion::Version;
-    use svoyak_tauri_app::hw_comm::uart_adapter::byte_handler::START_BYTE;
     use crate::{MOCK_EVENTS, MOCK_TIMESTAMP, process_request_frame};
 
     #[test_log::test]
