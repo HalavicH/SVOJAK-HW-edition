@@ -12,7 +12,7 @@ use crate::core::game_entities::HubStatus;
 use crate::hw_comm::api::{HubIoError, ResponseStatus, TermButtonState, TermEvent};
 use crate::hw_comm::uart_adapter::hub_protocol_io_handler::HubProtocolIoHandler;
 
-const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100_000);
+const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100);
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HubManagerError {
