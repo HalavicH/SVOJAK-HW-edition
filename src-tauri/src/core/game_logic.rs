@@ -9,7 +9,6 @@ use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
 use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
 use crate::core::hub_manager::{get_epoch_ms, HubManager, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
-use crate::hw_comm::api::TermButtonState;
 
 const EVT_POLLING_INTERVAL_MS: u64 = 100;
 
