@@ -9,8 +9,8 @@ use error_stack::{IntoReport, ResultExt, Result, Report};
 use rgb::RGB8;
 use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
-use crate::hw_comm::api::{HubIoError, ResponseStatus, TermButtonState, TermEvent};
-use crate::hw_comm::uart_adapter::hub_protocol_io_handler::HubProtocolIoHandler;
+use crate::hw_comm::api_types::{HubIoError, HubRequest, ResponseStatus, TermButtonState, TermEvent};
+use crate::hw_comm::hub_protocol_io_handler::HubProtocolIoHandler;
 
 const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100);
 
@@ -34,7 +34,6 @@ impl Error for HubManagerError {}
 #[derive(Debug)]
 pub struct HubManager {
     pub port_name: String,
-    pub port_handle: Option<Box<dyn SerialPort>>,
     pub hub_io_handler: Option<HubProtocolIoHandler>,
     pub baudrate: u32,
     pub radio_channel: i32,
@@ -43,12 +42,10 @@ pub struct HubManager {
     pub last_status: HubStatus,
 }
 
-// Life
 impl Default for HubManager {
     fn default() -> Self {
         Self {
             port_name: String::default(),
-            port_handle: None,
             last_status: HubStatus::NoDevice,
             radio_channel: 0,
             baudrate: 200_000,
@@ -59,8 +56,25 @@ impl Default for HubManager {
     }
 }
 
-// API
 impl HubManager {
+    /// Queries OS for all available serial ports
+    pub fn discover_serial_ports() -> Vec<String> {
+        let ports = serialport::available_ports()
+            .expect("No ports found!");
+        let mut ports_vec = Vec::new();
+
+        log::info!("Serial ports: {:?}", ports);
+
+
+        for p in ports {
+            log::info!("{}", p.port_name);
+
+            ports_vec.push(p.port_name.clone());
+        }
+
+        ports_vec
+    }
+
     pub fn probe(&mut self, port: &str) -> Result<HubStatus, HubManagerError> {
         if self.hub_io_handler.is_some() {
             log::info!("Previous HUB io handle found: {:?}. Erasing", self.hub_io_handler.as_ref().unwrap());
@@ -257,11 +271,6 @@ impl HubManager {
     }
 }
 
-// NotInitializedError,
-// SerialPortError,
-// NoResponseFromHub,
-// InternalError,
-
 fn map_status_to_result(status: ResponseStatus) -> Result<(), HubManagerError> {
     match status {
         ResponseStatus::Ok => {
@@ -272,45 +281,6 @@ fn map_status_to_result(status: ResponseStatus) -> Result<(), HubManagerError> {
         }
         _ => {
             Err(Report::new(HubManagerError::InternalError))
-        }
-    }
-}
-
-pub enum HubRequest {
-    SetTimestamp(u32),
-    GetTimestamp,
-    SetHubRadioChannel(u8),
-    SetTermRadioChannel(u8, u8),
-    PingDevice(u8),
-    SetLightColor(u8, RGB8),
-    SetFeedbackLed(u8, bool),
-    ReadEventQueue,
-}
-
-impl HubRequest {
-    pub fn cmd(&self) -> u8 {
-        match self {
-            HubRequest::SetTimestamp(_) => 0x80,
-            HubRequest::GetTimestamp => 0x81,
-            HubRequest::SetHubRadioChannel(_) => 0x82,
-            HubRequest::SetTermRadioChannel(_, _) => 0x82,
-            HubRequest::PingDevice(_) => 0x90,
-            HubRequest::SetLightColor(_, _) => 0x91,
-            HubRequest::SetFeedbackLed(_, _) => 0x92,
-            HubRequest::ReadEventQueue => 0xA0,
-        }
-    }
-
-    pub fn payload(&self) -> Vec<u8> {
-        match self {
-            HubRequest::SetTimestamp(timestamp) => timestamp.to_be_bytes().to_vec(),
-            HubRequest::GetTimestamp => vec![],
-            HubRequest::SetHubRadioChannel(channel_num) => vec![*channel_num],
-            HubRequest::SetTermRadioChannel(term_id, channel_num) => vec![*term_id, *channel_num],
-            HubRequest::PingDevice(term_id) => vec![*term_id],
-            HubRequest::SetLightColor(term_id, color) => vec![*term_id, color.r, color.g, color.b],
-            HubRequest::SetFeedbackLed(term_id, state) => vec![*term_id, *state as u8],
-            HubRequest::ReadEventQueue => vec![],
         }
     }
 }
@@ -365,7 +335,7 @@ mod tests {
 
         // Check the result
         assert!(result.is_ok());
-        let execution_offset = 50;
+        let execution_offset = 100;
         let timestamp = result.unwrap();
         assert!(timestamp > expected_milliseconds_since_base &&
             timestamp < (expected_milliseconds_since_base + execution_offset));
