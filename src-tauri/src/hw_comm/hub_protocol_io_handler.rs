@@ -1,6 +1,8 @@
+use std::default::Default;
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::thread::JoinHandle;
 use std::time::Duration;
 
 use error_stack::{IntoReport, Report, Result, ResultExt};
@@ -9,18 +11,21 @@ use serialport::SerialPort;
 use crate::hw_comm::api_types::{hub_frame_pos, HubIoError, HubRequest, HubResponse, ResponseStatus};
 use crate::hw_comm::api_types::ProtocolVersion::Version;
 use crate::hw_comm::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
+use crate::hw_comm::hub_mock::HubMock;
 
 #[derive(Debug)]
 pub struct HubProtocolIoHandler {
     fsm_byte_handler: Arc<Mutex<ByteHandler>>,
     port_handle: Arc<Mutex<Box<dyn SerialPort>>>,
+    hub_mock_handle: Option<JoinHandle<()>>,
 }
 
 impl HubProtocolIoHandler {
-    pub fn new(port_handle: Box<dyn SerialPort>) -> Self {
+    pub fn new(port_handle: Box<dyn SerialPort>, hub_mock_handle: Option<JoinHandle<()>>) -> Self {
         Self {
             port_handle: Arc::new(Mutex::new(port_handle)),
             fsm_byte_handler: Arc::new(Mutex::new(ByteHandler::default())),
+            hub_mock_handle
         }
     }
 
@@ -60,7 +65,7 @@ impl HubProtocolIoHandler {
         thread::sleep(Duration::from_millis(10));
 
         while byte[0] != START_BYTE {
-            println!("Byte: {}", byte[0]);
+            log::trace!("Byte: {}", byte[0]);
             port_handle.read_exact(&mut byte)
                 .into_report().change_context(HubIoError::NoResponseFromHub)
                 .attach_printable("Probably timeout")?;
