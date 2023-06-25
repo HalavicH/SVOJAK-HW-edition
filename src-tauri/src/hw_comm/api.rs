@@ -1,7 +1,6 @@
 use serde::Serialize;
 use std::error::Error;
 use std::fmt;
-use std::string::ParseError;
 
 // Data definition
 pub type DevId = u8;
@@ -12,6 +11,7 @@ pub enum HubIoError {
     NotInitializedError,
     SerialPortError,
     NoResponseFromHub,
+    CorruptedResponseFromHub,
     InternalError,
 }
 
@@ -23,7 +23,7 @@ impl fmt::Display for HubIoError {
 
 impl Error for HubIoError {}
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct HubResponse {
     pub id: u8,
     pub status: ResponseStatus,
@@ -36,7 +36,7 @@ pub enum ResponseStatus {
     Ok = 0x00,
     GenericError = 0x80,
     TerminalNotResponding = 0x90,
-    UnknownError,
+    UnknownError = 0xFF,
 }
 
 impl From<u8> for ResponseStatus {
@@ -45,7 +45,7 @@ impl From<u8> for ResponseStatus {
             0x00 => ResponseStatus::Ok,
             0x80 => ResponseStatus::GenericError,
             0x90 => ResponseStatus::TerminalNotResponding,
-            _ => ResponseStatus::UnknownError,
+            0xFF | _ => ResponseStatus::UnknownError,
         }
     }
 }
@@ -81,7 +81,7 @@ pub fn discover_serial_ports() -> Vec<String> {
 }
 
 pub enum ProtocolVersion {
-    V3 = 0x03,
+    Version = 0x03,
 }
 
 impl ProtocolVersion {
@@ -151,3 +151,4 @@ impl TryFrom<u8> for TermButtonState {
         }
     }
 }
+
