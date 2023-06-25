@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use crate::hw_comm::hub_protocol_io_handler::format_bytes_hex;
 
 pub type RawFrame = Vec<u8>;
 
@@ -35,16 +36,16 @@ impl ByteHandler {
     }
 
     pub fn handle_byte(&mut self, byte: u8) {
-        log::debug!("Received byte: {byte:#X}");
+        log::trace!("Received byte: {byte:#X}");
         match self.state {
             ByteHandlerState::Byte => {
                 self.handle_clean_byte(byte);
             }
             ByteHandlerState::Escape => {
                 self.state = ByteHandlerState::Byte;
-                log::debug!("!!! During escape state. Set state: {:?}", self.state);
+                log::trace!("!!! During escape state. Set state: {:?}", self.state);
                 let original_byte = byte | ESCAPE_MASK;
-                log::debug!("Recovered byte: {byte}");
+                log::trace!("Recovered byte: {byte}");
                 self.framebuf.push(original_byte);
             }
         }
@@ -54,17 +55,17 @@ impl ByteHandler {
         match byte {
             ESCAPE_BYTE => {
                 self.state = ByteHandlerState::Escape;
-                log::debug!("Got escape byte. Set state: {:?}", self.state);
+                log::trace!("Got escape byte. Set state: {:?}", self.state);
             }
             START_BYTE => {
                 self.state = ByteHandlerState::Byte;
-                log::debug!("Got start byte. Set state: {:?}", self.state);
+                log::trace!("Got start byte. Set state: {:?}", self.state);
                 self.framebuf.clear();
             }
             STOP_BYTE => {
                 self.state = ByteHandlerState::Byte;
-                log::debug!("Got end byte. Set state: {:?}", self.state);
-                log::debug!("Resulting frame: {:?}", self.framebuf);
+                log::trace!("Got end byte. Set state: {:?}", self.state);
+                log::trace!("Resulting frame: {:?}", format_bytes_hex(self.framebuf.as_slice()));
             }
             _ => self.framebuf.push(byte),
         }
