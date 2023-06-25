@@ -1,8 +1,8 @@
 use crate::api::dto::{ConfigDto, QuestionDataDto, QuestionSceneDto, RoundDto, TopicDto};
 use crate::core::game_entities::{game, Player};
-use crate::hw_comm::api::discover_serial_ports;
 use std::collections::HashMap;
 use crate::api::dto::{PackInfoDto, PlayerGameDto, QuestionDto};
+use crate::core::hub_manager::HubManager;
 use crate::game_pack::pack_content_entities::{PackContent, Question, Round, RoundType};
 
 use super::dto::PlayerSetupDto;
@@ -11,7 +11,7 @@ use super::dto::PlayerSetupDto;
 pub fn get_config_dto() -> ConfigDto {
     let context = game();
     ConfigDto {
-        available_ports: discover_serial_ports(),
+        available_ports: HubManager::discover_serial_ports(),
         hub_port: context.hub.port_name.clone(),
         radio_channel: context.hub.radio_channel,
         players: context
