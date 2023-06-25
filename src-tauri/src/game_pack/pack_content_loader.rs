@@ -33,7 +33,7 @@ pub fn load_pack_content(pack_location_data: &PackLocationData) -> Result<PackCo
     let package: PackageDto = parse_package(package_content_file_str)
         .change_context(GamePackLoadingError::CorruptedPack("Can't parse package".to_string()))
         .attach_printable_lazy(|| {
-            format!("Can't load pack content: parsing failed")
+            "Can't load pack content: parsing failed".to_string()
         })?;
 
     let mut mapped_content = map_package(package);
