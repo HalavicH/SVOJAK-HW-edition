@@ -1,14 +1,27 @@
 use std::collections::HashMap;
-use std::thread::sleep;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::thread::{JoinHandle, sleep};
 use std::time::Duration;
 use error_stack::{IntoReport, ResultExt, Result, Report};
 use rand::Rng;
 use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
 use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
-use crate::core::hub_manager::{get_epoch_ms, HubManagerError};
+use crate::core::hub_manager::{get_epoch_ms, HubManager, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
+use crate::hw_comm::api::TermButtonState;
+
+const EVT_POLLING_INTERVAL_MS: u64 = 100;
 
 impl GameContext {
+    pub fn new() -> Self {
+        let context = Self {
+            ..Default::default()
+        };
+
+        context
+    }
+
     pub fn start_the_game(&mut self) -> Result<(), GameplayError> {
         self.update_game_state(GameState::QuestionChoosing);
 
@@ -85,16 +98,17 @@ impl GameContext {
     }
 
     pub fn get_fastest_click_player_id(&mut self) -> Result<u8, GameplayError> {
-        let allowed_to_click_num = self.players.values()
+        let players_allowed_to_click_num = self.players.values()
             .filter(|&p| { p.allowed_to_click() })
             .count();
-        if allowed_to_click_num == 0 {
+        if players_allowed_to_click_num == 0 {
             let report = Report::new(GameplayError::OperationForbidden)
                 .attach_printable("Can't get first click: No players allowed to click left.");
             return Err(report);
         }
 
-        let fastest_player_id = self.get_fastest_click();
+        let fastest_player_id = self.get_fastest_click_from_hub()
+            .change_context(GameplayError::HubOperationError)?;
 
         log::info!("Fastest click from user: {}", fastest_player_id);
         self.current.click_for_answer_allowed = false;
@@ -230,6 +244,7 @@ impl GameContext {
                 .collect(),
         }
     }
+
     fn update_game_state(&mut self, new_state: GameState) {
         log::info!("Game state {:?} -> {:?}", self.current.game_state(), new_state);
         self.current.set_game_state(new_state);
@@ -255,8 +270,19 @@ impl GameContext {
         Ok((question, question_number))
     }
 
-    fn get_fastest_click(&mut self) -> u8 {
-// TODO: Add logic for fastest click
+    fn get_fastest_click_from_hub(&mut self) -> Result<u8, HubManagerError> {
+        // let mut events = vec![];
+        // while events.is_empty() {
+        //     events = self.hub.read_event_queue()?;
+        // }
+        //
+        // events.iter()
+        //     .filter(|e| e.state == TermButtonState::Pressed)
+        // for evt in events {
+        //     evt.
+        // }
+
+    // TODO: Add logic for fastest click
 
         let keys = self.players.iter()
             .filter(|(_, &ref p)| { p.allowed_to_click() })
@@ -269,7 +295,7 @@ impl GameContext {
 
         let fastest_click_index: usize = rand::thread_rng().gen_range(0..keys.len() as usize);
         let fastest_player_id = keys[fastest_click_index];
-        fastest_player_id
+        Ok(fastest_player_id)
     }
 
     fn get_player_keys(&self) -> Vec<u8> {
@@ -317,3 +343,41 @@ impl GameContext {
         });
     }
 }
+
+pub fn start_event_listener(hub: Arc<Mutex<HubManager>>) -> JoinHandle<()>{
+    thread::spawn(move || {
+        listen_hub_events(hub);
+    })
+}
+
+fn listen_hub_events(hub: Arc<Mutex<HubManager>>) {
+    let hub_guard = hub.lock().expect("Mutex is poisoned");
+    loop {
+        sleep(Duration::from_millis(EVT_POLLING_INTERVAL_MS));
+        let events = hub_guard.read_event_queue()
+            .unwrap_or_else(|error| {
+                log::error!("Can't get events. Err {:?}", error);
+                vec![]
+            });
+
+        if events.is_empty() {
+            log::debug!("No player events occurred");
+            continue;
+        }
+
+        events.iter()
+            .for_each(|e| {
+                hub_guard.set_term_feedback_led(e.term_id, &e.state)
+                    .unwrap_or_else(|error| {
+                        log::error!("Can't set term_feedback let. Err {:?}", error);
+                    });
+
+                if e.timestamp >= hub_guard.allow_answer_timestamp {
+                    log::info!("After answer allowed");
+                } else {
+                    log::info!("Forbidden. Adding 1s delay for the answer");
+                }
+            });
+    }
+}
+
