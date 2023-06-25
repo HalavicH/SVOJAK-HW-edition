@@ -1,10 +1,7 @@
 use serde::Serialize;
 use std::error::Error;
 use std::fmt;
-
-// Data definition
-pub type DevId = u8;
-pub type Timestamp = u32;
+use rgb::RGB8;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HubIoError {
@@ -23,6 +20,47 @@ impl fmt::Display for HubIoError {
 
 impl Error for HubIoError {}
 
+/// HUB REQUEST
+pub enum HubRequest {
+    SetTimestamp(u32),
+    GetTimestamp,
+    SetHubRadioChannel(u8),
+    SetTermRadioChannel(u8, u8),
+    PingDevice(u8),
+    SetLightColor(u8, RGB8),
+    SetFeedbackLed(u8, bool),
+    ReadEventQueue,
+}
+
+impl HubRequest {
+    pub fn cmd(&self) -> u8 {
+        match self {
+            HubRequest::SetTimestamp(_) => 0x80,
+            HubRequest::GetTimestamp => 0x81,
+            HubRequest::SetHubRadioChannel(_) => 0x82,
+            HubRequest::SetTermRadioChannel(_, _) => 0x82,
+            HubRequest::PingDevice(_) => 0x90,
+            HubRequest::SetLightColor(_, _) => 0x91,
+            HubRequest::SetFeedbackLed(_, _) => 0x92,
+            HubRequest::ReadEventQueue => 0xA0,
+        }
+    }
+
+    pub fn payload(&self) -> Vec<u8> {
+        match self {
+            HubRequest::SetTimestamp(timestamp) => timestamp.to_be_bytes().to_vec(),
+            HubRequest::GetTimestamp => vec![],
+            HubRequest::SetHubRadioChannel(channel_num) => vec![*channel_num],
+            HubRequest::SetTermRadioChannel(term_id, channel_num) => vec![*term_id, *channel_num],
+            HubRequest::PingDevice(term_id) => vec![*term_id],
+            HubRequest::SetLightColor(term_id, color) => vec![*term_id, color.r, color.g, color.b],
+            HubRequest::SetFeedbackLed(term_id, state) => vec![*term_id, *state as u8],
+            HubRequest::ReadEventQueue => vec![],
+        }
+    }
+}
+
+/// HUB RESPONSE
 #[derive(Debug, Eq, PartialEq)]
 pub struct HubResponse {
     pub id: u8,
@@ -31,6 +69,18 @@ pub struct HubResponse {
     pub payload: Vec<u8>,
 }
 
+impl HubResponse {
+    pub fn new(id: u8, status: ResponseStatus, payload: Vec<u8>) -> Self {
+        Self {
+            id,
+            status,
+            payload_len: payload.len() as u8,
+            payload,
+        }
+    }
+}
+
+/// HUB RESPONSE STATUS
 #[derive(Debug, Eq, PartialEq)]
 pub enum ResponseStatus {
     Ok = 0x00,
@@ -50,36 +100,7 @@ impl From<u8> for ResponseStatus {
     }
 }
 
-impl HubResponse {
-    pub fn new(id: u8, status: ResponseStatus, payload: Vec<u8>) -> Self {
-        Self {
-            id,
-            status,
-            payload_len: payload.len() as u8,
-            payload,
-        }
-    }
-}
-
-
-/// Queries OS for all available serial ports
-pub fn discover_serial_ports() -> Vec<String> {
-    let ports = serialport::available_ports()
-        .expect("No ports found!");
-    let mut ports_vec = Vec::new();
-
-    log::info!("Serial ports: {:?}", ports);
-
-
-    for p in ports {
-        log::info!("{}", p.port_name);
-
-        ports_vec.push(p.port_name.clone());
-    }
-
-    ports_vec
-}
-
+/// HUB PROTOCOL VERSION
 pub enum ProtocolVersion {
     Version = 0x03,
 }
@@ -90,6 +111,7 @@ impl ProtocolVersion {
     }
 }
 
+/// HUB FRAME ELEMENTS POSITION
 pub mod hub_frame_pos {
     pub const PROTOCOL_VERSION: usize = 0;
     pub const TID: usize = 1;
@@ -104,6 +126,7 @@ pub struct TermEvent {
     pub state: TermButtonState,
 }
 
+/// Terminal button state enum
 #[derive(Debug)]
 pub enum TermButtonState {
     Pressed,
@@ -151,4 +174,5 @@ impl TryFrom<u8> for TermButtonState {
         }
     }
 }
+
 

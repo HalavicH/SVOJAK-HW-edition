@@ -9,6 +9,14 @@ use crate::api::dto::QuestionType;
 use crate::core::hub_manager::HubManager;
 use crate::game_pack::game_pack_entites::GamePack;
 
+lazy_static::lazy_static! {
+    static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::new()));
+}
+
+pub fn game() -> MutexGuard<'static, GameContext> {
+    CONTEXT.lock().unwrap()
+}
+
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum PlayerState {
     #[default]
@@ -140,14 +148,6 @@ impl fmt::Display for GameplayError {
 }
 
 impl Error for GameplayError {}
-
-lazy_static::lazy_static! {
-    static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::new()));
-}
-
-pub fn game() -> MutexGuard<'static, GameContext> {
-    CONTEXT.lock().unwrap()
-}
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum GameState {
