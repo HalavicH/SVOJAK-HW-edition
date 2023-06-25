@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 use std::default::Default;
 use std::error::Error;
 use std::fmt;
@@ -7,9 +8,10 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 use error_stack::{IntoReport, ResultExt, Result, Report};
 use rgb::RGB8;
-use serialport::{SerialPort};
+use serialport::SerialPort;
 use crate::core::game_entities::HubStatus;
 use crate::hw_comm::api_types::{HubIoError, HubRequest, ResponseStatus, TermButtonState, TermEvent};
+use crate::hw_comm::hub_mock::{HubMock, run_hub_mock, VIRTUAL_HUB_PORT};
 use crate::hw_comm::hub_protocol_io_handler::HubProtocolIoHandler;
 
 const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100);
@@ -61,7 +63,7 @@ impl HubManager {
     pub fn discover_serial_ports() -> Vec<String> {
         let ports = serialport::available_ports()
             .expect("No ports found!");
-        let mut ports_vec = Vec::new();
+        let mut ports_vec = vec![VIRTUAL_HUB_PORT.to_owned()];
 
         log::info!("Serial ports: {:?}", ports);
 
@@ -81,6 +83,25 @@ impl HubManager {
             self.hub_io_handler = None;
         }
 
+        if port == VIRTUAL_HUB_PORT {
+            log::info!("Virtual hub selected. Let's have fun");
+            let (serial_port, hub_mock_handle) = run_hub_mock()
+                .map_err(|_| {
+                    Report::new(HubManagerError::InternalError)
+                        .attach_printable("Can't create virtual hub.")
+                })?;
+            self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port, Some(hub_mock_handle)));
+        } else {
+            let serial_port = self.setup_serial_connection(port)?;
+            self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port, None));
+        }
+
+        self.init_timestamp()?;
+        self.set_hub_timestamp(self.base_timestamp)?;
+        Ok(HubStatus::Detected)
+    }
+
+    fn setup_serial_connection(&mut self, port: &str) -> Result<Box<dyn SerialPort>, HubManagerError> {
         log::info!("Try to discover hub at port: {port}");
         self.port_name = port.to_owned();
 
@@ -91,11 +112,7 @@ impl HubManager {
 
         serial_port.set_timeout(HUB_CMD_TIMEOUT).into_report()
             .change_context(HubManagerError::InternalError)?;
-
-        self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port));
-        self.init_timestamp()?;
-        self.set_hub_timestamp(self.base_timestamp)?;
-        Ok(HubStatus::Detected)
+        Ok(serial_port)
     }
 
     pub fn is_hub_alive(&self) -> bool {

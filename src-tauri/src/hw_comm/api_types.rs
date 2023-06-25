@@ -48,7 +48,7 @@ impl HubRequest {
 
     pub fn payload(&self) -> Vec<u8> {
         match self {
-            HubRequest::SetTimestamp(timestamp) => timestamp.to_be_bytes().to_vec(),
+            HubRequest::SetTimestamp(timestamp) => timestamp.to_le_bytes().to_vec(),
             HubRequest::GetTimestamp => vec![],
             HubRequest::SetHubRadioChannel(channel_num) => vec![*channel_num],
             HubRequest::SetTermRadioChannel(term_id, channel_num) => vec![*term_id, *channel_num],
@@ -81,7 +81,7 @@ impl HubResponse {
 }
 
 /// HUB RESPONSE STATUS
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Eq, PartialEq)]
 pub enum ResponseStatus {
     Ok = 0x00,
     GenericError = 0x80,
@@ -89,13 +89,22 @@ pub enum ResponseStatus {
     UnknownError = 0xFF,
 }
 
+impl fmt::Display for ResponseStatus {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.write_str("Failed to perform hub operation:")
+    }
+}
+
+impl Error for ResponseStatus {}
+
+
 impl From<u8> for ResponseStatus {
     fn from(value: u8) -> Self {
         match value {
             0x00 => ResponseStatus::Ok,
             0x80 => ResponseStatus::GenericError,
             0x90 => ResponseStatus::TerminalNotResponding,
-            | _ => ResponseStatus::UnknownError,
+            _ => ResponseStatus::UnknownError,
         }
     }
 }
