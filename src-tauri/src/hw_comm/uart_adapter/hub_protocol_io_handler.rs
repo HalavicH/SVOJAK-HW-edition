@@ -1,54 +1,31 @@
 use std::io::{Read, Write};
-use std::sync::{Arc, mpsc, Mutex};
-use std::sync::mpsc::{Receiver};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
+
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use serialport::SerialPort;
-use crate::core::hub_manager::{HubRequest};
-use crate::hw_comm::api::{HubIoError, ResponseStatus, HubResponse, hub_frame_pos};
+
+use crate::core::hub_manager::HubRequest;
+use crate::hw_comm::api::{hub_frame_pos, HubIoError, HubResponse, ResponseStatus};
 use crate::hw_comm::api::ProtocolVersion::Version;
 use crate::hw_comm::uart_adapter::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
 
 #[derive(Debug)]
 pub struct HubProtocolIoHandler {
     fsm_byte_handler: Arc<Mutex<ByteHandler>>,
-    fsm_frame_rx: Receiver<Vec<u8>>,
     port_handle: Arc<Mutex<Box<dyn SerialPort>>>,
     listening_thread: Option<JoinHandle<()>>,
 }
 
 impl HubProtocolIoHandler {
     pub fn new(port_handle: Box<dyn SerialPort>) -> Self {
-        let (_, fsm_frame_rx) = mpsc::channel::<Vec<u8>>();
-
         Self {
             port_handle: Arc::new(Mutex::new(port_handle)),
             fsm_byte_handler: Arc::new(Mutex::new(ByteHandler::new())),
-            fsm_frame_rx,
             listening_thread: None,
         }
-    }
-
-    pub fn start_listening(&mut self) {
-        let byte_handler_ptr = Arc::clone(&self.fsm_byte_handler);
-        let port_handle_ptr = Arc::clone(&self.port_handle);
-
-        let handle = thread::spawn(move || {
-            loop {
-                let mut byte: [u8; 1] = [0];
-                let mut port_handle = port_handle_ptr.lock().unwrap();
-                // Читає байт
-                port_handle.read_exact(&mut byte).unwrap();
-
-                let mut byte_handler = byte_handler_ptr.lock().unwrap();
-                // Хендлить його. Як збереться фрейм byte_handler відправить його в fsm_frame_rx (64 строчка)
-                byte_handler.handle_byte(byte[0]);
-            }
-        });
-
-        self.listening_thread = Some(handle);
     }
 
     pub fn send_command(&self, request: HubRequest) -> Result<HubResponse, HubIoError> {
@@ -57,8 +34,7 @@ impl HubProtocolIoHandler {
 
         {
             let mut port_handle = self.port_handle.lock()
-                .map_err(|e| {
-                    // Report::new(e).change_context(HubIoError::InternalError)
+                .map_err(|_| {
                     Report::new(HubIoError::InternalError)
                 })?;
 
@@ -86,6 +62,7 @@ impl HubProtocolIoHandler {
 
         // Give HUB some time to perform operation
         thread::sleep(Duration::from_millis(10));
+
         while byte[0] != START_BYTE {
             println!("Byte: {}", byte[0]);
             port_handle.read_exact(&mut byte)
