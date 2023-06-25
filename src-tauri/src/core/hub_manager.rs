@@ -125,9 +125,10 @@ impl HubManager {
             return Err(Report::new(HubManagerError::InternalError));
         }
 
-        let timestamp = parse_u32_from_vec(&response.payload)
-            .change_context(HubManagerError::InternalError)
-            .attach_printable(format!("Can't parse payload. {:?}", response.payload))?;
+        let bytes: [u8; 4] = response.payload.try_into().map_err(|_| {
+            Report::new(HubManagerError::NoResponseFromHub)
+        })?;
+        let timestamp = u32::from_le_bytes(bytes);
 
         log::info!("Got HUB timestamp: {}", timestamp);
 
@@ -214,7 +215,7 @@ impl HubManager {
         for chunk in response.payload.chunks_exact(std::mem::size_of::<TermEvent>()) {
             // Convert each chunk of bytes to a `TermEvent`
             let term_id = chunk[0];
-            let timestamp = u32::from_ne_bytes(chunk[1..5].try_into().unwrap());
+            let timestamp = u32::from_le_bytes(chunk[1..5].try_into().unwrap());
             let state_byte = chunk[5];
             let state = TermButtonState::try_from(state_byte)
                 .into_report()
@@ -334,31 +335,6 @@ pub fn get_epoch_ms() -> Result<u32, HubManagerError> {
         .attach_printable("Can't process UNIX time to timestamp")?;
 
     Ok(milliseconds_since_base)
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ParseU32Error {}
-
-impl fmt::Display for ParseU32Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.write_str("Failed to parse u32 value:")
-    }
-}
-
-impl Error for ParseU32Error {}
-
-
-fn parse_u32_from_vec(vec: &Vec<u8>) -> Result<u32, ParseU32Error> {
-    if vec.len() != 4 {
-        return Err(ParseU32Error {}).into_report();
-    }
-    let mut result: u32 = 0;
-
-    for &byte in vec {
-        result = (result << 8) | byte as u32;
-    }
-
-    Ok(result)
 }
 
 #[cfg(test)]
