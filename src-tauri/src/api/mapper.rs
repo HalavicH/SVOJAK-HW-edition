@@ -28,14 +28,6 @@ pub fn get_config_dto() -> ConfigDto {
 }
 
 /// Takes whole game context and maps to config which contains only required elements
-// pub fn update_game_context(config: &ConfigDto) {
-//     let mut context = game_ctx();
-//     context.players = config.players.clone();
-//     context.hub.port = config.hub_port.clone();
-//     context.hub.radio_channel = config.radio_channel;
-// }
-
-/// Takes whole game context and maps to config which contains only required elements
 pub fn update_players(players: &Vec<Player>) {
     let mut context = game();
 
