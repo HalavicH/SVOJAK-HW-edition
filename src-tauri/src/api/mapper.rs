@@ -118,6 +118,8 @@ pub fn map_players_to_player_game_dto(players: &HashMap<u8, Player>) -> Vec<Play
 ///     themes: HashMap::new(),
 ///     question_count: 30,
 ///     questions_left: 27,
+///     normal_question_count: 29,
+///     pip_question_count: 1
 /// };
 ///
 /// let round_dto = map_round_to_dto(&round);
