@@ -1,6 +1,7 @@
 use serde::Serialize;
 use std::error::Error;
 use std::fmt;
+use std::string::ParseError;
 
 // Data definition
 pub type DevId = u8;
@@ -23,7 +24,7 @@ impl fmt::Display for HubIoError {
 impl Error for HubIoError {}
 
 #[derive(Debug)]
-pub struct UartResponse {
+pub struct HubResponse {
     pub id: u8,
     pub status: ResponseStatus,
     pub payload_len: u8,
@@ -49,7 +50,7 @@ impl From<u8> for ResponseStatus {
     }
 }
 
-impl UartResponse {
+impl HubResponse {
     pub fn new(id: u8, status: ResponseStatus, payload: Vec<u8>) -> Self {
         Self {
             id,
@@ -103,8 +104,50 @@ pub struct TermEvent {
     pub state: TermButtonState,
 }
 
+#[derive(Debug)]
 pub enum TermButtonState {
     Pressed,
     Released,
 }
 
+impl TermButtonState {
+    pub fn to_bool(&self) -> bool {
+        match self {
+            TermButtonState::Pressed => { true }
+            TermButtonState::Released => { false }
+        }
+    }
+
+    pub fn from_bool(state: bool) -> TermButtonState {
+        match state {
+            true => { TermButtonState::Pressed }
+            false => { TermButtonState::Released }
+        }
+    }
+}
+
+
+#[derive(Debug, Clone, Serialize)]
+pub enum MyParseError {
+    FromU8(u8),
+}
+
+impl fmt::Display for MyParseError {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.write_str(&format!("Invalid TermButtonState value: {}", self))
+    }
+}
+
+impl Error for MyParseError {}
+
+impl TryFrom<u8> for TermButtonState {
+    type Error = MyParseError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(TermButtonState::Released),
+            1 => Ok(TermButtonState::Pressed),
+            _ => Err(MyParseError::FromU8(value)),
+        }
+    }
+}
