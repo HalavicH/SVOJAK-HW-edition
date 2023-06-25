@@ -288,7 +288,7 @@ impl GameContext {
             .map(|(id, _)| *id)
             .collect::<Vec<u8>>();
 
-        log::info!("Users participating in the click race: {:?}", keys);
+        log::debug!("Users participating in the click race: {:?}", keys);
 
         sleep(Duration::from_millis(200));
 
@@ -316,17 +316,17 @@ impl GameContext {
             log::debug!("Game state: {:?}. Player: {}:{:?}", game_state, p.term_id, p.state);
 
             if p.term_id == active_id {
-                log::info!("Active player. Skipping");
+                log::debug!("Active player. Skipping");
                 return;
             }
 
             if p.state == PlayerState::AnsweredWrong {
-                log::info!("Player with id {} becomes inactive", id);
+                log::trace!("Player with id {} becomes inactive", id);
                 p.state = PlayerState::Inactive;
             }
 
             if *game_state == GameState::QuestionChoosing || (p.state != PlayerState::Dead && p.state != PlayerState::Inactive) {
-                log::info!("Player with id {} becomes idle", id);
+                log::trace!("Player with id {} becomes idle", id);
                 p.state = PlayerState::Idle;
             }
         });

@@ -7,14 +7,14 @@ use crate::core::hub_manager::HubManagerError;
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {
     let vec = map_players_to_player_game_dto(game().fetch_players());
-    log::info!("Players: {:#?}", vec);
+    log::trace!("Players: {:#?}", vec);
     vec
 }
 
 #[command]
 pub fn fetch_round() -> RoundDto {
     let round_dto = map_round_to_dto(game().get_current_round());
-    log::info!("{round_dto:#?}");
+    log::trace!("{round_dto:#?}");
     round_dto
 }
 
@@ -47,7 +47,7 @@ pub fn get_fastest_click() -> Result<i32, GameplayError> {
 
 #[command]
 pub fn answer_question(answered_correctly: bool) -> Result<bool, GameplayError> {
-    log::info!("Answered correctly: {answered_correctly}");
+    log::debug!("Answered correctly: {answered_correctly}");
 
     game().answer_question(answered_correctly).map_err(|e| {
         log::error!("Failed to answer question: {:?}", e);
@@ -67,7 +67,7 @@ pub fn init_next_round() {
 
 #[command]
 pub fn send_pip_victim(victim_id: i32) {
-    log::info!("Victim id is: {}", victim_id);
+    log::debug!("Victim id is: {}", victim_id);
 }
 
 #[command]
