@@ -1,5 +1,3 @@
-use std::sync::mpsc::Sender;
-
 pub type RawFrame = Vec<u8>;
 
 #[derive(Debug)]
@@ -17,16 +15,19 @@ const ESCAPE_MASK: u8 = 0xC0;
 pub struct ByteHandler {
     state: ByteHandlerState,
     framebuf: RawFrame,
-    fsm_frame_tx: Sender<RawFrame>,
 }
 
 impl ByteHandler {
-    pub fn new(fsm_frame_tx: Sender<RawFrame>) -> Self {
+    pub fn new() -> Self {
         Self {
             state: ByteHandlerState::Byte,
             framebuf: vec!(),
-            fsm_frame_tx,
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.state = ByteHandlerState::Byte;
+        self.framebuf = vec![];
     }
 
     pub fn handle_byte(&mut self, byte: u8) {
@@ -54,20 +55,18 @@ impl ByteHandler {
             START_BYTE => {
                 self.state = ByteHandlerState::Byte;
                 log::debug!("Got start byte. Set state: {:?}", self.state);
+                self.framebuf.clear();
             }
             STOP_BYTE => {
                 self.state = ByteHandlerState::Byte;
                 log::debug!("Got end byte. Set state: {:?}", self.state);
-
-                self.send_uart_frame();
-                self.framebuf.clear();
+                log::debug!("Resulting frame: {:?}", self.framebuf);
             }
             _ => self.framebuf.push(byte),
         }
     }
 
-    fn send_uart_frame(&mut self) {
-        log::debug!("Sending frame: {:?}", self.framebuf);
-        let _ = self.fsm_frame_tx.send(self.framebuf.clone());
+    pub fn get_current_frame(&self) -> Vec<u8> {
+        self.framebuf.clone()
     }
 }

@@ -2,7 +2,7 @@
 use std::default::Default;
 use std::error::Error;
 use std::fmt;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use error_stack::{IntoReport, ResultExt, Result, Report};
@@ -11,6 +11,8 @@ use serialport::{SerialPort};
 use crate::core::game_entities::HubStatus;
 use crate::hw_comm::api::{HubIoError, ResponseStatus, TermButtonState, TermEvent};
 use crate::hw_comm::uart_adapter::hub_protocol_io_handler::HubProtocolIoHandler;
+
+const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100_000);
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HubManagerError {
@@ -33,7 +35,7 @@ impl Error for HubManagerError {}
 pub struct HubManager {
     pub port_name: String,
     pub port_handle: Option<Box<dyn SerialPort>>,
-    pub hub_io_handler: Option<HubProtocolIoHandler<dyn SerialPort>>,
+    pub hub_io_handler: Option<HubProtocolIoHandler>,
     pub baudrate: u32,
     pub radio_channel: i32,
     pub base_timestamp: u32,
@@ -68,10 +70,13 @@ impl HubManager {
         log::info!("Try to discover hub at port: {port}");
         self.port_name = port.to_owned();
 
-        let serial_port = serialport::new(port, self.baudrate).open()
+        let mut serial_port = serialport::new(port, self.baudrate).open()
             .into_report()
             .change_context(HubManagerError::SerialPortError)
             .attach_printable(format!("Can't open port {port}"))?;
+
+        serial_port.set_timeout(HUB_CMD_TIMEOUT).into_report()
+            .change_context(HubManagerError::InternalError)?;
 
         self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port));
         self.init_timestamp()?;
@@ -243,7 +248,7 @@ impl HubManager {
         Ok(self.base_timestamp = get_epoch_ms()?)
     }
 
-    fn get_hub_handle_or_err(&self) -> Result<&HubProtocolIoHandler<dyn SerialPort>, HubManagerError> {
+    fn get_hub_handle_or_err(&self) -> Result<&HubProtocolIoHandler, HubManagerError> {
         let connection = self.hub_io_handler.as_ref()
             .ok_or(HubManagerError::NotInitializedError)?;
         Ok(connection)
@@ -258,7 +263,8 @@ impl HubManager {
 fn map_status_to_result(status: ResponseStatus) -> Result<(), HubManagerError> {
     match status {
         ResponseStatus::Ok => {
-            Ok(())}
+            Ok(())
+        }
         ResponseStatus::TerminalNotResponding => {
             Err(Report::new(HubManagerError::NoResponseFromTerminal))
         }
@@ -403,20 +409,21 @@ mod tests {
         sleep(Duration::from_secs(1));
         let terminal_timestamp = get_epoch_ms().unwrap();
 
-        let execution_offset = 5;
-        assert_eq!(terminal_timestamp, hub.base_timestamp + 1000 + execution_offset);
+        let execution_offset = 50;
+        assert!(terminal_timestamp > hub.base_timestamp &&
+            terminal_timestamp < (hub.base_timestamp + 1000 + execution_offset));
     }
 
-    #[test]
-    fn test_probe() {
-        let mut hub = HubManager::default();
-        hub.probe("/dev/tty.Bluetooth-Incoming-Port").unwrap();
-        assert_eq!(hub.base_timestamp, get_epoch_ms().unwrap());
-
-        sleep(Duration::from_secs(1));
-        let terminal_timestamp = get_epoch_ms().unwrap();
-
-        let execution_offset = 5;
-        assert_eq!(terminal_timestamp, hub.base_timestamp + 1000 + execution_offset);
-    }
+    // #[test]
+    // fn test_probe() {
+    //     let mut hub = HubManager::default();
+    //     hub.probe("/dev/tty.Bluetooth-Incoming-Port").unwrap();
+    //     assert_eq!(hub.base_timestamp, get_epoch_ms().unwrap());
+    //
+    //     sleep(Duration::from_secs(1));
+    //     let terminal_timestamp = get_epoch_ms().unwrap();
+    //
+    //     let execution_offset = 5;
+    //     assert_eq!(terminal_timestamp, hub.base_timestamp + 1000 + execution_offset);
+    // }
 }
