@@ -1,7 +1,6 @@
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::thread::JoinHandle;
 use std::time::Duration;
 
 use error_stack::{IntoReport, Report, Result, ResultExt};
@@ -16,15 +15,13 @@ use crate::hw_comm::uart_adapter::byte_handler::{ByteHandler, START_BYTE, STOP_B
 pub struct HubProtocolIoHandler {
     fsm_byte_handler: Arc<Mutex<ByteHandler>>,
     port_handle: Arc<Mutex<Box<dyn SerialPort>>>,
-    listening_thread: Option<JoinHandle<()>>,
 }
 
 impl HubProtocolIoHandler {
     pub fn new(port_handle: Box<dyn SerialPort>) -> Self {
         Self {
             port_handle: Arc::new(Mutex::new(port_handle)),
-            fsm_byte_handler: Arc::new(Mutex::new(ByteHandler::new())),
-            listening_thread: None,
+            fsm_byte_handler: Arc::new(Mutex::new(ByteHandler::default())),
         }
     }
 
@@ -83,14 +80,6 @@ impl HubProtocolIoHandler {
         }
 
         Ok(byte_handler.get_current_frame())
-    }
-}
-
-impl Drop for HubProtocolIoHandler {
-    fn drop(&mut self) {
-        if let Some(handle) = self.listening_thread.take() {
-            handle.join().unwrap();
-        }
     }
 }
 

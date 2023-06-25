@@ -14,11 +14,11 @@ const EVT_POLLING_INTERVAL_MS: u64 = 100;
 
 impl GameContext {
     pub fn new() -> Self {
-        let context = Self {
-            ..Default::default()
-        };
+        
 
-        context
+        Self {
+            ..Default::default()
+        }
     }
 
     pub fn start_the_game(&mut self) -> Result<(), GameplayError> {
@@ -33,11 +33,11 @@ impl GameContext {
             Ok(id) => { id }
             Err(err) => {
                 log::error!("{:#?}", err);
-                let backup_id = self.players.values().nth(0)
+                
+                self.players.values().next()
                     .ok_or(GameplayError::PlayerNotPresent).into_report()
                     .attach_printable("Can't find any player to play with :D")?
-                    .term_id;
-                backup_id
+                    .term_id
             }
         };
 
@@ -128,7 +128,7 @@ impl GameContext {
     }
 
     pub fn answer_question(&mut self, answered_correctly: bool) -> Result<bool, GameplayError> {
-        if self.current.answer_allowed == false {
+        if !self.current.answer_allowed {
             return Err(Report::new(GameplayError::AnswerForbidden));
         }
 
@@ -163,7 +163,7 @@ impl GameContext {
         }
 
         let theme = self.current.question_theme.clone();
-        let price = self.current.question_price.clone();
+        let price = self.current.question_price;
 
         let mut retry = true;
         if answered_correctly || self.no_players_to_answer_left() {
@@ -184,12 +184,12 @@ impl GameContext {
     pub fn get_current_round(&self) -> &Round {
         let index = self.current.round_index;
         let round = self.game_pack.content.rounds.get(index).unwrap();
-        &round
+        round
     }
 
     pub fn no_players_to_answer_left(&self) -> bool {
         let players_left = self.players.iter()
-            .filter(|(_, &ref p)| {
+            .filter(|(_, p)| {
                 p.state != PlayerState::Inactive
                     && p.state != PlayerState::Dead
                     && p.state != PlayerState::AnsweredWrong
@@ -200,7 +200,7 @@ impl GameContext {
     }
 
     pub fn init_next_round(&mut self) {
-        if (self.game_pack.content.rounds.len() - 1) == self.current.round_index as usize {
+        if (self.game_pack.content.rounds.len() - 1) == self.current.round_index {
             log::error!("Already final round");
             return;
         }
@@ -265,7 +265,7 @@ impl GameContext {
 
         self.current.question_theme = theme.name.clone();
         self.current.question_type = question.question_type.clone();
-        self.current.question_price = question.price.clone();
+        self.current.question_price = question.price;
         Ok((question, question_number))
     }
 
@@ -284,22 +284,21 @@ impl GameContext {
     // TODO: Add logic for fastest click
 
         let keys = self.players.iter()
-            .filter(|(_, &ref p)| { p.allowed_to_click() })
-            .map(|(id, _)| id.clone())
+            .filter(|(_, p)| { p.allowed_to_click() })
+            .map(|(id, _)| *id)
             .collect::<Vec<u8>>();
 
         log::info!("Users participating in the click race: {:?}", keys);
 
         sleep(Duration::from_millis(200));
 
-        let fastest_click_index: usize = rand::thread_rng().gen_range(0..keys.len() as usize);
+        let fastest_click_index: usize = rand::thread_rng().gen_range(0..keys.len());
         let fastest_player_id = keys[fastest_click_index];
         Ok(fastest_player_id)
     }
 
     fn get_player_keys(&self) -> Vec<u8> {
-        self.players.keys()
-            .map(|k| k.clone())
+        self.players.keys().copied()
             .collect()
     }
 

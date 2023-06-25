@@ -59,14 +59,14 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
     let player_entities = players
         .iter()
         .map(|player| {
-            return Player {
+            Player {
                 icon: player.icon.clone(),
                 name: player.name.clone(),
                 term_id: player.termId,
                 is_used: player.isUsed,
                 state: PlayerState::Idle,
                 stats: Default::default(),
-            };
+            }
         })
         .collect();
 

@@ -126,7 +126,7 @@ fn validate_pack_path(game_archive_path: &str) -> Result<(), GamePackLoadingErro
     }
 
     if !game_archive_path.ends_with(".siq") {
-        let file_name = game_archive_path.split("/").last().unwrap_or_default();
+        let file_name = game_archive_path.split('/').last().unwrap_or_default();
         let err_msg = format!("Provided file doesn't have '.siq' file extension. Yot file: {}", file_name);
         log::error!("{}", err_msg);
         return Err(Report::new(GamePackLoadingError::InvalidPackFileExtension(game_archive_path.to_string()))

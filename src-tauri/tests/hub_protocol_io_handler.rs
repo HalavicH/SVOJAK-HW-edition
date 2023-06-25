@@ -131,7 +131,7 @@ fn test_ping_device() {
 
 //////// Helpers /////////
 fn prepare_ports() -> (TTYPort, Box<dyn SerialPort>) {
-    let (mut host_handle, mut device_tty) = TTYPort::pair().expect("Unable to create ptty pair");
+    let (host_handle, device_tty) = TTYPort::pair().expect("Unable to create ptty pair");
 
     println!("PTYs:");
     println!("\thost TTY: {:?}", host_handle);
@@ -142,7 +142,7 @@ fn prepare_ports() -> (TTYPort, Box<dyn SerialPort>) {
     (host_handle, device_handle)
 }
 
-fn start_hub_mock(mut port_handle: Box<dyn SerialPort>) -> JoinHandle<()> {
+fn start_hub_mock(port_handle: Box<dyn SerialPort>) -> JoinHandle<()> {
     thread::spawn(move || {
         hub_mock_routine(port_handle);
     })
@@ -180,7 +180,7 @@ fn hub_mock_routine(mut port_handle: Box<dyn SerialPort>) {
 }
 
 fn process_request_frame(raw_frame: Vec<u8>) -> Vec<u8> {
-    let mut byte_handler = ByteHandler::new();
+    let mut byte_handler = ByteHandler::default();
 
     for byte in raw_frame {
         byte_handler.handle_byte(byte);

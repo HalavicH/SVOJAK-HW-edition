@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 pub type RawFrame = Vec<u8>;
 
 #[derive(Debug)]
@@ -17,14 +19,16 @@ pub struct ByteHandler {
     framebuf: RawFrame,
 }
 
-impl ByteHandler {
-    pub fn new() -> Self {
+impl Default for ByteHandler {
+    fn default() -> Self {
         Self {
             state: ByteHandlerState::Byte,
             framebuf: vec!(),
         }
     }
+}
 
+impl ByteHandler {
     pub fn reset(&mut self) {
         self.state = ByteHandlerState::Byte;
         self.framebuf = vec![];
