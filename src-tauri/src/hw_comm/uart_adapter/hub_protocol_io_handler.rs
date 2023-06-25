@@ -6,7 +6,7 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 use error_stack::{Result};
 use crate::core::hub_manager::HubRequest;
-use crate::hw_comm::api::{HubIoError, ResponseStatus, UartResponse};
+use crate::hw_comm::api::{HubIoError, ResponseStatus, HubResponse};
 use crate::hw_comm::api::ProtocolVersion::V3;
 use crate::hw_comm::uart_adapter::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
 
@@ -52,8 +52,9 @@ impl<Handle: Read + Write + ?Sized + Send> HubProtocolIoHandler<Handle> {
         self.listening_thread = Some(handle);
     }
 
-    // Accept HubRequest -> HubResponse. Convert internally
-    pub fn send_command(&self, request: HubRequest) -> Result<UartResponse, HubIoError> {
+    // fn read_response -> {}
+
+    pub fn send_command(&self, request: HubRequest) -> Result<HubResponse, HubIoError> {
         let frame = Self::assemble_frame(request.cmd(), request.payload());
         let stuffed_frame = Self::stuff_bytes(&frame);
 
@@ -66,11 +67,10 @@ impl<Handle: Read + Write + ?Sized + Send> HubProtocolIoHandler<Handle> {
         let status = ResponseStatus::from(curr_frame[2]);
         let payload = curr_frame[3..].to_vec();
 
-        Ok(UartResponse::new(id, status, payload))
+        Ok(HubResponse::new(id, status, payload))
     }
 
-
-    pub fn stuff_bytes(frame: &Vec<u8>) -> Vec<u8> {
+    fn stuff_bytes(frame: &Vec<u8>) -> Vec<u8> {
         let mut stuffed = vec![];
         for byte in frame {
             match *byte {
@@ -107,8 +107,7 @@ impl<Handle: Read + Write + ?Sized + Send> Drop for HubProtocolIoHandler<Handle>
 }
 
 fn format_bytes_hex(bytes: &[u8]) -> String {
-    bytes
-        .iter()
+    bytes.iter()
         .map(|b| format!("{:02X}", b))
         .collect::<Vec<String>>()
         .join(" ")
@@ -153,21 +152,8 @@ mod tests {
             .expect("Failed to open virtual port");
 
         let mut hub: HubProtocolIoHandler<File> = HubProtocolIoHandler::new(Box::new(port_handle));
-        hub.start_listening();
+        // hub.start_listening();
         let _ = hub.send_command(GetTimestamp);
     }
 }
 
-// send_request():
-//     uart.write()  // <-- same uart handle
-//     let msg_from_reader = rx.recv();
-//
-// reader_thread():
-//     loop {
-//         let byte = uart.read_byte(); // <-- same uart handle
-//         if byte == END_BYTE:
-//             tx.send(msg_from_reader)
-//         else:
-//             msg_from_reader.push(byte)
-//     }
-//     ...

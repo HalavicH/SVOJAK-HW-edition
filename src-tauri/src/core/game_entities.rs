@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, MutexGuard};
 use std::sync::Mutex;
 use std::collections::HashMap;
 use std::error::Error;
@@ -144,10 +144,10 @@ impl fmt::Display for GameplayError {
 impl Error for GameplayError {}
 
 lazy_static::lazy_static! {
-    static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::default()));
+    static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::new()));
 }
 
-pub fn game() -> std::sync::MutexGuard<'static, GameContext> {
+pub fn game() -> MutexGuard<'static, GameContext> {
     CONTEXT.lock().unwrap()
 }
 
