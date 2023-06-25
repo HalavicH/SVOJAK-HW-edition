@@ -55,16 +55,14 @@ impl Player {
 }
 
 #[derive(Debug, Serialize, PartialEq)]
+#[derive(Default)]
 pub enum HubStatus {
     Detected,
+    #[default]
     NoDevice,
 }
 
-impl Default for HubStatus {
-    fn default() -> Self {
-        HubStatus::NoDevice
-    }
-}
+
 
 #[derive(Debug, Clone, Serialize)]
 pub enum GamePackError {
