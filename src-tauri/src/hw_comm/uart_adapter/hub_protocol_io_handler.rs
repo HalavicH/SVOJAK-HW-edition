@@ -132,19 +132,17 @@ pub fn assemble_frame(cmd: u8, mut payload: Vec<u8>) -> Vec<u8> {
 #[cfg(test)]
 mod tests {
     use crate::hw_comm::api::ProtocolVersion::Version;
-    use crate::hw_comm::uart_adapter::byte_handler::{START_BYTE, STOP_BYTE};
     use crate::hw_comm::uart_adapter::hub_protocol_io_handler::{assemble_frame, stuff_bytes};
 
     #[test]
     fn test_frame_assembly() {
         let expected = vec![
-            START_BYTE,
             Version.to_value(),
             0x00,
             0x90,
             0x03,
-            0x01, 0x02, 0x03,
-            STOP_BYTE];
+            0x01, 0x02, 0x03
+        ];
         let frame = assemble_frame(0x90, vec![0x01, 0x02, 0x03]);
         assert_eq!(frame, expected);
     }
@@ -152,7 +150,7 @@ mod tests {
     #[test]
     fn test_byte_stuffing_when_no_stuffing_occurs() {
         let input = vec![0x03, 0x00, 0x90, 0x03, 0x01, 0x02, 0x03];
-        let goal = vec![0x03, 0x00, 0x90, 0x03, 0x01, 0x02, 0x03];
+        let goal = vec![0xC0, 0x03, 0x00, 0x90, 0x03, 0x01, 0x02, 0x03, 0xCF];
         let result = stuff_bytes(&input);
         assert_eq!(result, goal);
     }
@@ -160,9 +158,9 @@ mod tests {
     #[test]
     fn test_byte_stuffing() {
         let input = vec![0x03, 0x00, 0x90, 0x03, 0xC0, 0xC1, 0xCF];
-        let goal = vec![0x03, 0x00, 0x90, 0x03, 0xC1, 0x00, 0xC1, 0x01, 0xC1, 0x0F];
+        let expect = vec![0xC0, 0x03, 0x00, 0x90, 0x03, 0xC1, 0x00, 0xC1, 0x01, 0xC1, 0x0F, 0xCF];
         let result = stuff_bytes(&input);
-        assert_eq!(result, goal);
+        assert_eq!(result, expect);
     }
 }
 
