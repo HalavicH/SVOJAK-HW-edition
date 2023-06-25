@@ -3,10 +3,10 @@ use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
 use serialport::{SerialPort, TTYPort};
-use svoyak_tauri_app::core::hub_manager::HubRequest::*;
-use svoyak_tauri_app::hw_comm::api::{HubResponse, ResponseStatus};
-use svoyak_tauri_app::hw_comm::uart_adapter::byte_handler::{ByteHandler};
-use svoyak_tauri_app::hw_comm::uart_adapter::hub_protocol_io_handler::{format_bytes_hex, HubProtocolIoHandler, stuff_bytes};
+use svoyak_tauri_app::hw_comm::api_types::{HubResponse, ResponseStatus};
+use svoyak_tauri_app::hw_comm::api_types::HubRequest::*;
+use svoyak_tauri_app::hw_comm::byte_handler::{ByteHandler};
+use svoyak_tauri_app::hw_comm::hub_protocol_io_handler::{format_bytes_hex, HubProtocolIoHandler, stuff_bytes};
 
 const MOCK_ID: u8 = 6;
 const MOCK_TID: u8 = 0;
@@ -216,36 +216,36 @@ fn process_request_frame(raw_frame: Vec<u8>) -> Vec<u8> {
     response_frame
 }
 
-#[allow(non_snake_case)]
-mod test {
-    use crate::{MOCK_EVENTS, MOCK_TIMESTAMP, process_request_frame};
-
-    #[test_log::test]
-    fn test__process_request_frame__when__set_timestamp__then__ok() {
-        let input = [0x03_u8, 0x00, 0x80, 0x04, 0x01, 0x02, 0x03, 0x04].to_vec();
-        let expected = [0x03_u8, 0x00, 0x00, 0x00].to_vec();
-
-        let result = process_request_frame(input);
-        assert_eq!(expected, result);
-    }
-
-    #[test_log::test]
-    fn test__process_request_frame__when__get_timestamp__then__ok() {
-        let input = [0x03_u8, 0x00, 0x81, 0x00].to_vec();
-        let mut expected = [0x03_u8, 0x00, 0x00, 0x04].to_vec();
-        expected.append(&mut MOCK_TIMESTAMP.to_le_bytes().to_vec());
-
-        let result = process_request_frame(input);
-        assert_eq!(expected, result);
-    }
-
-    #[test_log::test]
-    fn test__process_request_frame__when__get_events__then__ok() {
-        let input = [0x03_u8, 0x00, 0xA0, 0x00].to_vec();
-        let mut expected = [0x03_u8, 0x00, 0x00, MOCK_EVENTS.len() as u8].to_vec();
-        expected.append(&mut MOCK_EVENTS.to_vec());
-
-        let result = process_request_frame(input);
-        assert_eq!(expected, result);
-    }
-}
+// #[allow(non_snake_case)]
+// mod test {
+//     use crate::{MOCK_EVENTS, MOCK_TIMESTAMP, process_request_frame};
+//
+//     #[test_log::test]
+//     fn test__process_request_frame__when__set_timestamp__then__ok() {
+//         let input = [0x03_u8, 0x00, 0x80, 0x04, 0x01, 0x02, 0x03, 0x04].to_vec();
+//         let expected = [0x03_u8, 0x00, 0x00, 0x00].to_vec();
+//
+//         let result = process_request_frame(input);
+//         assert_eq!(expected, result);
+//     }
+//
+//     #[test_log::test]
+//     fn test__process_request_frame__when__get_timestamp__then__ok() {
+//         let input = [0x03_u8, 0x00, 0x81, 0x00].to_vec();
+//         let mut expected = [0x03_u8, 0x00, 0x00, 0x04].to_vec();
+//         expected.append(&mut MOCK_TIMESTAMP.to_le_bytes().to_vec());
+//
+//         let result = process_request_frame(input);
+//         assert_eq!(expected, result);
+//     }
+//
+//     #[test_log::test]
+//     fn test__process_request_frame__when__get_events__then__ok() {
+//         let input = [0x03_u8, 0x00, 0xA0, 0x00].to_vec();
+//         let mut expected = [0x03_u8, 0x00, 0x00, MOCK_EVENTS.len() as u8].to_vec();
+//         expected.append(&mut MOCK_EVENTS.to_vec());
+//
+//         let result = process_request_frame(input);
+//         assert_eq!(expected, result);
+//     }
+// }

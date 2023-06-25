@@ -22,11 +22,9 @@ pub mod game_pack {
     pub mod game_pack_loader;
 }
 pub mod hw_comm {
-    pub mod api;
-    pub mod uart_adapter {
-        pub mod hub_protocol_io_handler;
-        pub mod byte_handler;
-    }
-}
-pub mod tests {
+    pub mod api_types;
+    pub mod hub_protocol_io_handler;
+    pub mod byte_handler;
+
+    pub mod uart_adapter {}
 }

@@ -6,10 +6,9 @@ use std::time::Duration;
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use serialport::SerialPort;
 
-use crate::core::hub_manager::HubRequest;
-use crate::hw_comm::api::{hub_frame_pos, HubIoError, HubResponse, ResponseStatus};
-use crate::hw_comm::api::ProtocolVersion::Version;
-use crate::hw_comm::uart_adapter::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
+use crate::hw_comm::api_types::{hub_frame_pos, HubIoError, HubRequest, HubResponse, ResponseStatus};
+use crate::hw_comm::api_types::ProtocolVersion::Version;
+use crate::hw_comm::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
 
 #[derive(Debug)]
 pub struct HubProtocolIoHandler {
@@ -120,8 +119,8 @@ pub fn assemble_frame(cmd: u8, mut payload: Vec<u8>) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use crate::hw_comm::api::ProtocolVersion::Version;
-    use crate::hw_comm::uart_adapter::hub_protocol_io_handler::{assemble_frame, stuff_bytes};
+    use crate::hw_comm::api_types::ProtocolVersion::Version;
+    use crate::hw_comm::hub_protocol_io_handler::{assemble_frame, stuff_bytes};
 
     #[test]
     fn test_frame_assembly() {
