@@ -3,10 +3,11 @@ use std::sync::{Arc, mpsc, Mutex};
 use std::sync::mpsc::{Receiver};
 use std::thread;
 use std::thread::JoinHandle;
+use std::time::Duration;
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use serialport::SerialPort;
 use crate::core::hub_manager::{HubRequest};
-use crate::hw_comm::api::{HubIoError, ResponseStatus, HubResponse};
+use crate::hw_comm::api::{HubIoError, ResponseStatus, HubResponse, hub_frame_pos};
 use crate::hw_comm::api::ProtocolVersion::Version;
 use crate::hw_comm::uart_adapter::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
 
@@ -66,11 +67,11 @@ impl HubProtocolIoHandler {
         }
 
         let response_frame = self.read_response_frame()?;
+        log::debug!("Response frame: {:?}", format_bytes_hex(response_frame.as_slice()));
 
-        let id = response_frame[1];
-        let status = ResponseStatus::from(response_frame[2]);
-        let payload = response_frame[3..].to_vec();
-
+        let id = response_frame[hub_frame_pos::TID];
+        let status = ResponseStatus::from(response_frame[hub_frame_pos::COMMAND_OR_STATUS]);
+        let payload = response_frame[hub_frame_pos::PAYLOAD..].to_vec();
         Ok(HubResponse::new(id, status, payload))
     }
 
@@ -83,7 +84,10 @@ impl HubProtocolIoHandler {
 
         byte_handler.reset();
 
+        // Give HUB some time to perform operation
+        thread::sleep(Duration::from_millis(10));
         while byte[0] != START_BYTE {
+            println!("Byte: {}", byte[0]);
             port_handle.read_exact(&mut byte)
                 .into_report().change_context(HubIoError::NoResponseFromHub)
                 .attach_printable("Probably timeout")?;
