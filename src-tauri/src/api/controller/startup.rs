@@ -6,6 +6,7 @@ use crate::core::game_entities::{game, GameplayError, HubStatus, Player, PlayerS
 use crate::api::dto::PlayerSetupDto;
 use crate::core::hub_manager::HubManagerError;
 use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
+use crate::hw_comm::api_types::HubIoError;
 
 /// Provide saved game configuration
 #[command]
@@ -45,7 +46,7 @@ pub fn discover_terminals(channel_id: i32) -> Result<Vec<u8>, HubManagerError> {
     }
 
     game().hub.discover_terminals(channel_id)
-        .map_err(|e|{
+        .map_err(|e| {
             log::error!("{:#?}", e);
             e.current_context().clone()
         })
@@ -105,8 +106,33 @@ pub fn save_round_duration(round_minutes: i32) {
 #[command]
 pub fn start_the_game() -> Result<(), GameplayError> {
     log::info!("Triggered the game start");
-    game().start_the_game().map_err(|e|{
+    game().start_the_game().map_err(|e| {
         log::error!("{:#?}", e);
         e.current_context().clone()
     })
+}
+
+/// HUB Debug API
+#[command]
+pub fn send_raw_request_frame(request_frame: Vec<u8>) -> Result<Vec<u8>, HubIoError> {
+    log::info!("Sending raw frame request to HUB");
+    let mut game_ctx = game();
+    let handler = game_ctx.hub.hub_io_handler.as_mut()
+        .ok_or(HubIoError::NotInitializedError)?;
+
+    handler.send_raw_frame(request_frame).map_err(|e| {
+        log::error!("Operation failed: {:?}", e);
+        e.current_context().clone()
+    })
+}
+
+#[command]
+pub fn setup_hub_connection(port_name: String) -> Result<(), HubManagerError> {
+    log::info!("Trying to open HUB connection");
+    let mut game_ctx = game();
+    game_ctx.hub.setup_hub_connection(&port_name)
+        .map_err(|e| {
+            log::error!("Operation failed: {:?}", e);
+            e.current_context().clone()
+        })
 }

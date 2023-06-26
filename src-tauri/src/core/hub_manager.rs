@@ -83,6 +83,14 @@ impl HubManager {
             self.hub_io_handler = None;
         }
 
+        self.setup_hub_connection(port)?;
+
+        self.init_timestamp()?;
+        self.set_hub_timestamp(self.base_timestamp)?;
+        Ok(HubStatus::Detected)
+    }
+
+    pub fn setup_hub_connection(&mut self, port: &str) -> Result<(), HubManagerError> {
         if port == VIRTUAL_HUB_PORT {
             log::info!("Virtual hub selected. Let's have fun");
             let (serial_port, hub_mock_handle) = run_hub_mock()
@@ -92,16 +100,13 @@ impl HubManager {
                 })?;
             self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port, Some(hub_mock_handle)));
         } else {
-            let serial_port = self.setup_serial_connection(port)?;
+            let serial_port = self.setup_physical_serial_connection(port)?;
             self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port, None));
         }
-
-        self.init_timestamp()?;
-        self.set_hub_timestamp(self.base_timestamp)?;
-        Ok(HubStatus::Detected)
+        Ok(())
     }
 
-    fn setup_serial_connection(&mut self, port: &str) -> Result<Box<dyn SerialPort>, HubManagerError> {
+    fn setup_physical_serial_connection(&mut self, port: &str) -> Result<Box<dyn SerialPort>, HubManagerError> {
         log::info!("Try to discover hub at port: {port}");
         self.port_name = port.to_owned();
 
