@@ -1,5 +1,6 @@
 import {openSettingsModal, closeSettingsModal, handleDiscoverTerminals, serialPortSelectHandler} from "./modal/settings-modal.js";
 import {openPackInfoModal, closePackInfoModal, handleStartTheGame, closePackErrorModal} from "./modal/pack-info-modal.js";
+import {setupHubDebugCallbacks} from "./modal/hub-debug-modal.js";
 const { convertFileSrc } = window.__TAURI__.tauri;
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -15,6 +16,8 @@ window.addEventListener("DOMContentLoaded", () => {
     document
         .querySelector("#close-settings-modal")
         .addEventListener("click", closeSettingsModal);
+
+    setupHubDebugCallbacks();
 
     document
         .querySelector("#open-pack")

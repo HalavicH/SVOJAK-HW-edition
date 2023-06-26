@@ -1,0 +1,86 @@
+@import "./modal-common.css";
+
+/*<p class="title">Raw data communication:</p>*/
+/*<input type="text" name="request" id="request" placeholder="Request frame">*/
+/*<div style="display: flex">*/
+/*<div id="request-status" style="display: block; justify-self:left">Operation status:&nbsp;</div>*/
+/*<div id="request-status-value">Success</div>*/
+/*</div>*/
+/*<div style="display: flex">*/
+/*<div id="response-content" style="display: block; justify-self:left">Response:&nbsp;</div>*/
+/*<div id="response-content-value">C0 03 00 00 04 EF BE AD DE CF</div>*/
+/*</div>*/
+/*<button id="send-request-btn">Execute request</button>*/
+
+.left-aligned-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    padding: 5px;
+}
+
+#request-block div {
+    font-family: monospace;
+    display: flex;
+}
+
+/*#request-status-value {*/
+/*    padding: 0 10px;*/
+/*    border-radius: 5px;*/
+/*    background-color: var(--modal-table-background-color);*/
+/*}*/
+
+/************ Statuses ************/
+.request-status {
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    padding: 0 4px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bolder;
+
+    color: #ff0000;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid #ff0000;
+    box-shadow: 0 0 0.5em #ff0000;
+    transition: box-shadow 0.5s;
+}
+
+.request-status.timeout {
+    color: #8a8a8a;
+    background: rgba(163, 147, 3, 0.1);
+    border: 1px solid #818181;
+}
+
+.request-status.undefined {
+    color: #8a8a8a;
+    background: rgba(163, 147, 3, 0.1);
+    border: 1px solid #818181;
+    box-shadow: none;
+}
+
+.request-status.ok {
+    color: #52aa65;
+    background: rgba(82, 170, 101, 0.1);
+    border: 1px solid #52aa65;
+    box-shadow: 0 0 0.5em #58db24;
+    transition: box-shadow 0.5s;
+}
+
+#response-content-value {
+    -webkit-user-select: auto; /* Safari */
+    -moz-user-select: auto; /* Firefox */
+    -ms-user-select: auto; /* IE10+/Edge */
+    user-select: auto; /* Standard */
+    cursor: text;
+    box-sizing: border-box;
+
+    font-size: 10pt;
+
+    padding: 3px 10px;
+    border-radius: 10px;
+    background-color: var(--primary-button-color);
+}

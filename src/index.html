@@ -27,6 +27,8 @@
             <button id="settings-button" type="button">Check setup (HW & Players)</button>
             <p>then</p>
             <button id="open-pack" type="button">Open pack</button>
+            <p></p>
+            <button id="open-hub-debug" type="button">Debug menu</button>
         </div>
     </div>
 
@@ -248,9 +250,70 @@
                 </tr>
             </table>
         </div>
+    </div>
+</div>
+<!-- Modal HUB debug window -->
+<div class="modal" id="hub-debug-modal">
+    <div class="modal-content" id="hub-debug-modal-content">
+        <span class="close" id="close-hub-debug-modal">&times;</span>
+        <h2 class="modal-name">HUB debug menu</h2>
 
-        <div class="action-block">
-            <button id="pack-error-ok-btn" type="submit">Ok</button>
+        <div class="items-block">
+            <p class="title">Setup connection:</p>
+            <table class="grid">
+                <tr>
+                    <td>
+                        <div>Port status:</div>
+                    </td>
+                    <td>
+                        <div id="port-status-field" class="hub-status">Undefined</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="dev-serial-port-menu">Select serial device:
+                        </label>
+                    </td>
+                    <td>
+                        <select id="dev-serial-port-menu" name="size"></select>
+                    </td>
+                </tr>
+            </table>
+            <!--            <div id="apply-settings-row">-->
+            <!--                <button id="apply-settings-btn">Discover HUB</button>-->
+            <!--            </div>-->
+        </div>
+        <div class="items-block" id="request-block">
+            <p class="title">Raw data communication:</p>
+            <input type="text" name="request" id="request-from-input" placeholder="Request frame">
+            <div class="left-aligned-row">
+                <div id="request-status">Operation status:&nbsp;</div>
+                <div id="request-status-value" class="request-status undefined">Undefined</div>
+            </div>
+            <div class="left-aligned-row">
+                <div id="response-content">Response:&nbsp;</div>
+                <div id="response-content-value">No response as for now *w*</div>
+            </div>
+            <button id="send-request-btn">Execute request</button>
+        </div>
+
+        <div class="items-block" style="display: none">
+            <!--                SetTimestamp(u32),-->
+            <!--                GetTimestamp,-->
+            <!--                SetHubRadioChannel(u8),-->
+            <!--                SetTermRadioChannel(u8, u8),-->
+            <!--                PingDevice(u8),-->
+            <!--                SetLightColor(u8, RGB8),-->
+            <!--                SetFeedbackLed(u8, bool),-->
+            <!--                ReadEventQueue,-->
+
+            <p class="title">Commands</p>
+            <div id="command-status">Operation status:
+                <div id="command-status-value"></div>
+            </div>
+            <div class="row">
+                <button id="set-timestamp-btn"></button>
+            </div>
         </div>
     </div>
 </div>
