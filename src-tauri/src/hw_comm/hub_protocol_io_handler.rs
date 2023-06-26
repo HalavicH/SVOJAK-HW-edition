@@ -11,7 +11,6 @@ use serialport::SerialPort;
 use crate::hw_comm::api_types::{hub_frame_pos, HubIoError, HubRequest, HubResponse, ResponseStatus};
 use crate::hw_comm::api_types::ProtocolVersion::Version;
 use crate::hw_comm::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
-use crate::hw_comm::hub_mock::HubMock;
 
 const HUB_REQUEST_PROCESSING_TIMEOUT_MS: u64 = 50;
 
