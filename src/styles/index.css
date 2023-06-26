@@ -1,6 +1,7 @@
 @import "general.css";
 @import "modal/settings-modal.css";
 @import "modal/pack-info-modal.css";
+@import "modal/hub-debug-modal.css";
 
 .container {
     margin: 0;
