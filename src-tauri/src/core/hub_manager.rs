@@ -11,8 +11,8 @@ use rgb::RGB8;
 use serialport::SerialPort;
 use crate::core::game_entities::HubStatus;
 use crate::hw_comm::api_types::{HubIoError, HubRequest, ResponseStatus, TermButtonState, TermEvent};
-use crate::hw_comm::hub_mock::{HubMock, run_hub_mock, VIRTUAL_HUB_PORT};
 use crate::hw_comm::hub_protocol_io_handler::HubProtocolIoHandler;
+use crate::hw_comm::virtual_hw_hub::{setup_virtual_hub_connection, VIRTUAL_HUB_PORT};
 
 const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100);
 
@@ -93,11 +93,7 @@ impl HubManager {
     pub fn setup_hub_connection(&mut self, port: &str) -> Result<(), HubManagerError> {
         if port == VIRTUAL_HUB_PORT {
             log::info!("Virtual hub selected. Let's have fun");
-            let (serial_port, hub_mock_handle) = run_hub_mock()
-                .map_err(|_| {
-                    Report::new(HubManagerError::InternalError)
-                        .attach_printable("Can't create virtual hub.")
-                })?;
+            let (serial_port, hub_mock_handle) = setup_virtual_hub_connection()?;
             self.hub_io_handler = Some(HubProtocolIoHandler::new(serial_port, Some(hub_mock_handle)));
         } else {
             let serial_port = self.setup_physical_serial_connection(port)?;
