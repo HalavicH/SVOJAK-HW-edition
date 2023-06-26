@@ -1,254 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles/index.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Tauri App</title>
-        <script type="module" src="./scripts/index/index.js" defer></script>
-    </head>
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" href="styles/index.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tauri App</title>
+    <script type="module" src="./scripts/index/index.js" defer></script>
+</head>
 
-    <body>
-        <div class="container">
-            <h1>Welcome to Svojak!</h1>
-            <p>Powered by BronuCon commuity</p>
+<body>
+<div class="container">
+    <h1>Welcome to Svojak!</h1>
+    <p>Powered by BronuCon commuity</p>
+    <div class="row">
+        <a href="https://bronucon.in.ua" target="_blank">
+            <img
+                    src="assets/bc-logo.png"
+                    class="logo bronucon"
+                    alt="BronuCon logo"
+            />
+        </a>
+    </div>
+
+    <div class="row">
+        <div>
+            <button id="settings-button" type="button">Check setup (HW & Players)</button>
+            <p>then</p>
+            <button id="open-pack" type="button">Open pack</button>
+        </div>
+    </div>
+
+    <p id="greet-msg"></p>
+</div>
+
+<!-- Modal settings window -->
+<div id="settings-modal" class="modal">
+    <div class="modal-content" id="settings-modal-content">
+        <span class="close" id="close-settings-modal">&times;</span>
+        <h2>Settings</h2>
+        <!-- Add your settings options and controls here -->
+
+        <div class="items-block" id="serial-settings">
+            <p class="title">Setup HUB Serial connection:</p>
+            <table class="grid">
+                <tr>
+                    <td>
+                        <div>Hub status:</div>
+                    </td>
+                    <td>
+                        <div id="hub-status-field" class="hub-status">Undefined</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="serial-port-menu"
+                        >Select serial device:
+                        </label>
+                    </td>
+                    <td>
+                        <select id="serial-port-menu" name="size"></select>
+                    </td>
+                </tr>
+            </table>
+            <!--            <div id="apply-settings-row">-->
+            <!--                <button id="apply-settings-btn">Discover HUB</button>-->
+            <!--            </div>-->
+        </div>
+
+        <div class="items-block" id="hw-status-group">
+            <p class="title">Setup terminals & users</p>
+
             <div class="row">
-                <a href="https://bronucon.in.ua" target="_blank">
-                    <img
-                        src="assets/bc-logo.png"
-                        class="logo bronucon"
-                        alt="BronuCon logo"
-                    />
-                </a>
+                <div>Provide radio channel num:</div>
+                <input
+                        type="text"
+                        name="radio-channel"
+                        id="radio-channel"
+                        placeholder="1-127"
+                />
+                <button id="discover-terminals" class="inline-btn">
+                    Discover
+                </button>
             </div>
-
-            <div class="row">
-                <div>
-                    <button id="settings-button" type="button">
-                        Check setup (HW & Players)
-                    </button>
-                    <p>then</p>
-                    <button id="open-pack" type="button">Open pack</button>
-                </div>
+            <div id="hub-data-block">
+                <div>Terminal data:</div>
+                <table class="dark-table" id="terminal-data-table">
+                    <tr class="dark-table-labels" id="terminal-data-labels">
+                        <td>Id</td>
+                        <td>Icon</td>
+                        <td>Name</td>
+                        <td>Use</td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x01</td>
+                        <td>
+                            <img
+                                    src="assets/default-icon.png"
+                                    class="player-image"
+                                    id="term-one"
+                                    alt="Select image"
+                            />
+                        </td>
+                        <td>
+                            <input
+                                    type="text"
+                                    class="term-name"
+                                    placeholder="Enter player name"
+                            />
+                        </td>
+                        <td><input type="checkbox" class=""/></td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x02</td>
+                        <td>
+                            <img
+                                    src="assets/default-icon.png"
+                                    class="player-image"
+                                    alt="Select image"
+                            />
+                        </td>
+                        <td>
+                            <input
+                                    type="text"
+                                    class="term-name"
+                                    placeholder="Enter player name"
+                            />
+                        </td>
+                        <td><input type="checkbox"/></td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x03</td>
+                        <td>
+                            <img
+                                    src="assets/default-icon.png"
+                                    class="player-image"
+                                    alt="Select image"
+                            />
+                        </td>
+                        <td>
+                            <input
+                                    type="text"
+                                    class="term-name"
+                                    placeholder="Enter player name"
+                            />
+                        </td>
+                        <td><input type="checkbox"/></td>
+                    </tr>
+                    <tr class="terminal-data">
+                        <td>0x04</td>
+                        <td>
+                            <img
+                                    src="assets/default-icon.png"
+                                    class="player-image"
+                                    alt="Select image"
+                            />
+                        </td>
+                        <td>
+                            <input
+                                    type="text"
+                                    class="term-name"
+                                    placeholder="Enter player name"
+                            />
+                        </td>
+                        <td><input type="checkbox"/></td>
+                    </tr>
+                </table>
             </div>
+        </div>
+    </div>
+</div>
 
-            <p id="greet-msg"></p>
+<!-- Modal pack-info window -->
+<div class="modal" id="pack-info-modal">
+    <div class="modal-content" id="pack-info-modal-content">
+        <span class="close" id="close-pack-info-modal">&times;</span>
+        <h2 class="modal-name" id="pack-name">Pack: Zlyj reper Zenyk</h2>
+
+        <div class="items-block">
+            <p class="items-block-title" id="pack-info-title">Pack info:</p>
+            <div id="pack-author-form">Author: Zlyj reper Zenyk</div>
+            <ul id="pack-content-brief">
+                <li id="pack-round-num">Rounds: 3</li>
+                <li id="pack-topics-num">Topics: 20</li>
+                <li id="pack-question-num">Questions: 66</li>
+            </ul>
+            <div id="topic-list-title">Topic list:</div>
+            <ul id="topic-list">
+                <li>Beer</li>
+                <li>Pone</li>
+                <li>Music</li>
+                <li>Movies</li>
+                <li>Fallout equestria</li>
+                <li>Beer</li>
+                <li>Pone</li>
+                <li>Music</li>
+                <li>Movies</li>
+                <li>Fallout equestria</li>
+                <li>Beer</li>
+                <li>Pone</li>
+                <li>Music</li>
+                <li>Movies</li>
+                <li>Fallout equestria</li>
+            </ul>
         </div>
 
-        <!-- Modal settings window -->
-        <div id="settings-modal" class="modal">
-            <div class="modal-content" id="settings-modal-content">
-                <span class="close" id="close-settings-modal">&times;</span>
-                <h2>Settings</h2>
-                <!-- Add your settings options and controls here -->
-
-                <div class="items-block" id="serial-settings">
-                    <p class="title">Setup HUB Serial connection:</p>
-                    <table class="grid">
-                        <tr>
-                            <td>
-                                <div>Hub status:</div>
-                            </td>
-                            <td>
-                                <div id="hub-status-field" class="hub-status">Undefined</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label for="serial-port-menu"
-                                    >Select serial device:
-                                </label>
-                            </td>
-                            <td>
-                                <select id="serial-port-menu" name="size"></select>
-                            </td>
-                        </tr>
-                    </table>
-                    <!--            <div id="apply-settings-row">-->
-                    <!--                <button id="apply-settings-btn">Discover HUB</button>-->
-                    <!--            </div>-->
-                </div>
-
-                <div class="items-block" id="hw-status-group">
-                    <p class="title">Setup terminals & users</p>
-
-                    <div class="row">
-                        <div>Provide radio channel num:</div>
-                        <input
-                            type="text"
-                            name="radio-channel"
-                            id="radio-channel"
-                            placeholder="1-127"
-                        />
-                        <button id="discover-terminals" class="inline-btn">
-                            Discover
-                        </button>
-                    </div>
-                    <div id="hub-data-block">
-                        <div>Terminal data:</div>
-                        <table class="dark-table" id="terminal-data-table">
-                            <tr class="dark-table-labels" id="terminal-data-labels">
-                                <td>Id</td>
-                                <td>Icon</td>
-                                <td>Name</td>
-                                <td>Use</td>
-                            </tr>
-                            <tr class="terminal-data">
-                                <td>0x01</td>
-                                <td>
-                                    <img
-                                        src="assets/default-icon.png"
-                                        class="player-image"
-                                        id="term-one"
-                                        alt="Select image"
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        class="term-name"
-                                        placeholder="Enter player name"
-                                    />
-                                </td>
-                                <td><input type="checkbox" class="" /></td>
-                            </tr>
-                            <tr class="terminal-data">
-                                <td>0x02</td>
-                                <td>
-                                    <img
-                                        src="assets/default-icon.png"
-                                        class="player-image"
-                                        alt="Select image"
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        class="term-name"
-                                        placeholder="Enter player name"
-                                    />
-                                </td>
-                                <td><input type="checkbox" /></td>
-                            </tr>
-                            <tr class="terminal-data">
-                                <td>0x03</td>
-                                <td>
-                                    <img
-                                        src="assets/default-icon.png"
-                                        class="player-image"
-                                        alt="Select image"
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        class="term-name"
-                                        placeholder="Enter player name"
-                                    />
-                                </td>
-                                <td><input type="checkbox" /></td>
-                            </tr>
-                            <tr class="terminal-data">
-                                <td>0x04</td>
-                                <td>
-                                    <img
-                                        src="assets/default-icon.png"
-                                        class="player-image"
-                                        alt="Select image"
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        class="term-name"
-                                        placeholder="Enter player name"
-                                    />
-                                </td>
-                                <td><input type="checkbox" /></td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+        <div class="items-block">
+            <p class="pack-info-title">Gameplay settings:</p>
+            <div class="row" id="round-duration-selector-block">
+                <label for="round-duration">Select round duration:</label>
+                <select id="round-duration" name="size">
+                    <option value="10">10min</option>
+                    <option value="15" selected>15min</option>
+                    <option value="20">20min</option>
+                </select>
             </div>
         </div>
 
-        <!-- Modal pack-info window -->
-            <div class="modal" id="pack-info-modal">
-                <div class="modal-content" id="pack-info-modal-content">
-                    <span class="close" id="close-pack-info-modal">&times;</span>
-                    <h2 class="modal-name" id="pack-name">Pack: Zlyj reper Zenyk</h2>
-
-                    <div class="items-block">
-                        <p class="items-block-title" id="pack-info-title">Pack info:</p>
-                        <div id="pack-author-form">Author: Zlyj reper Zenyk</div>
-                        <ul id="pack-content-brief" >
-                            <li id="pack-round-num">Rounds: 3</li>
-                            <li id="pack-topics-num">Topics: 20</li>
-                            <li id="pack-question-num">Questions: 66</li>
-                        </ul>
-                        <div id="topic-list-title">Topic list:</div>
-                        <ul id="topic-list">
-                            <li>Beer</li>
-                            <li>Pone</li>
-                            <li>Music</li>
-                            <li>Movies</li>
-                            <li>Fallout equestria</li>
-                            <li>Beer</li>
-                            <li>Pone</li>
-                            <li>Music</li>
-                            <li>Movies</li>
-                            <li>Fallout equestria</li>
-                            <li>Beer</li>
-                            <li>Pone</li>
-                            <li>Music</li>
-                            <li>Movies</li>
-                            <li>Fallout equestria</li>
-                        </ul>
-                    </div>
-
-                    <div class="items-block">
-                        <p class="pack-info-title">Gameplay settings:</p>
-                        <div class="row" id="round-duration-selector-block">
-                           <label for="round-duration">Select round duration:</label>
-                            <select id="round-duration" name="size">
-                                <option value="10">10min</option>
-                                <option value="15" selected>15min</option>
-                                <option value="20">20min</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="action-block">
-                        <button id="start-the-game" type="button">Start the game</button>
-                    </div>
-                </div>
-            </div>
-        <!-- Modal pack-error window -->
-        <div class="modal" id="pack-error-modal">
-            <div class="modal-content" id="pack-error-modal-content">
-                <span class="close" id="pack-error-close-modal">&times;</span>
-                <h2 class="modal-name">Pack opening failed</h2>
-
-                <div class="items-block">
-                    <p class="pack-info-title">Can't open pack:</p>
-                    <table class="grid" id="pack-error-info-table">
-                        <tr>
-                            <td class="key"><div>Cause:</div></td>
-                            <td><div id="pack-error-cause" class="">Unknown error</div></td>
-                        </tr>
-                        <tr>
-                            <td class="key"><div>Pack path:</div></td>
-                            <td><div id="pack-path" class=""></div></td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="action-block">
-                    <button id="pack-error-ok-btn" type="submit">Ok</button>
-                </div>
-            </div>
+        <div class="action-block">
+            <button id="start-the-game" type="button">Start the game</button>
         </div>
-    </body>
+    </div>
+</div>
+<!-- Modal pack-error window -->
+<div class="modal" id="pack-error-modal">
+    <div class="modal-content" id="pack-error-modal-content">
+        <span class="close" id="pack-error-close-modal">&times;</span>
+        <h2 class="modal-name">Pack opening failed</h2>
+
+        <div class="items-block">
+            <p class="pack-info-title">Can't open pack:</p>
+            <table class="grid" id="pack-error-info-table">
+                <tr>
+                    <td class="key">
+                        <div>Cause:</div>
+                    </td>
+                    <td>
+                        <div id="pack-error-cause" class="">Unknown error</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="key">
+                        <div>Pack path:</div>
+                    </td>
+                    <td>
+                        <div id="pack-path" class=""></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="action-block">
+            <button id="pack-error-ok-btn" type="submit">Ok</button>
+        </div>
+    </div>
+</div>
+</body>
 </html>
 
 
