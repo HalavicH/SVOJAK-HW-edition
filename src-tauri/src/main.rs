@@ -22,6 +22,9 @@ fn main() {
             save_round_duration,
             get_pack_info,
             start_the_game,
+            // Debug API
+            send_raw_request_frame,
+            setup_hub_connection,
             // Gameplay API
             fetch_players,
             fetch_round,
