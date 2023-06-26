@@ -14,8 +14,6 @@ use crate::hw_comm::byte_handler::ByteHandler;
 
 use crate::hw_comm::hub_protocol_io_handler::{format_bytes_hex, stuff_bytes};
 
-pub const VIRTUAL_HUB_PORT: &str = "Demo HUB port";
-
 pub fn run_hub_mock() -> Result<(Box<dyn SerialPort>, JoinHandle<()>), String> {
     let (host_handle, device_tty) = TTYPort::pair().expect("Unable to create ptty pair");
     let device_handle = serialport::new(device_tty.name().unwrap(), 0).open().unwrap();

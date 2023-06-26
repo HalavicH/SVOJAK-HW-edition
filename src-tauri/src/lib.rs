@@ -26,5 +26,5 @@ pub mod hw_comm {
     pub mod hub_protocol_io_handler;
     pub mod byte_handler;
 
-    pub mod hub_mock;
+    pub mod virtual_hw_hub;
 }
