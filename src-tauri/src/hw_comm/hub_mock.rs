@@ -86,6 +86,15 @@ impl HubMock {
 
         let input_frame = self.byte_handler.get_current_frame();
 
+        if input_frame.len() < 4 {
+            return vec![
+                    0x03,
+                    0x00,
+                    0x90,
+                    0x00,
+                ];
+        }
+
         let version = input_frame[hub_frame_pos::PROTOCOL_VERSION];
         let tid = input_frame[hub_frame_pos::TID];
         let cmd = input_frame[hub_frame_pos::COMMAND_OR_STATUS];
