@@ -252,6 +252,7 @@
         </div>
     </div>
 </div>
+
 <!-- Modal HUB debug window -->
 <div class="modal" id="hub-debug-modal">
     <div class="modal-content" id="hub-debug-modal-content">
@@ -294,26 +295,18 @@
         </div>
 
         <div class="items-block">
-            <!--                SetTimestamp(u32),-->
-            <!--                GetTimestamp,-->
-            <!--                SetHubRadioChannel(u8),-->
-            <!--                SetTermRadioChannel(u8, u8),-->
-            <!--                PingDevice(u8),-->
-            <!--                SetLightColor(u8, RGB8),-->
-            <!--                SetFeedbackLed(u8, bool),-->
-            <!--                ReadEventQueue,-->
-
             <p class="title">Commands passing:&nbsp;&nbsp;</p>
             <div class="left-aligned-row">
                 <label for="dev-hub-command-menu">Select cmd:</label>
                 <select id="dev-hub-command-menu">
-                    <option value="set_timestamp">SetTimestamp(u32)</option>
+                    <option value="default">Select command</option>
+                    <option value="set_timestamp">SetTimestamp(timestamp: u32)</option>
                     <option value="get_timestamp">GetTimestamp</option>
-                    <option value="set_hub_radio_channel">SetHubRadioChannel(u8)</option>
-                    <option value="set_term_radio_channel">SetTermRadioChannel(u8, u8)</option>
-                    <option value="ping_device">PingDevice(u8)</option>
-                    <option value="set_light_color">SetLightColor(u8, RGB8)</option>
-                    <option value="set_feedback_led">SetFeedbackLed(u8, bool)</option>
+                    <option value="set_hub_radio_channel">SetHubRadioChannel(channel: u8)</option>
+                    <option value="set_term_radio_channel">SetTermRadioChannel(term_id: u8, channel: u8)</option>
+                    <option value="ping_device">PingDevice(term_id: u8)</option>
+                    <option value="set_light_color">SetLightColor(term_id: u8, color: RGB8)</option>
+                    <option value="set_feedback_led">SetFeedbackLed(term_id: u8, state: bool)</option>
                     <option value="read_event_queue">ReadEventQueue</option>
                 </select>
             </div>
@@ -325,28 +318,22 @@
 
             <div class="left-aligned-row">
                 <div>Request frame:&nbsp;</div>
-                <div id="request-frame" class="io-data-field">C0 03 00 80 04 EF BE AD DE CF</div>
+                <div id="request-frame" class="io-data-field">No response as for now *w*</div>
             </div>
 
             <div class="left-aligned-row">
                 <div id="command-status">Operation status:&nbsp;</div>
-                <div id="command-status-value" class="request-status ok">Operation Successful</div>
+                <div id="command-status-value" class="request-status undefined">Undefined</div>
             </div>
 
             <div class="left-aligned-row">
                 <div>Response frame:&nbsp;</div>
-                <div id="response-frame" class="io-data-field">C0 03 00 00 00 CF</div>
+                <div id="response-frame" class="io-data-field">No response as for now *w*</div>
             </div>
             <div>
                 <div>Response object:&nbsp;</div>
                 <div id="response-object" class="io-data-field">
-                    <pre>
-HubResponse {
-    id: 0,
-    status: Ok,
-    payload_len: 0,
-    payload: [],
-}</pre>
+                    <pre>No response as for now *w*</pre>
                 </div>
             </div>
             <button id="send-command-btn">Send command</button>
