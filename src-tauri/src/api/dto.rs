@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 use crate::core::game_entities::PlayerState;
 use crate::game_pack::pack_content_entities::QuestionMediaType;
+use crate::hw_comm::api_types::HubResponse;
 
 ////////// Config ///////////
 #[derive(Debug, Serialize)]
@@ -126,3 +127,22 @@ pub struct PlayerStatsDto {
     pub answeredCorrectly: i32,
     pub answeredWrong: i32,
 }
+
+////////// HUB DEBUG ///////////
+#[derive(Debug, Deserialize)]
+#[allow(non_snake_case)]
+pub struct HubRequestDto {
+    pub cmd: String,
+    pub param1: u32,
+    pub param2: u32,
+}
+
+#[derive(Debug, Serialize)]
+#[allow(non_snake_case)]
+pub struct HubResponseDto {
+    pub request_frame: String,
+    pub response_frame: String,
+    pub generic_response_obj: String,
+    pub response_obj: String,
+}
+

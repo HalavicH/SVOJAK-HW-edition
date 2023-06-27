@@ -2,7 +2,7 @@ use std::thread;
 use std::time::Duration;
 use std::cell::Cell;
 use std::io::ErrorKind;
-use std::thread::JoinHandle;
+use std::thread::{JoinHandle, sleep};
 use error_stack::{IntoReport, ResultExt, Result, Report};
 use serialport::{SerialPort, TTYPort};
 use rand::prelude::*;
@@ -186,7 +186,7 @@ impl HubMock {
                     events.lock().unwrap().len()
                 };
 
-                if len > 10 {
+                if len > 5 {
                     thread::sleep(Duration::from_millis(100));
                     continue;
                 }
@@ -195,12 +195,8 @@ impl HubMock {
 
                 terminals.shuffle(&mut thread_rng());
                 terminals.iter().for_each(|id| {
-                    let mut event = vec![];
-                    event.push(*id);
-                    let timestamp = get_epoch_ms().unwrap() + (*id as u32 * 5);
-                    event.append(&mut timestamp.to_le_bytes().to_vec());
-                    event.push(0x01);
-                    let state = if event.len() % 2 == 0 {
+                    let timestamp = get_epoch_ms().unwrap();
+                    let state = if timestamp % 2 == 0 {
                         TermButtonState::Pressed
                     } else {
                         TermButtonState::Released
@@ -211,8 +207,14 @@ impl HubMock {
                         state,
                     };
 
+                    sleep(Duration::from_millis(10));
+
                     // Lock the mutex and push the event into the shared vector
                     let mut guard = events.lock().unwrap();
+
+                    if guard.len() > 5 {
+                        return;;
+                    }
                     guard.push(term_event);
                 });
             }
@@ -222,6 +224,7 @@ impl HubMock {
     pub fn read_event_queue(&mut self) -> Vec<u8> {
         let mut events = self.events.lock().unwrap();
 
+        log::debug!("Events registered by HUB: {:#?}", events);
         let mut response = vec![];
 
         events.iter().for_each(|event| {
