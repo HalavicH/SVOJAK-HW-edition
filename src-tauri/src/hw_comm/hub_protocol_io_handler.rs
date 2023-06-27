@@ -67,7 +67,9 @@ impl HubProtocolIoHandler {
         let id = response_frame[hub_frame_pos::TID];
         let status = ResponseStatus::from(response_frame[hub_frame_pos::COMMAND_OR_STATUS]);
         let payload = response_frame[hub_frame_pos::PAYLOAD..].to_vec();
-        Ok(HubResponse::new(id, status, payload))
+        let response = HubResponse::new(id, status, payload);
+        log::trace!("Hub response: {:#?}", response);
+        Ok(response)
     }
 
     fn read_raw_response_frame(&self) -> Result<Vec<u8>, HubIoError> {
@@ -141,7 +143,7 @@ pub fn stuff_bytes(frame: &Vec<u8>) -> Vec<u8> {
         }
     }
     stuffed.push(STOP_BYTE);
-    log::debug!("Frame after bit stuffing: {:?}", format_bytes_hex(&stuffed));
+    log::trace!("Frame after bit stuffing: {:?}", format_bytes_hex(&stuffed));
 
     stuffed
 }
@@ -151,7 +153,7 @@ pub fn assemble_frame(cmd: u8, mut payload: Vec<u8>) -> Vec<u8> {
     let tid = 0;
     let mut frame = vec![Version.to_value(), tid, cmd, payload_len];
     frame.append(&mut payload);
-    log::debug!("Assembled frame: {:?}", format_bytes_hex(&frame));
+    log::trace!("Assembled frame: {:?}", format_bytes_hex(&frame));
     frame
 }
 
