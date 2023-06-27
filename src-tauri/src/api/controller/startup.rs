@@ -1,10 +1,12 @@
+use error_stack::ResultExt;
 use tauri::{command};
 use crate::api::dto::{ConfigDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
 use crate::core::game_entities::{game, GameplayError, HubStatus, Player, PlayerState};
 
 use crate::api::dto::PlayerSetupDto;
-use crate::core::hub_manager::HubManagerError;
+use crate::core::game_logic::start_event_listener;
+use crate::core::hub_manager::{HubManager, HubManagerError};
 use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
 use crate::hw_comm::api_types::HubIoError;
 
@@ -22,9 +24,11 @@ pub fn fetch_configuration() -> ConfigDto {
 /// Tries to detect hub at given serial port. If successful saves port name
 #[command]
 pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
-    let result = game().hub.probe(&path);
+    let guard = game();
+    let result = guard.get_unlocked_hub_mut().probe(&path);
     match result {
         Ok(status) => {
+            start_event_listener(guard.get_hub_ref().clone());
             log::info!("Hub status: {:?}", status);
             Ok(status)
         }
@@ -40,12 +44,14 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
 #[command]
 pub fn discover_terminals(channel_id: i32) -> Result<Vec<u8>, HubManagerError> {
     log::info!("Got channel id: {channel_id}");
+    let guard = game();
+    let mut hub_guard = guard.get_unlocked_hub_mut();
 
-    if !game().hub.is_hub_alive() {
+    if !hub_guard.is_hub_alive() {
         return Err(HubManagerError::NoResponseFromHub);
     }
 
-    game().hub.discover_terminals(channel_id)
+    hub_guard.discover_terminals(channel_id)
         .map_err(|e| {
             log::error!("{:#?}", e);
             e.current_context().clone()
@@ -116,8 +122,9 @@ pub fn start_the_game() -> Result<(), GameplayError> {
 #[command]
 pub fn send_raw_request_frame(request_frame: Vec<u8>) -> Result<Vec<u8>, HubIoError> {
     log::info!("Sending raw frame request to HUB");
-    let mut game_ctx = game();
-    let handler = game_ctx.hub.hub_io_handler.as_mut()
+    let guard = game();
+    let mut hub_guard = guard.get_unlocked_hub_mut();
+    let handler = hub_guard.hub_io_handler.as_mut()
         .ok_or(HubIoError::NotInitializedError)?;
 
     handler.send_raw_frame(request_frame).map_err(|e| {
@@ -130,7 +137,8 @@ pub fn send_raw_request_frame(request_frame: Vec<u8>) -> Result<Vec<u8>, HubIoEr
 pub fn setup_hub_connection(port_name: String) -> Result<(), HubManagerError> {
     log::info!("Trying to open HUB connection");
     let mut game_ctx = game();
-    game_ctx.hub.setup_hub_connection(&port_name)
+    let mut hub = game_ctx.get_unlocked_hub_mut();
+    hub.setup_hub_connection(&port_name)
         .map_err(|e| {
             log::error!("Operation failed: {:?}", e);
             e.current_context().clone()

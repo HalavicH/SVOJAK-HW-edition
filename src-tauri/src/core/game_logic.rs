@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::thread;
 use std::thread::{JoinHandle, sleep};
 use std::time::Duration;
@@ -9,18 +9,11 @@ use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
 use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
 use crate::core::hub_manager::{get_epoch_ms, HubManager, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
+use crate::hw_comm::api_types::TermEvent;
 
 const EVT_POLLING_INTERVAL_MS: u64 = 100;
 
 impl GameContext {
-    pub fn new() -> Self {
-        
-
-        Self {
-            ..Default::default()
-        }
-    }
-
     pub fn start_the_game(&mut self) -> Result<(), GameplayError> {
         self.update_game_state(GameState::QuestionChoosing);
 
@@ -29,11 +22,13 @@ impl GameContext {
             return Err(GameplayError::PlayerNotPresent).into_report();
         }
 
+        start_event_listener(self.get_hub_ref().clone());
+
         let q_picker_id = match self.get_fastest_click_player_id() {
             Ok(id) => { id }
             Err(err) => {
                 log::error!("{:#?}", err);
-                
+
                 self.players.values().next()
                     .ok_or(GameplayError::PlayerNotPresent).into_report()
                     .attach_printable("Can't find any player to play with :D")?
@@ -87,7 +82,7 @@ impl GameContext {
 
     pub fn allow_answer(&mut self) -> Result<(), HubManagerError> {
         let timestamp = get_epoch_ms()?;
-        self.hub.allow_answer_timestamp = timestamp;
+        self.get_unlocked_hub_mut().allow_answer_timestamp = timestamp;
         log::info!("Current answer base timestamp: {timestamp}");
 
         self.current.set_active_player_id(0);
@@ -272,7 +267,7 @@ impl GameContext {
     fn get_fastest_click_from_hub(&mut self) -> Result<u8, HubManagerError> {
         // let mut events = vec![];
         // while events.is_empty() {
-        //     events = self.hub.read_event_queue()?;
+        //     events = self.get_hub().read_event_queue()?;
         // }
         //
         // events.iter()
@@ -281,7 +276,7 @@ impl GameContext {
         //     evt.
         // }
 
-    // TODO: Add logic for fastest click
+        // TODO: Add logic for fastest click
 
         let keys = self.players.iter()
             .filter(|(_, p)| { p.allowed_to_click() })
@@ -342,14 +337,16 @@ impl GameContext {
     }
 }
 
-pub fn start_event_listener(hub: Arc<Mutex<HubManager>>) -> JoinHandle<()>{
+pub fn start_event_listener(hub: Arc<RwLock<HubManager>>) -> JoinHandle<()> {
+    log::info!("Starting event listener");
+
     thread::spawn(move || {
         listen_hub_events(hub);
     })
 }
 
-fn listen_hub_events(hub: Arc<Mutex<HubManager>>) {
-    let hub_guard = hub.lock().expect("Mutex is poisoned");
+fn listen_hub_events(hub: Arc<RwLock<HubManager>>) {
+    let hub_guard = hub.read().expect("Mutex is poisoned");
     loop {
         sleep(Duration::from_millis(EVT_POLLING_INTERVAL_MS));
         let events = hub_guard.read_event_queue()
@@ -365,17 +362,21 @@ fn listen_hub_events(hub: Arc<Mutex<HubManager>>) {
 
         events.iter()
             .for_each(|e| {
-                hub_guard.set_term_feedback_led(e.term_id, &e.state)
-                    .unwrap_or_else(|error| {
-                        log::error!("Can't set term_feedback let. Err {:?}", error);
-                    });
-
-                if e.timestamp >= hub_guard.allow_answer_timestamp {
-                    log::info!("After answer allowed");
-                } else {
-                    log::info!("Forbidden. Adding 1s delay for the answer");
-                }
+                process_term_event(&hub_guard, e);
             });
+    }
+}
+
+fn process_term_event(hub_guard: &RwLockReadGuard<HubManager>, e: &TermEvent) {
+    hub_guard.set_term_feedback_led(e.term_id, &e.state)
+        .unwrap_or_else(|error| {
+            log::error!("Can't set term_feedback let. Err {:?}", error);
+        });
+
+    if e.timestamp >= hub_guard.allow_answer_timestamp {
+        log::info!("After answer allowed");
+    } else {
+        log::info!("Forbidden. Adding 1s delay for the answer");
     }
 }
 
