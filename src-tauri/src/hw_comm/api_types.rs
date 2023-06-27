@@ -129,6 +129,7 @@ pub mod hub_frame_pos {
     pub const PAYLOAD: usize = 4;
 }
 
+#[derive(Debug)]
 pub struct TermEvent {
     pub term_id: u8,
     pub timestamp: u32,
