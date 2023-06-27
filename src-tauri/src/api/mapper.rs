@@ -10,10 +10,11 @@ use super::dto::PlayerSetupDto;
 /// Takes whole game context and maps to config which contains only required elements
 pub fn get_config_dto() -> ConfigDto {
     let context = game();
+    let hub_guard = context.get_unlocked_hub();
     ConfigDto {
         available_ports: HubManager::discover_serial_ports(),
-        hub_port: context.hub.port_name.clone(),
-        radio_channel: context.hub.radio_channel,
+        hub_port: hub_guard.port_name.clone(),
+        radio_channel: hub_guard.radio_channel,
         players: context
             .players
             .iter()
