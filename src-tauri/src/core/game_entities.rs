@@ -1,10 +1,11 @@
-use std::sync::{Arc, MutexGuard};
+use std::sync::{Arc, MutexGuard, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::sync::Mutex;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 
 use serde::{Serialize, Deserialize};
+use error_stack::{IntoReport, ResultExt, Result, Report};
 use crate::api::dto::QuestionType;
 use crate::core::hub_manager::HubManager;
 use crate::game_pack::game_pack_entites::GamePack;
@@ -71,7 +72,6 @@ pub enum HubStatus {
 }
 
 
-
 #[derive(Debug, Clone, Serialize)]
 pub enum GamePackError {
     ThemeNotPresent,
@@ -90,8 +90,36 @@ impl Error for GamePackError {}
 pub struct GameContext {
     pub players: HashMap<u8, Player>,
     pub game_pack: GamePack,
-    pub hub: HubManager,
+    hub: Arc<RwLock<HubManager>>,
     pub current: CurrentContext,
+}
+
+impl GameContext {
+    pub fn new() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
+
+    pub fn get_hub_ref(&self) -> &Arc<RwLock<HubManager>> {
+        &self.hub
+    }
+
+    pub fn get_unlocked_hub(&self) -> RwLockReadGuard<HubManager> {
+        self.hub.read()
+            .map_err(|e| {
+                Report::new(GameplayError::InternalError)
+                    .attach_printable(format!("Can't get HUB for read. {:?}", e))
+            }).expect("Poisoned")
+    }
+
+    pub fn get_unlocked_hub_mut(&self) -> RwLockWriteGuard<HubManager> {
+        self.hub.write()
+            .map_err(|e| {
+                Report::new(GameplayError::InternalError)
+                    .attach_printable(format!("Can't get HUB for write. {:?}", e))
+            }).expect("Poisoned")
+    }
 }
 
 #[derive(Default, Debug)]
@@ -113,7 +141,6 @@ impl CurrentContext {
     pub fn active_player_id(&self) -> u8 {
         self.active_player_id
     }
-
     pub fn set_active_player_id(&mut self, new_id: u8) {
         self.active_player_id = new_id
     }
@@ -132,6 +159,7 @@ pub enum GameplayError {
     PlayerNotPresent,
     HubOperationError,
     OperationForbidden,
+    InternalError,
 }
 
 impl fmt::Display for GameplayError {
@@ -142,6 +170,7 @@ impl fmt::Display for GameplayError {
             GameplayError::HubOperationError => { "HUB operation failed" }
             GameplayError::AnswerForbidden => { "Answer forbidden" }
             GameplayError::OperationForbidden => { "Operation forbidden" }
+            GameplayError::InternalError => { "Internal error" }
         };
         fmt.write_str(&format!("Gameplay error: {}", error))
     }
