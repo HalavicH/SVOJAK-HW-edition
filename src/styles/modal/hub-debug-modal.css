@@ -17,13 +17,12 @@
     flex-direction: row;
     justify-content: left;
     align-items: center;
-    padding: 5px;
+    padding: 5px 0;
 }
 
-#request-block div {
-    font-family: monospace;
-    display: flex;
-}
+/*#request-block div {*/
+/*    display: flex;*/
+/*}*/
 
 /*#request-status-value {*/
 /*    padding: 0 10px;*/
@@ -70,7 +69,7 @@
     transition: box-shadow 0.5s;
 }
 
-#response-content-value {
+.io-data-field {
     -webkit-user-select: auto; /* Safari */
     -moz-user-select: auto; /* Firefox */
     -ms-user-select: auto; /* IE10+/Edge */
@@ -83,4 +82,10 @@
     padding: 3px 10px;
     border-radius: 10px;
     background-color: var(--primary-button-color);
+
+    font-family: monospace;
+}
+
+.wide-input {
+    width: auto;
 }
