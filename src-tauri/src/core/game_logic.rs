@@ -348,6 +348,7 @@ pub fn start_event_listener(hub: Arc<RwLock<HubManager>>) -> JoinHandle<()> {
 fn listen_hub_events(hub: Arc<RwLock<HubManager>>) {
     let hub_guard = hub.read().expect("Mutex is poisoned");
     loop {
+        log::debug!("############# NEW ITERATION ###############");
         sleep(Duration::from_millis(EVT_POLLING_INTERVAL_MS));
         let events = hub_guard.read_event_queue()
             .unwrap_or_else(|error| {
