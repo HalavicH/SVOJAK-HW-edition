@@ -2,6 +2,7 @@ use serde::Serialize;
 use std::error::Error;
 use std::fmt;
 use rgb::RGB8;
+use crate::api::dto::HubRequestDto;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HubIoError {
@@ -33,6 +34,23 @@ pub enum HubRequest {
 }
 
 impl HubRequest {
+    pub fn from_debug_request(request: HubRequestDto) -> Self {
+        let x = request.param2.to_ne_bytes();
+        let rgb = RGB8::new(x[0], x[1], x[2]);
+        let state = if request.param2 != 0 { true } else { false };
+        match request.cmd.as_str() {
+            "set_timestamp" => HubRequest::SetTimestamp(request.param1),
+            "get_timestamp" => HubRequest::GetTimestamp,
+            "set_hub_radio_channel" => HubRequest::SetHubRadioChannel(request.param1 as u8),
+            "set_term_radio_channel" => HubRequest::SetTermRadioChannel(request.param1 as u8, request.param2 as u8),
+            "ping_device" => HubRequest::PingDevice(request.param1 as u8),
+            "set_light_color" => HubRequest::SetLightColor(request.param1 as u8, rgb),
+            "set_feedback_led" => HubRequest::SetFeedbackLed(request.param1 as u8, state),
+            "read_event_queue" => HubRequest::ReadEventQueue,
+            _ => todo!("Unknown string"), // Handle unknown strings if necessary
+        }
+    }
+
     pub fn cmd(&self) -> u8 {
         match self {
             HubRequest::SetTimestamp(_) => 0x80,
@@ -143,18 +161,20 @@ pub enum TermButtonState {
     Released,
 }
 
+impl From<bool> for TermButtonState {
+    fn from(state: bool) -> Self {
+        match state {
+            true => { TermButtonState::Pressed }
+            false => { TermButtonState::Released }
+        }
+    }
+}
+
 impl TermButtonState {
     pub fn to_bool(&self) -> bool {
         match self {
             TermButtonState::Pressed => { true }
             TermButtonState::Released => { false }
-        }
-    }
-
-    pub fn from_bool(state: bool) -> TermButtonState {
-        match state {
-            true => { TermButtonState::Pressed }
-            false => { TermButtonState::Released }
         }
     }
 }
