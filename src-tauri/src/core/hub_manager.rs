@@ -133,7 +133,7 @@ impl HubManager {
 
         // TODO: Check radio channel
 
-        for term_id in 1..128 {
+        for term_id in 1..10 {
             if self.ping_terminal(term_id).is_ok() {
                 log::debug!("Terminal #{} is alive", term_id);
                 terminals.push(term_id);
@@ -245,7 +245,6 @@ impl HubManager {
 
         let mut events = vec![];
         for chunk in response.payload.chunks_exact(std::mem::size_of::<TermEvent>()) {
-            // Convert each chunk of bytes to a `TermEvent`
             let term_id = chunk[0];
             let timestamp = u32::from_le_bytes(chunk[1..5].try_into().unwrap());
             let state_byte = chunk[5];
@@ -254,14 +253,12 @@ impl HubManager {
                 .change_context(HubManagerError::InternalError)
                 .attach_printable(format!("Can't parse TermButtonState for terminal {}", term_id))?;
 
-            // Create a `TermEvent` struct
             let event = TermEvent {
                 term_id,
                 timestamp,
                 state,
             };
 
-            // Add the `TermEvent` to the events vector
             events.push(event);
         }
 
