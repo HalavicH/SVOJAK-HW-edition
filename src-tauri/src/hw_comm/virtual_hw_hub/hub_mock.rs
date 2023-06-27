@@ -7,9 +7,13 @@ use error_stack::{IntoReport, ResultExt, Result, Report};
 use serialport::{SerialPort, TTYPort};
 use rand::prelude::*;
 use std::collections::HashSet;
+use std::sync::{Arc, Mutex};
+use log::log;
 use rand::thread_rng;
+use rand::seq::SliceRandom;
+use crate::core::hub_manager::get_epoch_ms;
 
-use crate::hw_comm::api_types::{hub_frame_pos, ResponseStatus};
+use crate::hw_comm::api_types::{hub_frame_pos, ResponseStatus, TermButtonState, TermEvent};
 use crate::hw_comm::byte_handler::ByteHandler;
 
 use crate::hw_comm::hub_protocol_io_handler::{format_bytes_hex, stuff_bytes};
@@ -19,6 +23,8 @@ pub fn run_hub_mock() -> Result<(Box<dyn SerialPort>, JoinHandle<()>), String> {
     let device_handle = serialport::new(device_tty.name().unwrap(), 0).open().unwrap();
 
     let mut hub_mock = HubMock::new(Box::new(host_handle));
+
+    hub_mock.run_event_generation();
 
     let handle = thread::spawn(move || {
         hub_mock.hub_mock_routine();
@@ -31,6 +37,7 @@ pub fn run_hub_mock() -> Result<(Box<dyn SerialPort>, JoinHandle<()>), String> {
 pub struct HubMock {
     port_handle: Box<dyn SerialPort>,
     terminals: Vec<u8>,
+    events: Arc<Mutex<Vec<TermEvent>>>,
     byte_handler: ByteHandler,
     base_timestamp: u32,
 }
@@ -39,6 +46,7 @@ impl HubMock {
     fn new(port_handle: Box<dyn SerialPort>) -> Self {
         Self {
             port_handle,
+            events: Arc::new(Mutex::new(vec![])),
             terminals: generate_random_numbers(),
             byte_handler: ByteHandler::default(),
             base_timestamp: u32::default(),
@@ -144,10 +152,10 @@ impl HubMock {
             }
             0x90 => { // PingDevice
                 let id = payload[0];
-                if self.terminals.contains(&id) {
-                    return Ok(vec![]);
+                return if self.terminals.contains(&id) {
+                    Ok(vec![])
                 } else {
-                    return Err(Report::new(ResponseStatus::GenericError));
+                    Err(Report::new(ResponseStatus::TerminalNotResponding))
                 }
             }
             0x91 => { // SetLightColor
@@ -157,11 +165,74 @@ impl HubMock {
                 vec![]
             }
             0xA0 => { // ReadEventQueue
-                vec![]
+                let events = self.read_event_queue();
+                log::debug!("Events: {:?}", events);
+                events
             }
             _ => panic!("Invalid command value {}", cmd),
         };
         Ok(response_payload)
+    }
+
+    pub fn run_event_generation(&mut self) {
+        log::debug!("Start event generation");
+        let events = self.events.clone(); // Clone the shared events Arc<Mutex<Vec<TermEvent>>>
+        let mut terminals = self.terminals.clone(); // Clone the terminals vector
+
+        // Spawn a new thread to generate events
+        thread::spawn(move || {
+            loop {
+                let len = {
+                    events.lock().unwrap().len()
+                };
+
+                if len > 10 {
+                    thread::sleep(Duration::from_millis(100));
+                    continue;
+                }
+
+                log::debug!("Current events num: {}. Adding new", len);
+
+                terminals.shuffle(&mut thread_rng());
+                terminals.iter().for_each(|id| {
+                    let mut event = vec![];
+                    event.push(*id);
+                    let timestamp = get_epoch_ms().unwrap() + (*id as u32 * 5);
+                    event.append(&mut timestamp.to_le_bytes().to_vec());
+                    event.push(0x01);
+                    let state = if event.len() % 2 == 0 {
+                        TermButtonState::Pressed
+                    } else {
+                        TermButtonState::Released
+                    };
+                    let term_event = TermEvent {
+                        term_id: *id,
+                        timestamp,
+                        state,
+                    };
+
+                    // Lock the mutex and push the event into the shared vector
+                    let mut guard = events.lock().unwrap();
+                    guard.push(term_event);
+                });
+            }
+        });
+    }
+
+    pub fn read_event_queue(&mut self) -> Vec<u8> {
+        let mut events = self.events.lock().unwrap();
+
+        let mut response = vec![];
+
+        events.iter().for_each(|event| {
+            response.push(event.term_id);
+            response.extend(&event.timestamp.to_le_bytes());
+            response.push(if event.state.to_bool() { 0x01 } else { 0x00 });
+        });
+
+        events.clear();
+
+        response
     }
 }
 
@@ -181,4 +252,5 @@ fn generate_random_numbers() -> Vec<u8> {
     numbers.extend(set.into_iter());
     numbers
 }
+
 
