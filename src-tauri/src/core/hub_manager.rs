@@ -244,7 +244,10 @@ impl HubManager {
         map_status_to_result(response.status)?;
 
         let mut events = vec![];
-        for chunk in response.payload.chunks_exact(std::mem::size_of::<TermEvent>()) {
+        let event_size = 6;
+        for chunk in response.payload.chunks_exact(event_size) {
+            log::debug!("Chunk {:?}", chunk);
+
             let term_id = chunk[0];
             let timestamp = u32::from_le_bytes(chunk[1..5].try_into().unwrap());
             let state_byte = chunk[5];

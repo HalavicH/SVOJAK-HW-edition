@@ -23,8 +23,9 @@ fn main() {
             get_pack_info,
             start_the_game,
             // Debug API
-            send_raw_request_frame,
             setup_hub_connection,
+            send_raw_request_frame,
+            send_hub_command,
             // Gameplay API
             fetch_players,
             fetch_round,
