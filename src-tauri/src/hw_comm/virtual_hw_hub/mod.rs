@@ -1,6 +1,6 @@
 use std::thread::JoinHandle;
 use serialport::SerialPort;
-use error_stack::{IntoReport, ResultExt, Result, Report};
+use error_stack::{Result, Report};
 
 use crate::core::hub_manager::HubManagerError;
 #[cfg(unix)]
