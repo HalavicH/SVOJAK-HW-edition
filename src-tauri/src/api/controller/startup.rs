@@ -1,4 +1,4 @@
-use std::sync::RwLockWriteGuard;
+use std::sync::{mpsc, RwLockWriteGuard};
 use error_stack::ResultExt;
 use tauri::{command};
 use crate::api::dto::{ConfigDto, HubRequestDto, HubResponseDto, PackInfoDto};
@@ -29,7 +29,8 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
     let result = guard.get_unlocked_hub_mut().probe(&path);
     match result {
         Ok(status) => {
-            start_event_listener(guard.get_hub_ref().clone());
+            let (event_tx, _) = mpsc::channel();
+            start_event_listener(guard.get_hub_ref().clone(), event_tx);
             log::info!("Hub status: {:?}", status);
             Ok(status)
         }

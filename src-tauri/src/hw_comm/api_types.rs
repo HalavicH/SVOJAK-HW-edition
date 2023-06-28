@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt;
 use rgb::RGB8;
@@ -147,7 +147,7 @@ pub mod hub_frame_pos {
     pub const PAYLOAD: usize = 4;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct TermEvent {
     pub term_id: u8,
     pub timestamp: u32,
@@ -155,7 +155,7 @@ pub struct TermEvent {
 }
 
 /// Terminal button state enum
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum TermButtonState {
     Pressed,
     Released,

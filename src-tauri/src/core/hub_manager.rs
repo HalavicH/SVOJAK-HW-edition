@@ -133,7 +133,8 @@ impl HubManager {
 
         // TODO: Check radio channel
 
-        for term_id in 1..10 {
+        let MAX_TERMINAL_CNT = 10;
+        for term_id in 1..MAX_TERMINAL_CNT {
             if self.ping_terminal(term_id).is_ok() {
                 log::debug!("Terminal #{} is alive", term_id);
                 terminals.push(term_id);
@@ -246,7 +247,7 @@ impl HubManager {
         let mut events = vec![];
         let event_size = 6;
         for chunk in response.payload.chunks_exact(event_size) {
-            log::debug!("Chunk {:?}", chunk);
+            log::trace!("Chunk {:?}", chunk);
 
             let term_id = chunk[0];
             let timestamp = u32::from_le_bytes(chunk[1..5].try_into().unwrap());

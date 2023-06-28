@@ -3,12 +3,14 @@ use std::sync::Mutex;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
+use std::sync::mpsc::Receiver;
 
 use serde::{Serialize, Deserialize};
 use error_stack::{IntoReport, ResultExt, Result, Report};
 use crate::api::dto::QuestionType;
 use crate::core::hub_manager::HubManager;
 use crate::game_pack::game_pack_entites::GamePack;
+use crate::hw_comm::api_types::TermEvent;
 
 lazy_static::lazy_static! {
     static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::new()));
@@ -92,6 +94,7 @@ pub struct GameContext {
     pub game_pack: GamePack,
     hub: Arc<RwLock<HubManager>>,
     pub current: CurrentContext,
+    pub event_queue: Option<Receiver<TermEvent>>,
 }
 
 impl GameContext {
