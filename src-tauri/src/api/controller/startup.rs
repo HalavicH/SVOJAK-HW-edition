@@ -29,8 +29,6 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
     let result = guard.get_unlocked_hub_mut().probe(&path);
     match result {
         Ok(status) => {
-            let (event_tx, _) = mpsc::channel();
-            start_event_listener(guard.get_hub_ref().clone(), event_tx);
             log::info!("Hub status: {:?}", status);
             Ok(status)
         }
