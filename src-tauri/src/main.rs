@@ -16,6 +16,7 @@ fn main() {
             // Startup API
             fetch_configuration,
             discover_hub,
+            set_hub_radio_channel,
             discover_terminals,
             save_players,
             get_pack_info,
