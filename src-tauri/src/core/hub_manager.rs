@@ -83,6 +83,7 @@ impl HubManager {
             self.hub_io_handler = None;
         }
 
+        self.port_name = port.to_owned();
         self.setup_hub_connection(port)?;
 
         self.init_timestamp()?;
@@ -124,13 +125,8 @@ impl HubManager {
         Ok(get_epoch_ms()? - self.base_timestamp)
     }
 
-    pub fn discover_terminals(&mut self, radio_channel: i32) -> Result<Vec<u8>, HubManagerError> {
+    pub fn discover_terminals(&mut self) -> Result<Vec<u8>, HubManagerError> {
         let mut terminals = vec![];
-
-        self.radio_channel = radio_channel;
-        self.set_hub_radio_channel(radio_channel as u8)?;
-
-        // TODO: Check radio channel
 
         let MAX_TERMINAL_CNT = 10;
         for term_id in 1..MAX_TERMINAL_CNT {

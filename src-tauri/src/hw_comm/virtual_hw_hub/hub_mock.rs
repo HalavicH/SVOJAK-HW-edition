@@ -145,6 +145,7 @@ impl HubMock {
                 self.base_timestamp.to_le_bytes().to_vec()
             }
             0x82 => { // SetHubRadioChannel
+                self.terminals = generate_random_numbers();
                 vec![]
             }
             0x83 => { // SetTermRadioChannel

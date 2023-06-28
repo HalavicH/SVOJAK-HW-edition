@@ -116,7 +116,7 @@ impl GameContext {
             }).expect("Poisoned")
     }
 
-    pub fn get_unlocked_hub_mut(&self) -> RwLockWriteGuard<HubManager> {
+    pub fn get_locked_hub_mut(&self) -> RwLockWriteGuard<HubManager> {
         self.hub.write()
             .map_err(|e| {
                 Report::new(GameplayError::InternalError)

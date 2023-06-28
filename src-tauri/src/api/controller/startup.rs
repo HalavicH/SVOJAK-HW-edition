@@ -26,7 +26,7 @@ pub fn fetch_configuration() -> ConfigDto {
 #[command]
 pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
     let guard = game();
-    let result = guard.get_unlocked_hub_mut().probe(&path);
+    let result = guard.get_locked_hub_mut().probe(&path);
     match result {
         Ok(status) => {
             log::info!("Hub status: {:?}", status);
@@ -39,19 +39,29 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
     }
 }
 
-/// Calls HUB to set specific radio channel, pings all devices on that channel, devices which
-/// replied considered as available and returned as vector
+/// Calls HUB to set specific radio channel
 #[command]
-pub fn discover_terminals(channel_id: i32) -> Result<Vec<u8>, HubManagerError> {
+pub fn set_hub_radio_channel(channel_id: i32) -> Result<(), HubManagerError> {
     log::info!("Got channel id: {channel_id}");
     let guard = game();
-    let mut hub_guard = guard.get_unlocked_hub_mut();
+    let mut hub_guard = guard.get_locked_hub_mut();
 
-    if !hub_guard.is_hub_alive() {
-        return Err(HubManagerError::NoResponseFromHub);
-    }
+    hub_guard.set_hub_radio_channel(channel_id as u8)
+        .map_err(|e| {
+        log::error!("{:#?}", e);
+        e.current_context().clone()
+    })
+}
 
-    hub_guard.discover_terminals(channel_id)
+/// Calls HUB to ping all devices on selected channel, devices which
+/// replied considered as available. All available devices are returned as vector
+#[command]
+pub fn discover_terminals() -> Result<Vec<u8>, HubManagerError> {
+    log::info!("Discovering terminals");
+    let guard = game();
+    let mut hub_guard = guard.get_locked_hub_mut();
+
+    hub_guard.discover_terminals()
         .map_err(|e| {
             log::error!("{:#?}", e);
             e.current_context().clone()
@@ -123,7 +133,7 @@ pub fn start_the_game() -> Result<(), GameplayError> {
 pub fn setup_hub_connection(port_name: String) -> Result<(), HubManagerError> {
     log::info!("Trying to open HUB connection");
     let mut game_ctx = game();
-    let mut hub = game_ctx.get_unlocked_hub_mut();
+    let mut hub = game_ctx.get_locked_hub_mut();
     hub.setup_hub_connection(&port_name)
         .map_err(|e| {
             log::error!("Operation failed: {:?}", e);
@@ -135,7 +145,7 @@ pub fn setup_hub_connection(port_name: String) -> Result<(), HubManagerError> {
 pub fn send_raw_request_frame(request_frame: Vec<u8>) -> Result<Vec<u8>, HubIoError> {
     log::info!("Sending raw frame request to HUB");
     let guard = game();
-    let mut hub_guard = guard.get_unlocked_hub_mut();
+    let mut hub_guard = guard.get_locked_hub_mut();
     let handler = hub_guard.hub_io_handler.as_mut()
         .ok_or(HubIoError::NotInitializedError)?;
 
@@ -170,7 +180,7 @@ pub fn send_raw_request_frame(request_frame: Vec<u8>) -> Result<Vec<u8>, HubIoEr
 pub fn send_hub_command(request: HubRequestDto) -> Result<HubResponseDto, HubManagerError> {
     log::info!("Sending request to HUB.\n{:#?}", request);
     let guard = game();
-    let mut hub_guard = guard.get_unlocked_hub_mut();
+    let mut hub_guard = guard.get_locked_hub_mut();
 
     let request_enum = HubRequest::from_debug_request(request);
     let result = process_hub_command(&mut hub_guard, request_enum)
