@@ -150,7 +150,7 @@ class Slider {
             image.alt = "Question Image";
             image.className = "question-image";
             this.questionViewport.appendChild(image);
-            slide.element = video;
+            slide.element = image;
         } else {
             console.log("Not supported format");
 
