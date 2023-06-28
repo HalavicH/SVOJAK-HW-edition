@@ -1,12 +1,12 @@
-use std::sync::{mpsc, RwLockWriteGuard};
-use error_stack::ResultExt;
+use std::sync::{RwLockWriteGuard};
+
 use tauri::{command};
 use crate::api::dto::{ConfigDto, HubRequestDto, HubResponseDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
 use crate::core::game_entities::{game, GameplayError, HubStatus, Player, PlayerState};
 
 use crate::api::dto::PlayerSetupDto;
-use crate::core::game_logic::start_event_listener;
+
 use crate::core::hub_manager::{HubManager, HubManagerError};
 use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
 use crate::hw_comm::api_types::{HubIoError, HubRequest};
@@ -44,7 +44,7 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
 pub fn set_hub_radio_channel(channel_id: i32) -> Result<(), HubManagerError> {
     log::info!("Got channel id: {channel_id}");
     let guard = game();
-    let mut hub_guard = guard.get_locked_hub_mut();
+    let hub_guard = guard.get_locked_hub_mut();
 
     hub_guard.set_hub_radio_channel(channel_id as u8)
         .map_err(|e| {
@@ -132,7 +132,7 @@ pub fn start_the_game() -> Result<(), GameplayError> {
 #[command]
 pub fn setup_hub_connection(port_name: String) -> Result<(), HubManagerError> {
     log::info!("Trying to open HUB connection");
-    let mut game_ctx = game();
+    let game_ctx = game();
     let mut hub = game_ctx.get_locked_hub_mut();
     hub.setup_hub_connection(&port_name)
         .map_err(|e| {
