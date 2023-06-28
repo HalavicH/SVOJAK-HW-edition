@@ -125,7 +125,6 @@ impl HubManager {
     }
 
     pub fn discover_terminals(&mut self, radio_channel: i32) -> Result<Vec<u8>, HubManagerError> {
-        log::info!("Pretend terminals discovery at: {radio_channel}");
         let mut terminals = vec![];
 
         self.radio_channel = radio_channel;
