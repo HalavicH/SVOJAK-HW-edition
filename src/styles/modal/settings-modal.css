@@ -11,18 +11,8 @@
     text-align: center;
 }
 
-#discover-terminals {
-    width: fit-content;
+#set-hub-radio-channel {
     margin-right: 20px;
-    color: #2a2a2a;
-    background-color: var(--secondary-button-color);
-    border: solid 1px var(--secondary-button-border-color);
-}
-
-#discover-terminals:active {
-    background-color: #0f3b34;
-    color: #c4c4c4;
-    box-shadow: 2px 2px black;
 }
 
 #apply-settings-row {

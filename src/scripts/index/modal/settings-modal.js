@@ -1,5 +1,11 @@
 import {openModal, closeModal} from "../../service/modal-common.js";
-import {getSettingsConfig, savePlayers, probeHub, discoverTerminals} from "../../service/back-end-com.js";
+import {
+    getSettingsConfig,
+    savePlayers,
+    probeHub,
+    discoverTerminals,
+    setHubRadioChannel
+} from "../../service/back-end-com.js";
 import {getImagePathOrDefault} from "../../service/utils.js";
 
 const {invoke} = window.__TAURI__.tauri;
@@ -155,10 +161,8 @@ function fillPlayersData(newPlayersData) {
     });
 }
 
-
 export async function handleDiscoverTerminals() {
-    const channelIdObject = document.querySelector("#radio-channel");
-    const terminals = await discoverTerminals(channelIdObject);
+    const terminals = await discoverTerminals();
 
     console.info("result = " + terminals);
 
@@ -188,5 +192,14 @@ export async function serialPortSelectHandler(event) {
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
     discoverHubAndSetStatus(selectedOption);
+    await handleDiscoverTerminals();
+}
+
+export async function handleSetHubRadioChannel() {
+    console.log("Set radio channel...");
+    const channelIdObject = document.querySelector("#radio-channel");
+
+    await setHubRadioChannel(channelIdObject.value);
+    await handleDiscoverTerminals()
 }
 
