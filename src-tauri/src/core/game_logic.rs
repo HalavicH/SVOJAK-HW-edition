@@ -1,15 +1,15 @@
 use std::collections::HashMap;
-use std::sync::{Arc, mpsc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{Arc, mpsc, RwLock, RwLockReadGuard};
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use std::thread::{JoinHandle, sleep};
 use std::time::{Duration, Instant};
 use error_stack::{IntoReport, ResultExt, Result, Report};
-use log::log;
-use rand::Rng;
+
+
 use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
 use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
-use crate::core::game_entities::GameplayError::HubOperationError;
+
 use crate::core::hub_manager::{get_epoch_ms, HubManager, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
 use crate::hw_comm::api_types::TermButtonState::Pressed;
@@ -285,7 +285,7 @@ impl GameContext {
 
         let start_time = Instant::now();
         let timeout = Duration::from_secs(10);
-        let mut fastest_click: Option<u8> = None;
+        let fastest_click: Option<u8> = None;
 
         loop {
             if start_time.elapsed() >= timeout {

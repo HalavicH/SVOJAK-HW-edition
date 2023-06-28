@@ -1,14 +1,14 @@
 use std::thread;
 use std::time::Duration;
-use std::cell::Cell;
+
 use std::io::ErrorKind;
 use std::thread::{JoinHandle, sleep};
-use error_stack::{IntoReport, ResultExt, Result, Report};
+use error_stack::{Result, Report};
 use serialport::{SerialPort, TTYPort};
 use rand::prelude::*;
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
-use log::log;
+
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use crate::core::hub_manager::get_epoch_ms;
@@ -80,7 +80,7 @@ impl HubMock {
             let stuffed = stuff_bytes(&response_frame);
 
             log::debug!("Responding with: {}", format_bytes_hex(&stuffed));
-            let bytes_written = self.port_handle.write(&stuffed)
+            let _bytes_written = self.port_handle.write(&stuffed)
                 .unwrap();
         }
     }
@@ -104,7 +104,7 @@ impl HubMock {
         let version = input_frame[hub_frame_pos::PROTOCOL_VERSION];
         let tid = input_frame[hub_frame_pos::TID];
         let cmd = input_frame[hub_frame_pos::COMMAND_OR_STATUS];
-        let len = input_frame[hub_frame_pos::PAYLOAD_LEN];
+        let _len = input_frame[hub_frame_pos::PAYLOAD_LEN];
         let payload = input_frame[hub_frame_pos::PAYLOAD..].to_vec();
 
         let result = self.process_cmd(cmd, payload);
@@ -132,7 +132,7 @@ impl HubMock {
     }
 
     fn process_cmd(&mut self, cmd: u8, payload: Vec<u8>) -> Result<Vec<u8>, ResponseStatus> {
-        let mut response_payload = match cmd {
+        let response_payload = match cmd {
             0x80 => { // SetTimestamp
                 self.base_timestamp = u32::from_le_bytes(payload.try_into()
                     .map_err(|_| {
@@ -214,7 +214,7 @@ impl HubMock {
                     let mut guard = events.lock().unwrap();
 
                     if guard.len() > 5 {
-                        return;;
+                        return;
                     }
                     guard.push(term_event);
                 });
