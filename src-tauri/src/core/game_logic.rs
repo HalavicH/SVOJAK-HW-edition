@@ -96,7 +96,7 @@ impl GameContext {
 
     pub fn allow_answer(&mut self) -> Result<(), HubManagerError> {
         let timestamp = get_epoch_ms()?;
-        self.get_unlocked_hub_mut().allow_answer_timestamp = timestamp;
+        self.get_locked_hub_mut().allow_answer_timestamp = timestamp;
         log::info!("Current answer base timestamp: {timestamp}");
 
         self.current.set_active_player_id(0);
