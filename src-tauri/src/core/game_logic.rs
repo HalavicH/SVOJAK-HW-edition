@@ -55,9 +55,16 @@ impl GameContext {
         &self.players
     }
 
-    pub fn process_question_obtaining(&mut self, theme: &String, price: &i32) -> Result<(Question, i32), GamePackError> {
+    pub fn get_pack_question(&mut self, theme: &String, price: &i32) -> Result<(Question, i32), GameplayError> {
         log::info!("Get question from category: {theme}, price: {price}");
-        let (question, question_number) = self.get_question(theme, price)?;
+
+        if *self.current.game_state() != GameState::QuestionChoosing {
+            return Err(Report::new(GamePackError::QuestionNotPresent)
+                .change_context(GameplayError::PackElementNotPresent));
+        }
+
+        let (question, question_number) = self.get_question(theme, price)
+            .change_context(GameplayError::PackElementNotPresent)?;
 
         self.update_game_state(GameState::QuestionSelected);
 

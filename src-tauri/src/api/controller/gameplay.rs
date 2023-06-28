@@ -19,11 +19,14 @@ pub fn fetch_round() -> RoundDto {
 }
 
 #[command]
-pub fn get_question_data(topic: String, price: i32) -> QuestionDataDto {
+pub fn get_question_data(topic: String, price: i32) -> Result<QuestionDataDto, GameplayError> {
     let (question, q_num) = game()
-        .process_question_obtaining(&topic, &price).unwrap();
+        .get_pack_question(&topic, &price).map_err(|e| {
+        log::error!("Can't get question data: {:#?}", e);
+        e.current_context().clone()
+    })?;
 
-    map_question_to_question_dto(topic, question, q_num)
+    Ok(map_question_to_question_dto(topic, question, q_num))
 }
 
 #[command]
