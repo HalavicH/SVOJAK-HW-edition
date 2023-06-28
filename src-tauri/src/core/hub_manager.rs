@@ -15,6 +15,7 @@ use crate::hw_comm::hub_protocol_io_handler::HubProtocolIoHandler;
 use crate::hw_comm::virtual_hw_hub::{setup_virtual_hub_connection, VIRTUAL_HUB_PORT};
 
 const HUB_CMD_TIMEOUT: Duration = Duration::from_millis(100);
+const MAX_TERMINAL_CNT: u8 = 10;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HubManagerError {
@@ -128,7 +129,6 @@ impl HubManager {
     pub fn discover_terminals(&mut self) -> Result<Vec<u8>, HubManagerError> {
         let mut terminals = vec![];
 
-        let MAX_TERMINAL_CNT = 10;
         for term_id in 1..MAX_TERMINAL_CNT {
             if self.ping_terminal(term_id).is_ok() {
                 log::debug!("Terminal #{} is alive", term_id);
@@ -334,7 +334,7 @@ mod tests {
         let now = SystemTime::now();
         let since_the_epoch = now.duration_since(UNIX_EPOCH).unwrap();
 
-        let expected_milliseconds_since_base: u32 = since_the_epoch
+        let _expected_milliseconds_since_base: u32 = since_the_epoch
             .as_secs()
             .checked_mul(1000)
             .and_then(|ms| {
@@ -349,8 +349,8 @@ mod tests {
 
         // Check the result
         assert!(result.is_ok());
-        let execution_offset = 100;
-        let timestamp = result.unwrap();
+        let _execution_offset = 100;
+        let _timestamp = result.unwrap();
         // assert!(timestamp > expected_milliseconds_since_base &&
         //     timestamp < (expected_milliseconds_since_base + execution_offset));
     }
