@@ -1,17 +1,21 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{Arc, mpsc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use std::thread::{JoinHandle, sleep};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use error_stack::{IntoReport, ResultExt, Result, Report};
+use log::log;
 use rand::Rng;
 use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
 use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
+use crate::core::game_entities::GameplayError::HubOperationError;
 use crate::core::hub_manager::{get_epoch_ms, HubManager, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
+use crate::hw_comm::api_types::TermButtonState::Pressed;
 use crate::hw_comm::api_types::TermEvent;
 
-const EVT_POLLING_INTERVAL_MS: u64 = 100;
+const EVT_POLLING_INTERVAL_MS: u64 = 1000;
 
 impl GameContext {
     pub fn start_the_game(&mut self) -> Result<(), GameplayError> {
@@ -22,7 +26,10 @@ impl GameContext {
             return Err(GameplayError::PlayerNotPresent).into_report();
         }
 
-        start_event_listener(self.get_hub_ref().clone());
+        let (event_tx, event_rx) = mpsc::channel();
+        self.event_queue = Some(event_rx);
+
+        start_event_listener(self.get_hub_ref().clone(), event_tx);
 
         let q_picker_id = match self.get_fastest_click_player_id() {
             Ok(id) => { id }
@@ -265,31 +272,88 @@ impl GameContext {
     }
 
     fn get_fastest_click_from_hub(&mut self) -> Result<u8, HubManagerError> {
-        // let mut events = vec![];
-        // while events.is_empty() {
-        //     events = self.get_hub().read_event_queue()?;
-        // }
-        //
-        // events.iter()
-        //     .filter(|e| e.state == TermButtonState::Pressed)
-        // for evt in events {
-        //     evt.
-        // }
+        let Some(receiver) = &self.event_queue else {
+            return Err(HubManagerError::NotInitializedError.into());
+        };
 
-        // TODO: Add logic for fastest click
+        let start_time = Instant::now();
+        let timeout = Duration::from_secs(10);
+        let mut fastest_click: Option<u8> = None;
 
-        let keys = self.players.iter()
-            .filter(|(_, p)| { p.allowed_to_click() })
-            .map(|(id, _)| *id)
-            .collect::<Vec<u8>>();
+        loop {
+            if start_time.elapsed() >= timeout {
+                return Err(Report::new(HubManagerError::NoResponseFromTerminal));
+            }
 
-        log::debug!("Users participating in the click race: {:?}", keys);
+            let mut events = match Self::get_events(receiver) {
+                Ok(events) => events,
+                Err(_) => {
+                    sleep(Duration::from_millis(100));
+                    continue;
+                }
+            };
 
-        sleep(Duration::from_millis(200));
+            events.sort_by(|e1, e2| {
+                e1.timestamp.cmp(&e2.timestamp)
+            });
 
-        let fastest_click_index: usize = rand::thread_rng().gen_range(0..keys.len());
-        let fastest_player_id = keys[fastest_click_index];
-        Ok(fastest_player_id)
+
+            if let Some(value) = self.find_the_fastest_event(&mut events) {
+                return value;
+            }
+
+            if let Some(fastest_click_id) = fastest_click {
+                return Ok(fastest_click_id);
+            }
+
+            sleep(Duration::from_secs(1));
+        }
+    }
+
+    fn find_the_fastest_event(&self, events: &mut Vec<TermEvent>) -> Option<Result<u8, HubManagerError>> {
+        for e in events {
+            if e.state != Pressed {
+                log::debug!("Release event. Skipping: {:?}", e);
+                continue;
+            }
+
+            let Some(player) = self.players.get(&e.term_id) else {
+                log::debug!("Unknown terminal id {} event. Skipping: {:?}", e.term_id, e);
+                continue;
+            };
+
+            if !player.allowed_to_click() {
+                log::debug!("Player {} is not allowed to click. Skipping: {:?}", e.term_id, e);
+                continue;
+            }
+
+            log::info!("Found the fastest click: {:?}", e);
+            return Some(Ok(e.term_id));
+        }
+        None
+    }
+
+    fn get_events(receiver: &Receiver<TermEvent>) -> Result<Vec<TermEvent>, HubManagerError> {
+        let mut events: Vec<TermEvent> = Vec::new();
+        loop {
+            match receiver.try_recv() {
+                Ok(received_event) => {
+                    events.push(received_event);
+                }
+                Err(mpsc::TryRecvError::Empty) => {
+                    log::debug!("Got {} events for now.", events.len());
+                    break;
+                }
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    // Channel has been disconnected, so we break the loop
+                    let report = Report::new(HubManagerError::InternalError)
+                        .attach_printable("Pipe disconnected: mpsc::TryRecvError::Disconnected");
+                    return Err(report);
+                }
+            }
+        }
+
+        Ok(events)
     }
 
     fn get_player_keys(&self) -> Vec<u8> {
@@ -337,19 +401,20 @@ impl GameContext {
     }
 }
 
-pub fn start_event_listener(hub: Arc<RwLock<HubManager>>) -> JoinHandle<()> {
+pub fn start_event_listener(hub: Arc<RwLock<HubManager>>, sender: Sender<TermEvent>) -> JoinHandle<()> {
     log::info!("Starting event listener");
 
     thread::spawn(move || {
-        listen_hub_events(hub);
+        listen_hub_events(hub, sender);
     })
 }
 
-fn listen_hub_events(hub: Arc<RwLock<HubManager>>) {
-    let hub_guard = hub.read().expect("Mutex is poisoned");
+fn listen_hub_events(hub: Arc<RwLock<HubManager>>, sender: Sender<TermEvent>) {
     loop {
         log::debug!("############# NEW ITERATION ###############");
         sleep(Duration::from_millis(EVT_POLLING_INTERVAL_MS));
+        let hub_guard = hub.read()
+            .expect("Mutex is poisoned");
         let events = hub_guard.read_event_queue()
             .unwrap_or_else(|error| {
                 log::error!("Can't get events. Err {:?}", error);
@@ -363,21 +428,25 @@ fn listen_hub_events(hub: Arc<RwLock<HubManager>>) {
 
         events.iter()
             .for_each(|e| {
-                process_term_event(&hub_guard, e);
+                process_term_event(&hub_guard, e, &sender);
             });
     }
 }
 
-fn process_term_event(hub_guard: &RwLockReadGuard<HubManager>, e: &TermEvent) {
+fn process_term_event(hub_guard: &RwLockReadGuard<HubManager>, e: &TermEvent, sender: &Sender<TermEvent>) {
     hub_guard.set_term_feedback_led(e.term_id, &e.state)
         .unwrap_or_else(|error| {
             log::error!("Can't set term_feedback let. Err {:?}", error);
         });
 
     if e.timestamp >= hub_guard.allow_answer_timestamp {
-        log::info!("After answer allowed");
+        log::info!("After answer allowed. Event {:?}", e);
+        sender.send((*e).clone()).map_err(|e| {
+            log::error!("Can't send the event: {}", e);
+        }).unwrap_or_default();
     } else {
-        log::info!("Forbidden. Adding 1s delay for the answer");
+        log::info!("Answer too early. Event {:?}", e);
+        // TODO: add 1 sec of delay and forbid response
     }
 }
 
