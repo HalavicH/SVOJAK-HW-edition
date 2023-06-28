@@ -25,9 +25,9 @@ export async function processQuestionSelection(event) {
         return;
     }
 
-    question.className = "round-td-price used";
-
     await processQuestionDisplay(topic, price);
+
+    question.className = "round-td-price used";
 }
 
 function placeQuestionContent(question) {

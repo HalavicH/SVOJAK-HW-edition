@@ -8,10 +8,14 @@ export async function probeHub(selectedOption) {
     return await invoke("discover_hub", {path: selectedOption});
 }
 
-export async function discoverTerminals(channelIdObject) {
-    return await invoke("discover_terminals", {
-        channelId: parseInt(channelIdObject.value),
+export async function setHubRadioChannel(value) {
+    return await invoke("set_hub_radio_channel", {
+        channelId: parseInt(value),
     });
+}
+
+export async function discoverTerminals() {
+    return await invoke("discover_terminals");
 }
 
 export async function savePlayers(playersList) {

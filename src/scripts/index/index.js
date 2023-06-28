@@ -1,4 +1,9 @@
-import {openSettingsModal, closeSettingsModal, handleDiscoverTerminals, serialPortSelectHandler} from "./modal/settings-modal.js";
+import {
+    openSettingsModal,
+    closeSettingsModal,
+    serialPortSelectHandler,
+    handleSetHubRadioChannel, handleDiscoverTerminals
+} from "./modal/settings-modal.js";
 import {openPackInfoModal, closePackInfoModal, handleStartTheGame, closePackErrorModal} from "./modal/pack-info-modal.js";
 import {setupHubDebugCallbacks} from "./modal/hub-debug-modal.js";
 const { convertFileSrc } = window.__TAURI__.tauri;
@@ -33,7 +38,11 @@ window.addEventListener("DOMContentLoaded", () => {
         .addEventListener("click", selectImage);
 
     document
-        .querySelector("#discover-terminals")
+        .querySelector("#set-hub-radio-channel")
+        .addEventListener("click", handleSetHubRadioChannel);
+
+    document
+        .querySelector("#refresh-terminals-btn")
         .addEventListener("click", handleDiscoverTerminals);
 
     document
