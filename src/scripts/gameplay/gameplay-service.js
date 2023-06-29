@@ -221,6 +221,7 @@ export async function processQuestionDisplay(topic, price) {
     } else if (question.questionType === "Auction") {
         processAuctionPlayers(await getActivePlayerId());
     }
+    updatePlayers();
 }
 
 export function displayQuestionScreen() {
