@@ -147,7 +147,7 @@ export async function loadRoundFromBackend() {
 
     document.querySelectorAll(".round-label")
         .forEach((label) => {
-            label.innerText = "Round: " + round.roundName;
+            label.innerText = round.roundName + " - " + round.roundType;
         });
 
     round.roundTopics.forEach((topic) => {

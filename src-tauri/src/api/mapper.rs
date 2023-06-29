@@ -1,7 +1,7 @@
 use crate::api::dto::{ConfigDto, QuestionDataDto, QuestionSceneDto, RoundDto, TopicDto};
 use crate::api::dto::{PackInfoDto, PlayerGameDto, QuestionDto};
 use crate::core::game_entities::{game, Player};
-use crate::game_pack::pack_content_entities::{PackContent, Question, Round, RoundType};
+use crate::game_pack::pack_content_entities::{PackContent, Question, Round};
 use std::collections::HashMap;
 
 use crate::hub_comm::hw::hw_hub_manager::discover_serial_ports;
@@ -120,11 +120,6 @@ pub fn map_players_to_player_game_dto(players: &HashMap<u8, Player>) -> Vec<Play
 /// let round_dto = map_round_to_dto(&round);
 /// ```
 pub fn map_round_to_dto(round: &Round) -> RoundDto {
-    let round_type = match round.round_type {
-        RoundType::Normal => "Normal",
-        RoundType::Final => "Final",
-    };
-
     let round_topics: Vec<TopicDto> = round
         .themes
         .values()
@@ -151,7 +146,7 @@ pub fn map_round_to_dto(round: &Round) -> RoundDto {
 
     RoundDto {
         roundName: round.name.clone(),
-        roundType: round_type.to_string(),
+        roundType: round.round_type.clone(),
         roundTopics: round_topics,
     }
 }

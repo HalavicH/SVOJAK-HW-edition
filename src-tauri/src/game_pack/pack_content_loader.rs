@@ -212,12 +212,7 @@ fn map_theme(t: &ThemeDto) -> (String, Theme) {
 fn map_round(r: &RoundDto) -> Round {
     let mut round = Round {
         name: r.name.clone(),
-        round_type: {
-            match r.r#type {
-                RoundTypeDto::normal => RoundType::Normal,
-                RoundTypeDto::r#final => RoundType::Final,
-            }
-        },
+        round_type: r.r#type.clone(),
         themes: {
             r.themes
                 .themes_list

@@ -56,18 +56,12 @@ pub struct ThemesDto {
     pub themes_list: Vec<ThemeDto>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-#[allow(non_camel_case_types)]
-pub enum RoundTypeDto {
-    normal,
-    r#final,
-}
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct RoundDto {
     pub name: String,
-    #[serde(default = "default_round_type")]
-    pub r#type: RoundTypeDto,
+    #[serde(default = "String::default")]
+    pub r#type: String,
     #[serde(rename = "$value")]
     pub themes: ThemesDto,
 }
@@ -102,10 +96,6 @@ pub struct PackageDto {
     pub difficulty: u8,
     pub info: InfoDto,
     pub rounds: RoundsDto,
-}
-
-fn default_round_type() -> RoundTypeDto {
-    RoundTypeDto::normal
 }
 
 fn default_atom_type() -> AtomTypeDto {
