@@ -1,16 +1,17 @@
 use std::sync::{Arc, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::sync::Mutex;
 use std::collections::HashMap;
-use std::error::Error;
-use std::fmt;
+
+use thiserror::Error;
+
 use std::sync::mpsc::Receiver;
 
 use serde::{Serialize, Deserialize};
 use error_stack::{Report};
 use crate::api::dto::QuestionType;
-use crate::core::hub_manager::HubManager;
 use crate::game_pack::game_pack_entites::GamePack;
-use crate::hw_comm::api_types::TermEvent;
+use crate::hub_comm::hw::hw_hub_manager::HwHubManager;
+use crate::hub_comm::hw::internal::api_types::TermEvent;
 
 lazy_static::lazy_static! {
     static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::new()));
@@ -73,26 +74,19 @@ pub enum HubStatus {
     NoDevice,
 }
 
-
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Error)]
 pub enum GamePackError {
+    #[error("Theme not present")]
     ThemeNotPresent,
+    #[error("Question not present")]
     QuestionNotPresent,
 }
-
-impl fmt::Display for GamePackError {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.write_str("Failed to retrieve pack item:")
-    }
-}
-
-impl Error for GamePackError {}
 
 #[derive(Default, Debug)]
 pub struct GameContext {
     pub players: HashMap<u8, Player>,
     pub game_pack: GamePack,
-    hub: Arc<RwLock<HubManager>>,
+    hub: Arc<RwLock<HwHubManager>>,
     pub current: CurrentContext,
     pub event_queue: Option<Receiver<TermEvent>>,
 }
@@ -104,11 +98,11 @@ impl GameContext {
         }
     }
 
-    pub fn get_hub_ref(&self) -> &Arc<RwLock<HubManager>> {
+    pub fn get_hub_ref(&self) -> &Arc<RwLock<HwHubManager>> {
         &self.hub
     }
 
-    pub fn get_unlocked_hub(&self) -> RwLockReadGuard<HubManager> {
+    pub fn get_unlocked_hub(&self) -> RwLockReadGuard<HwHubManager> {
         self.hub.read()
             .map_err(|e| {
                 Report::new(GameplayError::InternalError)
@@ -116,7 +110,7 @@ impl GameContext {
             }).expect("Poisoned")
     }
 
-    pub fn get_locked_hub_mut(&self) -> RwLockWriteGuard<HubManager> {
+    pub fn get_locked_hub_mut(&self) -> RwLockWriteGuard<HwHubManager> {
         self.hub.write()
             .map_err(|e| {
                 Report::new(GameplayError::InternalError)
@@ -155,31 +149,21 @@ impl CurrentContext {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Error)]
 pub enum GameplayError {
-    AnswerForbidden,
+    #[error("Pack element not present")]
     PackElementNotPresent,
+    #[error("Player is not present")]
     PlayerNotPresent,
+    #[error("HUB operation failed")]
     HubOperationError,
+    #[error("Answer forbidden")]
+    AnswerForbidden,
+    #[error("Operation forbidden")]
     OperationForbidden,
+    #[error("Internal error")]
     InternalError,
 }
-
-impl fmt::Display for GameplayError {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let error = match self {
-            GameplayError::PackElementNotPresent => { "Pack element not present" }
-            GameplayError::PlayerNotPresent => { "Player is not present" }
-            GameplayError::HubOperationError => { "HUB operation failed" }
-            GameplayError::AnswerForbidden => { "Answer forbidden" }
-            GameplayError::OperationForbidden => { "Operation forbidden" }
-            GameplayError::InternalError => { "Internal error" }
-        };
-        fmt.write_str(&format!("Gameplay error: {}", error))
-    }
-}
-
-impl Error for GameplayError {}
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum GameState {
