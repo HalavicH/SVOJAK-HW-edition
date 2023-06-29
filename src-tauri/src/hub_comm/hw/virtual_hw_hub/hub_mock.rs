@@ -20,9 +20,10 @@ use rand::thread_rng;
 
 pub fn run_hub_mock() -> Result<(Box<dyn SerialPort>, JoinHandle<()>), String> {
     let (host_handle, device_tty) = TTYPort::pair().expect("Unable to create ptty pair");
-    let device_handle = serialport::new(device_tty.name().unwrap(), 0)
+    let string = device_tty.name().expect("Mock HUB. Not for prod");
+    let device_handle = serialport::new(string, 0)
         .open()
-        .unwrap();
+        .expect("Mock HUB. Not for prod");
 
     let mut hub_mock = HubMock::new(Box::new(host_handle));
 
@@ -80,7 +81,7 @@ impl HubMock {
             let stuffed = stuff_bytes(&response_frame);
 
             log::debug!("Responding with: {}", format_bytes_hex(&stuffed));
-            let _bytes_written = self.port_handle.write(&stuffed).unwrap();
+            let _bytes_written = self.port_handle.write(&stuffed).expect("Mock HUB. Not for prod");
         }
     }
 
@@ -175,10 +176,10 @@ impl HubMock {
         // Spawn a new thread to generate events
         thread::spawn(move || {
             loop {
-                let len = { events.lock().unwrap().len() };
+                let len = { events.lock().expect("Mutex is poisoned").len() };
 
                 if len > 5 {
-                    thread::sleep(Duration::from_millis(100));
+                    sleep(Duration::from_millis(100));
                     continue;
                 }
 
@@ -186,7 +187,7 @@ impl HubMock {
 
                 terminals.shuffle(&mut thread_rng());
                 terminals.iter().for_each(|id| {
-                    let timestamp = get_epoch_ms().unwrap();
+                    let timestamp = get_epoch_ms().expect("Mock HUB. Not for prod");
                     let state = if timestamp % 2 == 0 {
                         TermButtonState::Pressed
                     } else {
@@ -201,7 +202,7 @@ impl HubMock {
                     sleep(Duration::from_millis(10));
 
                     // Lock the mutex and push the event into the shared vector
-                    let mut guard = events.lock().unwrap();
+                    let mut guard = events.lock().expect("Mock HUB. Not for prod");
 
                     if guard.len() > 5 {
                         return;
@@ -213,7 +214,7 @@ impl HubMock {
     }
 
     pub fn read_event_queue(&mut self) -> Vec<u8> {
-        let mut events = self.events.lock().unwrap();
+        let mut events = self.events.lock().expect("Mock HUB. Not for prod");
 
         log::debug!("Events registered by HUB: {:#?}", events);
         let mut response = vec![];

@@ -43,7 +43,7 @@ fn main() {
             fetch_round_stats
         ])
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .expect("Can't start Tauri app");
 
     /*
      *  Game loader usage example
