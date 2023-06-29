@@ -58,6 +58,9 @@ impl GameContext {
     pub fn get_pack_question(&mut self, theme: &String, price: &i32) -> Result<(Question, i32), GameplayError> {
         log::info!("Get question from category: {theme}, price: {price}");
 
+        self.current.set_active_player_id(0);
+        self.update_non_target_player_states();
+
         if *self.current.game_state() != GameState::QuestionChoosing {
             return Err(Report::new(GamePackError::QuestionNotPresent)
                 .change_context(GameplayError::PackElementNotPresent));
@@ -179,7 +182,6 @@ impl GameContext {
             log::info!("Removing question from the pack");
 
             retry = false;
-            self.current.set_active_player_id(0);
             self.update_game_state(GameState::QuestionChoosing);
             self.update_non_target_player_states();
 
