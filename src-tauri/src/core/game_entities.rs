@@ -1,20 +1,22 @@
-use std::sync::{Arc, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
-use std::sync::Mutex;
 use std::collections::HashMap;
+use std::sync::atomic::AtomicU32;
+use std::sync::Mutex;
+use std::sync::{Arc, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use thiserror::Error;
 
 use std::sync::mpsc::Receiver;
 
-use serde::{Serialize, Deserialize};
-use error_stack::{Report};
 use crate::api::dto::QuestionType;
 use crate::game_pack::game_pack_entites::GamePack;
+use crate::hub_comm::common::hub_api::HubManager;
 use crate::hub_comm::hw::hw_hub_manager::HwHubManager;
 use crate::hub_comm::hw::internal::api_types::TermEvent;
+use error_stack::Report;
+use serde::{Deserialize, Serialize};
 
 lazy_static::lazy_static! {
-    static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::new()));
+    static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::default()));
 }
 
 pub fn game() -> MutexGuard<'static, GameContext> {
@@ -66,8 +68,7 @@ impl Player {
     }
 }
 
-#[derive(Debug, Serialize, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Serialize, PartialEq, Default)]
 pub enum HubStatus {
     Detected,
     #[default]
@@ -82,40 +83,54 @@ pub enum GamePackError {
     QuestionNotPresent,
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct GameContext {
     pub players: HashMap<u8, Player>,
     pub game_pack: GamePack,
-    hub: Arc<RwLock<HwHubManager>>,
+    hub: Arc<RwLock<Box<dyn HubManager>>>,
     pub current: CurrentContext,
     pub event_queue: Option<Receiver<TermEvent>>,
+    pub allow_answer_timestamp: Arc<AtomicU32>,
+}
+
+unsafe impl Send for GameContext {}
+
+impl Default for GameContext {
+    fn default() -> Self {
+        Self {
+            hub: Arc::new(RwLock::new(Box::new(HwHubManager::default()))),
+            players: HashMap::default(),
+            game_pack: GamePack::default(),
+            current: CurrentContext::default(),
+            event_queue: None,
+            allow_answer_timestamp: Arc::new(AtomicU32::default()),
+        }
+    }
 }
 
 impl GameContext {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
-    }
-
-    pub fn get_hub_ref(&self) -> &Arc<RwLock<HwHubManager>> {
+    pub fn get_hub_ref(&self) -> &Arc<RwLock<Box<dyn HubManager>>> {
         &self.hub
     }
 
-    pub fn get_unlocked_hub(&self) -> RwLockReadGuard<HwHubManager> {
-        self.hub.read()
+    pub fn get_unlocked_hub(&self) -> RwLockReadGuard<Box<dyn HubManager>> {
+        self.hub
+            .read()
             .map_err(|e| {
                 Report::new(GameplayError::InternalError)
                     .attach_printable(format!("Can't get HUB for read. {:?}", e))
-            }).expect("Poisoned")
+            })
+            .expect("Poisoned")
     }
 
-    pub fn get_locked_hub_mut(&self) -> RwLockWriteGuard<HwHubManager> {
-        self.hub.write()
+    pub fn get_locked_hub_mut(&self) -> RwLockWriteGuard<Box<dyn HubManager>> {
+        self.hub
+            .write()
             .map_err(|e| {
                 Report::new(GameplayError::InternalError)
                     .attach_printable(format!("Can't get HUB for write. {:?}", e))
-            }).expect("Poisoned")
+            })
+            .expect("Poisoned")
     }
 }
 

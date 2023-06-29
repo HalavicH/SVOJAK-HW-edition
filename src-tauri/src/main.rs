@@ -1,11 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#[allow(unused_imports)]
-
-use svoyak_tauri_app::api::controller::startup::*;
+use svoyak_tauri_app::api::controller::gameplay::*;
 use svoyak_tauri_app::api::controller::startup::hub::*;
 use svoyak_tauri_app::api::controller::startup::hw_hub::*;
-use svoyak_tauri_app::api::controller::gameplay::*;
+#[allow(unused_imports)]
+use svoyak_tauri_app::api::controller::startup::*;
 use svoyak_tauri_app::core::game_entities::*;
 
 fn main() {

@@ -5,11 +5,13 @@ use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
 
+use crate::hub_comm::hw::internal::api_types::ProtocolVersion::Version;
+use crate::hub_comm::hw::internal::api_types::{
+    hub_frame_pos, HubResponse, HwHubIoError, HwHubRequest, ResponseStatus,
+};
+use crate::hub_comm::hw::internal::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use serialport::SerialPort;
-use crate::hub_comm::hw::internal::api_types::{hub_frame_pos, HubResponse, HwHubIoError, HwHubRequest, ResponseStatus};
-use crate::hub_comm::hw::internal::api_types::ProtocolVersion::Version;
-use crate::hub_comm::hw::internal::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
 
 const HUB_REQUEST_PROCESSING_TIMEOUT_MS: u64 = 50;
 
@@ -17,6 +19,7 @@ const HUB_REQUEST_PROCESSING_TIMEOUT_MS: u64 = 50;
 pub struct HwHubCommunicationHandler {
     fsm_byte_handler: Arc<Mutex<ByteHandler>>,
     port_handle: Arc<Mutex<Box<dyn SerialPort>>>,
+    #[allow(dead_code)]
     hub_mock_handle: Option<JoinHandle<()>>,
 }
 
@@ -30,19 +33,27 @@ impl HwHubCommunicationHandler {
     }
 
     pub fn send_raw_frame(&self, request_frame: Vec<u8>) -> Result<Vec<u8>, HwHubIoError> {
-        log::debug!("Request frame: {:?}", format_bytes_hex(request_frame.as_slice()));
+        log::debug!(
+            "Request frame: {:?}",
+            format_bytes_hex(request_frame.as_slice())
+        );
         {
-            let mut port_handle = self.port_handle.lock()
-                .map_err(|_| {
-                    Report::new(HwHubIoError::InternalError)
-                })?;
+            let mut port_handle = self
+                .port_handle
+                .lock()
+                .map_err(|_| Report::new(HwHubIoError::InternalError))?;
 
-            port_handle.write_all(&request_frame).into_report()
+            port_handle
+                .write_all(&request_frame)
+                .into_report()
                 .change_context(HwHubIoError::SerialPortError)?;
         }
 
         let response_frame = self.read_raw_response_frame()?;
-        log::debug!("Response frame: {:?}", format_bytes_hex(response_frame.as_slice()));
+        log::debug!(
+            "Response frame: {:?}",
+            format_bytes_hex(response_frame.as_slice())
+        );
         Ok(response_frame)
     }
 
@@ -51,17 +62,22 @@ impl HwHubCommunicationHandler {
         let stuffed_frame = stuff_bytes(&frame);
 
         {
-            let mut port_handle = self.port_handle.lock()
-                .map_err(|_| {
-                    Report::new(HwHubIoError::InternalError)
-                })?;
+            let mut port_handle = self
+                .port_handle
+                .lock()
+                .map_err(|_| Report::new(HwHubIoError::InternalError))?;
 
-            port_handle.write_all(&stuffed_frame).into_report()
+            port_handle
+                .write_all(&stuffed_frame)
+                .into_report()
                 .change_context(HwHubIoError::SerialPortError)?;
         }
 
         let response_frame = self.read_response_frame()?;
-        log::debug!("Response frame: {:?}", format_bytes_hex(response_frame.as_slice()));
+        log::debug!(
+            "Response frame: {:?}",
+            format_bytes_hex(response_frame.as_slice())
+        );
 
         let id = response_frame[hub_frame_pos::TID];
         let status = ResponseStatus::from(response_frame[hub_frame_pos::COMMAND_OR_STATUS]);
@@ -78,8 +94,10 @@ impl HwHubCommunicationHandler {
 
         // Give HUB some time to perform operation
         thread::sleep(Duration::from_millis(HUB_REQUEST_PROCESSING_TIMEOUT_MS));
-        let bytes_read = port_handle.read(&mut buffer)
-            .into_report().change_context(HwHubIoError::NoResponseFromHub)
+        let bytes_read = port_handle
+            .read(&mut buffer)
+            .into_report()
+            .change_context(HwHubIoError::NoResponseFromHub)
             .attach_printable("Probably timeout")?;
 
         let response = buffer[..bytes_read].to_vec();
@@ -100,8 +118,10 @@ impl HwHubCommunicationHandler {
 
         while byte[0] != START_BYTE {
             log::trace!("Byte: {}", byte[0]);
-            port_handle.read_exact(&mut byte)
-                .into_report().change_context(HwHubIoError::NoResponseFromHub)
+            port_handle
+                .read_exact(&mut byte)
+                .into_report()
+                .change_context(HwHubIoError::NoResponseFromHub)
                 .attach_printable("Probably timeout")?;
         }
         // Handle start byte
@@ -122,7 +142,8 @@ impl HwHubCommunicationHandler {
 }
 
 pub fn format_bytes_hex(bytes: &[u8]) -> String {
-    bytes.iter()
+    bytes
+        .iter()
         .map(|b| format!("{:02X}", b))
         .collect::<Vec<String>>()
         .join(" ")
@@ -136,9 +157,7 @@ pub fn stuff_bytes(frame: &Vec<u8>) -> Vec<u8> {
                 stuffed.push(0xC1);
                 stuffed.push(*byte & 0x0F);
             }
-            _ => {
-                stuffed.push(*byte)
-            }
+            _ => stuffed.push(*byte),
         }
     }
     stuffed.push(STOP_BYTE);
@@ -160,18 +179,10 @@ pub fn assemble_frame(cmd: u8, mut payload: Vec<u8>) -> Vec<u8> {
 mod tests {
     use crate::hub_comm::hw::internal::api_types::ProtocolVersion::Version;
     use crate::hub_comm::hw::internal::hub_protocol_io_handler::{assemble_frame, stuff_bytes};
-    use crate::hw_comm::api_types::ProtocolVersion::Version;
-    use crate::hw_comm::hub_protocol_io_handler::{assemble_frame, stuff_bytes};
 
     #[test]
     fn test_frame_assembly() {
-        let expected = vec![
-            Version.to_value(),
-            0x00,
-            0x90,
-            0x03,
-            0x01, 0x02, 0x03,
-        ];
+        let expected = vec![Version.to_value(), 0x00, 0x90, 0x03, 0x01, 0x02, 0x03];
         let frame = assemble_frame(0x90, vec![0x01, 0x02, 0x03]);
         assert_eq!(frame, expected);
     }
@@ -187,9 +198,10 @@ mod tests {
     #[test]
     fn test_byte_stuffing() {
         let input = vec![0x03, 0x00, 0x90, 0x03, 0xC0, 0xC1, 0xCF];
-        let expect = vec![0xC0, 0x03, 0x00, 0x90, 0x03, 0xC1, 0x00, 0xC1, 0x01, 0xC1, 0x0F, 0xCF];
+        let expect = vec![
+            0xC0, 0x03, 0x00, 0x90, 0x03, 0xC1, 0x00, 0xC1, 0x01, 0xC1, 0x0F, 0xCF,
+        ];
         let result = stuff_bytes(&input);
         assert_eq!(result, expect);
     }
 }
-

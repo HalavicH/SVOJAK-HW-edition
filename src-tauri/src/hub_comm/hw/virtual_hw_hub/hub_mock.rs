@@ -1,24 +1,28 @@
 use std::thread;
 use std::time::Duration;
 
-use std::io::ErrorKind;
-use std::thread::{JoinHandle, sleep};
-use error_stack::{Result, Report};
-use serialport::{SerialPort, TTYPort};
+use error_stack::{Report, Result};
 use rand::prelude::*;
+use serialport::{SerialPort, TTYPort};
 use std::collections::HashSet;
+use std::io::ErrorKind;
 use std::sync::{Arc, Mutex};
+use std::thread::{sleep, JoinHandle};
 
-use rand::thread_rng;
-use rand::seq::SliceRandom;
 use crate::hub_comm::hw::hw_hub_manager::get_epoch_ms;
-use crate::hub_comm::hw::internal::api_types::{hub_frame_pos, ResponseStatus, TermButtonState, TermEvent};
+use crate::hub_comm::hw::internal::api_types::{
+    hub_frame_pos, ResponseStatus, TermButtonState, TermEvent,
+};
 use crate::hub_comm::hw::internal::byte_handler::ByteHandler;
-use crate::hub_comm::hw::internal::hub_protocol_io_handler::{stuff_bytes, format_bytes_hex};
+use crate::hub_comm::hw::internal::hub_protocol_io_handler::{format_bytes_hex, stuff_bytes};
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 pub fn run_hub_mock() -> Result<(Box<dyn SerialPort>, JoinHandle<()>), String> {
     let (host_handle, device_tty) = TTYPort::pair().expect("Unable to create ptty pair");
-    let device_handle = serialport::new(device_tty.name().unwrap(), 0).open().unwrap();
+    let device_handle = serialport::new(device_tty.name().unwrap(), 0)
+        .open()
+        .unwrap();
 
     let mut hub_mock = HubMock::new(Box::new(host_handle));
 
@@ -57,9 +61,7 @@ impl HubMock {
             // Read data from the virtual port
             let mut buffer = [0; 1024];
             let bytes_read = match self.port_handle.read(&mut buffer) {
-                Ok(val) => {
-                    val
-                }
+                Ok(val) => val,
                 Err(err) => {
                     if err.kind() == ErrorKind::TimedOut {
                         thread::sleep(Duration::from_millis(50));
@@ -78,8 +80,7 @@ impl HubMock {
             let stuffed = stuff_bytes(&response_frame);
 
             log::debug!("Responding with: {}", format_bytes_hex(&stuffed));
-            let _bytes_written = self.port_handle.write(&stuffed)
-                .unwrap();
+            let _bytes_written = self.port_handle.write(&stuffed).unwrap();
         }
     }
 
@@ -91,12 +92,7 @@ impl HubMock {
         let input_frame = self.byte_handler.get_current_frame();
 
         if input_frame.len() < 4 {
-            return vec![
-                    0x03,
-                    0x00,
-                    0x90,
-                    0x00,
-                ];
+            return vec![0x03, 0x00, 0x90, 0x00];
         }
 
         let version = input_frame[hub_frame_pos::PROTOCOL_VERSION];
@@ -109,61 +105,59 @@ impl HubMock {
 
         match result {
             Ok(response_payload) => {
-                let mut response_frame = vec![
-                    version,
-                    tid,
-                    0x00,
-                    response_payload.len() as u8,
-                ];
+                let mut response_frame = vec![version, tid, 0x00, response_payload.len() as u8];
                 response_frame.append(&mut response_payload.clone());
                 response_frame
             }
             Err(err) => {
-                vec![
-                    version,
-                    tid,
-                    err.current_context().clone() as u8,
-                    0x00,
-                ]
+                vec![version, tid, err.current_context().clone() as u8, 0x00]
             }
         }
     }
 
     fn process_cmd(&mut self, cmd: u8, payload: Vec<u8>) -> Result<Vec<u8>, ResponseStatus> {
         let response_payload = match cmd {
-            0x80 => { // SetTimestamp
-                self.base_timestamp = u32::from_le_bytes(payload.try_into()
-                    .map_err(|_| {
-                        Report::new(ResponseStatus::GenericError)
-                    })?
+            0x80 => {
+                // SetTimestamp
+                self.base_timestamp = u32::from_le_bytes(
+                    payload
+                        .try_into()
+                        .map_err(|_| Report::new(ResponseStatus::GenericError))?,
                 );
                 vec![]
             }
-            0x81 => { // GetTimestamp
+            0x81 => {
+                // GetTimestamp
                 self.base_timestamp.to_le_bytes().to_vec()
             }
-            0x82 => { // SetHubRadioChannel
+            0x82 => {
+                // SetHubRadioChannel
                 self.terminals = generate_random_numbers();
                 vec![]
             }
-            0x83 => { // SetTermRadioChannel
+            0x83 => {
+                // SetTermRadioChannel
                 vec![]
             }
-            0x90 => { // PingDevice
+            0x90 => {
+                // PingDevice
                 let id = payload[0];
                 return if self.terminals.contains(&id) {
                     Ok(vec![])
                 } else {
                     Err(Report::new(ResponseStatus::TerminalNotResponding))
-                }
+                };
             }
-            0x91 => { // SetLightColor
+            0x91 => {
+                // SetLightColor
                 vec![]
             }
-            0x92 => { // SetFeedbackLed
+            0x92 => {
+                // SetFeedbackLed
                 vec![]
             }
-            0xA0 => { // ReadEventQueue
+            0xA0 => {
+                // ReadEventQueue
                 let events = self.read_event_queue();
                 log::debug!("Events: {:?}", events);
                 events
@@ -181,9 +175,7 @@ impl HubMock {
         // Spawn a new thread to generate events
         thread::spawn(move || {
             loop {
-                let len = {
-                    events.lock().unwrap().len()
-                };
+                let len = { events.lock().unwrap().len() };
 
                 if len > 5 {
                     thread::sleep(Duration::from_millis(100));
@@ -254,5 +246,3 @@ fn generate_random_numbers() -> Vec<u8> {
     numbers.extend(set.into_iter());
     numbers
 }
-
-
