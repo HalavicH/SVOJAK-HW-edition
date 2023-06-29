@@ -23,6 +23,32 @@
     filter: drop-shadow(0 0 2em #dbbd24);
 }
 
+#pack-error-info-table {
+    border-collapse:separate;
+    border-spacing: 0 1em;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
 #pack-error-info-table .key {
     width: 20%;
+    font-weight: bold;
+}
+
+#pack-error-info-table tr {
+    vertical-align: top;
+}
+
+#pack-error-info-table td {
+}
+
+#pack-error-details {
+    font-size: 10pt;
+    font-family: "Inconsolata", monospace;
+    line-height: 1.2;
+}
+
+#error-block {
+    max-width: 100%;
+    overflow-x: auto;
 }

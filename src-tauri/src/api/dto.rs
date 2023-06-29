@@ -2,6 +2,13 @@ use crate::core::game_entities::PlayerState;
 use crate::game_pack::pack_content_entities::QuestionMediaType;
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Serialize)]
+pub struct PackErrorData {
+    pub path: String,
+    pub cause: String,
+    pub details: String,
+}
+
 ////////// Config ///////////
 #[derive(Debug, Serialize)]
 #[allow(non_snake_case)]

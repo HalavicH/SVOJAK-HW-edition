@@ -13,6 +13,7 @@ use zip::ZipArchive;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum GamePackLoadingError {
+    InvalidPathToMediaElement(String),
     InvalidPathToPack(String),
     InvalidPackFileExtension(String),
     CorruptedPack(String),
@@ -89,9 +90,10 @@ fn normalize_pack_entities_filenames(
 fn normalize_filenames_in_dir(dir_path: &str) -> Result<(), GamePackLoadingError> {
     log::info!("Normalizing names for {}", dir_path);
 
-    let files = fs::read_dir(dir_path)
-        .into_report()
-        .change_context(GamePackLoadingError::InternalError)?;
+    let Ok(files) = fs::read_dir(dir_path) else {
+        log::info!("It seems that dir {dir_path} doesn't exist. Nothing to normalize");
+        return Ok(());
+    };
 
     for file in files {
         let file_entry = file

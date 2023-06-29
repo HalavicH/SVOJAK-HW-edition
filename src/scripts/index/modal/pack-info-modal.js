@@ -102,20 +102,9 @@ export function handleStartTheGame() {
 
 function openPackErrorModel(error) {
     let errorModel = document.querySelector("#pack-error-modal");
-    if (error.InvalidPackFileExtension !== undefined) {
-        errorModel.querySelector("#pack-error-cause").innerText = "Wrong file extension. Expected '.siq";
-        errorModel.querySelector("#pack-path").innerText = error.InvalidPackFileExtension;
-    } else if (error.InvalidPathToPack !== undefined) {
-        errorModel.querySelector("#pack-error-cause").innerText = "Invalid path to pack file";
-        errorModel.querySelector("#pack-path").innerText = error.InvalidPathToPack;
-    } else if (error.CorruptedPack !== undefined) {
-        errorModel.querySelector("#pack-error-cause").innerText = "Corrupted pack";
-        errorModel.querySelector("#pack-path").innerText = error.CorruptedPack;
-    } else {
-        errorModel.querySelector("#pack-error-cause").innerText = "Unknown error";
-        errorModel.querySelector("#pack-path").innerText = error;
-    }
-
+    errorModel.querySelector("#pack-path").innerText = error.path;
+    errorModel.querySelector("#pack-error-cause").innerText = error.cause;
+    errorModel.querySelector("#pack-error-details").innerHTML = error.details.replaceAll("\n", "<br>");
 
     openModal(errorModel);
 }
