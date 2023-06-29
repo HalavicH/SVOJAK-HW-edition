@@ -1,15 +1,12 @@
-use std::sync::{RwLockWriteGuard};
+use std::sync::RwLockWriteGuard;
 
-use tauri::{command};
 use crate::api::dto::{HubRequestDto, HubResponseDto};
+use tauri::command;
 
-use crate::core::game_entities::{game};
+use crate::core::game_entities::game;
 use crate::hub_comm::common::hub_api::HubManager;
 
-
-
-
-use crate::hub_comm::hw::hw_hub_manager::{HubManagerError, HwHubManager};
+use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
 use crate::hub_comm::hw::internal::api_types::{HwHubIoError, HwHubRequest};
 
 /// Calls HUB to set specific radio channel
@@ -19,11 +16,12 @@ pub fn set_hub_radio_channel(channel_id: i32) -> Result<(), HubManagerError> {
     let guard = game();
     let hub_guard = guard.get_locked_hub_mut();
 
-    hub_guard.set_hub_radio_channel(channel_id as u8)
+    hub_guard
+        .set_hub_radio_channel(channel_id as u8)
         .map_err(|e| {
-        log::error!("{:#?}", e);
-        e.current_context().clone()
-    })
+            log::error!("{:#?}", e);
+            e.current_context().clone()
+        })
 }
 
 /// HUB Debug API
@@ -32,20 +30,20 @@ pub fn setup_hub_connection(port_name: String) -> Result<(), HubManagerError> {
     log::info!("Trying to open HUB connection");
     let game_ctx = game();
     let mut hub = game_ctx.get_locked_hub_mut();
-    hub.setup_hub_connection(&port_name)
-        .map_err(|e| {
-            log::error!("Operation failed: {:?}", e);
-            e.current_context().clone()
-        })
+    hub.setup_hub_connection(&port_name).map_err(|e| {
+        log::error!("Operation failed: {:?}", e);
+        e.current_context().clone()
+    })
 }
 
 #[command]
 pub fn send_raw_request_frame(request_frame: Vec<u8>) -> Result<Vec<u8>, HwHubIoError> {
     log::info!("Sending raw frame request to HUB");
     let guard = game();
-    let mut hub_guard = guard.get_locked_hub_mut();
-    let handler = hub_guard.hub_io_handler.as_mut()
-        .ok_or(HwHubIoError::NotInitializedError)?;
+    let hub_guard = guard.get_locked_hub_mut();
+    let Ok(handler) = hub_guard.hub_io_handler() else {
+        return Err(HwHubIoError::NotInitializedError);
+    };
 
     handler.send_raw_frame(request_frame).map_err(|e| {
         log::error!("Operation failed: {:?}", e);
@@ -72,7 +70,10 @@ pub fn send_hub_command(request: HubRequestDto) -> Result<HubResponseDto, HubMan
     Ok(dto)
 }
 
-fn process_hub_command(hub_guard: &mut RwLockWriteGuard<HwHubManager>, request_enum: HwHubRequest) -> error_stack::Result<String, HubManagerError> {
+fn process_hub_command(
+    hub_guard: &mut RwLockWriteGuard<Box<dyn HubManager>>,
+    request_enum: HwHubRequest,
+) -> error_stack::Result<String, HubManagerError> {
     match request_enum {
         HwHubRequest::SetTimestamp(timestamp) => {
             hub_guard.set_hub_timestamp(timestamp)?;
@@ -88,7 +89,10 @@ fn process_hub_command(hub_guard: &mut RwLockWriteGuard<HwHubManager>, request_e
         }
         HwHubRequest::SetTermRadioChannel(term_id, channel_num) => {
             hub_guard.set_term_radio_channel(term_id, channel_num)?;
-            Ok(format!("Set terminal {} radio channel successfully", term_id))
+            Ok(format!(
+                "Set terminal {} radio channel successfully",
+                term_id
+            ))
         }
         HwHubRequest::PingDevice(term_id) => {
             hub_guard.ping_terminal(term_id)?;
@@ -100,7 +104,10 @@ fn process_hub_command(hub_guard: &mut RwLockWriteGuard<HwHubManager>, request_e
         }
         HwHubRequest::SetFeedbackLed(term_id, state) => {
             hub_guard.set_term_feedback_led(term_id, &state.into())?;
-            Ok(format!("Set terminal {} feedback LED to {} successfully", term_id, state))
+            Ok(format!(
+                "Set terminal {} feedback LED to {} successfully",
+                term_id, state
+            ))
         }
         HwHubRequest::ReadEventQueue => {
             let events = hub_guard.read_event_queue()?;

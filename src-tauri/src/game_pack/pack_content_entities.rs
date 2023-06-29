@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use serde::Serialize;
 use crate::api::dto::QuestionType;
+use serde::Serialize;
+use std::collections::HashMap;
 
 // Game entities
 #[derive(Debug, PartialEq, Clone, Serialize)]

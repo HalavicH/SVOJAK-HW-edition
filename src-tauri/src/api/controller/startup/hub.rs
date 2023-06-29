@@ -1,16 +1,7 @@
-
-
-use tauri::{command};
-
+use tauri::command;
 
 use crate::core::game_entities::{game, HubStatus};
-use crate::hub_comm::common::hub_api::HubManager;
-
-
-
-
-use crate::hub_comm::hw::hw_hub_manager::{HubManagerError};
-
+use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
 
 /// Tries to detect hub at given serial port. If successful saves port name
 #[command]
@@ -37,9 +28,8 @@ pub fn discover_terminals() -> Result<Vec<u8>, HubManagerError> {
     let guard = game();
     let mut hub_guard = guard.get_locked_hub_mut();
 
-    hub_guard.discover_terminals()
-        .map_err(|e| {
-            log::error!("{:#?}", e);
-            e.current_context().clone()
-        })
+    hub_guard.discover_terminals().map_err(|e| {
+        log::error!("{:#?}", e);
+        e.current_context().clone()
+    })
 }

@@ -1,17 +1,20 @@
-use std::collections::HashMap;
-use std::sync::{Arc, mpsc, RwLock, RwLockReadGuard};
-use std::sync::mpsc::{Receiver, Sender};
-use std::thread;
-use std::thread::{JoinHandle, sleep};
-use std::time::{Duration, Instant};
-use error_stack::{IntoReport, ResultExt, Result, Report};
 use crate::hub_comm::common::hub_api::HubManager;
+use error_stack::{IntoReport, Report, Result, ResultExt};
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{mpsc, Arc, RwLock, RwLockReadGuard};
+use std::thread;
+use std::thread::{sleep, JoinHandle};
+use std::time::{Duration, Instant};
 
 use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
-use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
+use crate::core::game_entities::{
+    GameContext, GamePackError, GameState, GameplayError, Player, PlayerState,
+};
 
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
-use crate::hub_comm::hw::hw_hub_manager::{get_epoch_ms, HubManagerError, HwHubManager};
+use crate::hub_comm::hw::hw_hub_manager::{get_epoch_ms, HubManagerError};
 use crate::hub_comm::hw::internal::api_types::TermButtonState::Pressed;
 use crate::hub_comm::hw::internal::api_types::TermEvent;
 
@@ -29,23 +32,33 @@ impl GameContext {
         let (event_tx, event_rx) = mpsc::channel();
         self.event_queue = Some(event_rx);
 
-        start_event_listener(self.get_hub_ref().clone(), event_tx);
+        start_event_listener(
+            self.get_hub_ref().clone(),
+            event_tx,
+            self.allow_answer_timestamp.clone(),
+        );
 
         let q_picker_id = match self.get_fastest_click_player_id() {
-            Ok(id) => { id }
+            Ok(id) => id,
             Err(err) => {
                 log::error!("{:#?}", err);
 
-                self.players.values().next()
-                    .ok_or(GameplayError::PlayerNotPresent).into_report()
+                self.players
+                    .values()
+                    .next()
+                    .ok_or(GameplayError::PlayerNotPresent)
+                    .into_report()
                     .attach_printable("Can't find any player to play with :D")?
                     .term_id
             }
         };
 
         self.current.set_active_player_id(q_picker_id);
-        let player = self.players.get_mut(&self.current.active_player_id())
-            .ok_or(GameplayError::PlayerNotPresent).into_report()?;
+        let player = self
+            .players
+            .get_mut(&self.current.active_player_id())
+            .ok_or(GameplayError::PlayerNotPresent)
+            .into_report()?;
         player.state = PlayerState::QuestionChooser;
         Ok(())
     }
@@ -55,7 +68,11 @@ impl GameContext {
         &self.players
     }
 
-    pub fn get_pack_question(&mut self, theme: &String, price: &i32) -> Result<(Question, i32), GameplayError> {
+    pub fn get_pack_question(
+        &mut self,
+        theme: &String,
+        price: &i32,
+    ) -> Result<(Question, i32), GameplayError> {
         log::info!("Get question from category: {theme}, price: {price}");
 
         self.current.set_active_player_id(0);
@@ -66,7 +83,8 @@ impl GameContext {
                 .change_context(GameplayError::PackElementNotPresent));
         }
 
-        let (question, question_number) = self.get_question(theme, price)
+        let (question, question_number) = self
+            .get_question(theme, price)
             .change_context(GameplayError::PackElementNotPresent)?;
 
         self.update_game_state(GameState::QuestionSelected);
@@ -77,13 +95,20 @@ impl GameContext {
     pub fn remove_question(&mut self, theme: &String, price: &i32) -> Result<(), GamePackError> {
         log::info!("Try to remove question from category: {theme}, price: {price}");
         let round = self.get_current_round_mut();
-        let theme = round.themes.get_mut(theme)
-            .ok_or(GamePackError::ThemeNotPresent).into_report()
+        let theme = round
+            .themes
+            .get_mut(theme)
+            .ok_or(GamePackError::ThemeNotPresent)
+            .into_report()
             .attach_printable(format!("Can't find theme: {theme:?}"))?;
 
-        let _ = theme.pop_question(price)
-            .ok_or(GamePackError::QuestionNotPresent).into_report()
-            .attach_printable(format!("Can't find question with price {price:?} in theme: {theme:?}"))?;
+        let _ = theme
+            .pop_question(price)
+            .ok_or(GamePackError::QuestionNotPresent)
+            .into_report()
+            .attach_printable(format!(
+                "Can't find question with price {price:?} in theme: {theme:?}"
+            ))?;
 
         round.questions_left -= 1;
         log::info!("Question left: {}", round.questions_left);
@@ -99,7 +124,8 @@ impl GameContext {
 
     pub fn allow_answer(&mut self) -> Result<(), HubManagerError> {
         let timestamp = get_epoch_ms()?;
-        self.get_locked_hub_mut().allow_answer_timestamp = timestamp;
+        self.allow_answer_timestamp
+            .swap(timestamp, Ordering::Relaxed);
         log::info!("Current answer base timestamp: {timestamp}");
 
         self.current.set_active_player_id(0);
@@ -109,8 +135,10 @@ impl GameContext {
     }
 
     pub fn get_fastest_click_player_id(&mut self) -> Result<u8, GameplayError> {
-        let players_allowed_to_click_num = self.players.values()
-            .filter(|&p| { p.allowed_to_click() })
+        let players_allowed_to_click_num = self
+            .players
+            .values()
+            .filter(|&p| p.allowed_to_click())
             .count();
         if players_allowed_to_click_num == 0 {
             let report = Report::new(GameplayError::OperationForbidden)
@@ -118,7 +146,8 @@ impl GameContext {
             return Err(report);
         }
 
-        let fastest_player_id = self.get_fastest_click_from_hub()
+        let fastest_player_id = self
+            .get_fastest_click_from_hub()
             .change_context(GameplayError::HubOperationError)?;
 
         log::info!("Fastest click from user: {}", fastest_player_id);
@@ -126,14 +155,14 @@ impl GameContext {
         self.current.answer_allowed = true;
         self.current.set_active_player_id(fastest_player_id);
 
-        self.players.get_mut(&fastest_player_id)
+        self.players
+            .get_mut(&fastest_player_id)
             .ok_or(Report::new(GameplayError::PlayerNotPresent))
             .attach_printable(format!("Can't find player with id {}", fastest_player_id))?
             .state = PlayerState::FirstResponse;
 
         Ok(fastest_player_id)
     }
-
 
     pub fn get_active_player_id(&self) -> u8 {
         self.current.active_player_id()
@@ -147,10 +176,16 @@ impl GameContext {
         self.current.answer_allowed = false;
 
         let active_player_id = self.get_active_player_id();
-        log::info!("Active player id: {}. Player ids: {:?}", active_player_id, self.get_player_keys());
+        log::info!(
+            "Active player id: {}. Player ids: {:?}",
+            active_player_id,
+            self.get_player_keys()
+        );
 
         let response_player = {
-            let active_player = self.players.get_mut(&active_player_id)
+            let active_player = self
+                .players
+                .get_mut(&active_player_id)
                 .ok_or(GameplayError::PlayerNotPresent)?;
             if answered_correctly {
                 active_player.stats.correct_num += 1;
@@ -199,7 +234,9 @@ impl GameContext {
     }
 
     pub fn no_players_to_answer_left(&self) -> bool {
-        let players_left = self.players.iter()
+        let players_left = self
+            .players
+            .iter()
             .filter(|(_, p)| {
                 p.state != PlayerState::Inactive
                     && p.state != PlayerState::Dead
@@ -216,7 +253,12 @@ impl GameContext {
             return;
         }
         self.current.round_index += 1;
-        let round: &Round = self.game_pack.content.rounds.get(self.current.round_index).expect("Round should be present");
+        let round: &Round = self
+            .game_pack
+            .content
+            .rounds
+            .get(self.current.round_index)
+            .expect("Round should be present");
         log::info!("Next round name {}", round.name);
 
         self.current.total_tries = 0;
@@ -239,39 +281,54 @@ impl GameContext {
             totalWrongAnswers: self.current.total_wrong_answers,
             totalTries: self.current.total_tries,
             roundTime: "Not tracked".to_owned(),
-            players: self.players.values()
-                .map(|p| {
-                    PlayerStatsDto {
-                        id: p.term_id as i32,
-                        name: p.name.to_owned(),
-                        score: p.stats.score,
-                        playerIconPath: p.icon.to_owned(),
-                        totalAnswers: p.stats.total_tries,
-                        answeredCorrectly: p.stats.correct_num,
-                        answeredWrong: p.stats.wrong_num,
-                    }
+            players: self
+                .players
+                .values()
+                .map(|p| PlayerStatsDto {
+                    id: p.term_id as i32,
+                    name: p.name.to_owned(),
+                    score: p.stats.score,
+                    playerIconPath: p.icon.to_owned(),
+                    totalAnswers: p.stats.total_tries,
+                    answeredCorrectly: p.stats.correct_num,
+                    answeredWrong: p.stats.wrong_num,
                 })
                 .collect(),
         }
     }
 
     fn update_game_state(&mut self, new_state: GameState) {
-        log::info!("Game state {:?} -> {:?}", self.current.game_state(), new_state);
+        log::info!(
+            "Game state {:?} -> {:?}",
+            self.current.game_state(),
+            new_state
+        );
         self.current.set_game_state(new_state);
         self.update_non_target_player_states();
     }
 
-    fn get_question(&mut self, theme: &String, price: &i32) -> Result<(Question, i32), GamePackError> {
+    fn get_question(
+        &mut self,
+        theme: &String,
+        price: &i32,
+    ) -> Result<(Question, i32), GamePackError> {
         let round = self.get_current_round_mut();
         let question_number = round.question_count - round.questions_left;
 
-        let theme = round.themes.get_mut(theme)
-            .ok_or(GamePackError::ThemeNotPresent).into_report()
+        let theme = round
+            .themes
+            .get_mut(theme)
+            .ok_or(GamePackError::ThemeNotPresent)
+            .into_report()
             .attach_printable(format!("Can't find theme: {theme:?}"))?;
 
-        let question = theme.get_question(price)
-            .ok_or(GamePackError::QuestionNotPresent).into_report()
-            .attach_printable(format!("Can't find question with price {price:?} in theme: {theme:?}"))?
+        let question = theme
+            .get_question(price)
+            .ok_or(GamePackError::QuestionNotPresent)
+            .into_report()
+            .attach_printable(format!(
+                "Can't find question with price {price:?} in theme: {theme:?}"
+            ))?
             .clone();
 
         self.current.question_theme = theme.name.clone();
@@ -302,10 +359,7 @@ impl GameContext {
                 }
             };
 
-            events.sort_by(|e1, e2| {
-                e1.timestamp.cmp(&e2.timestamp)
-            });
-
+            events.sort_by(|e1, e2| e1.timestamp.cmp(&e2.timestamp));
 
             if let Some(value) = self.find_the_fastest_event(&mut events) {
                 return value;
@@ -319,7 +373,10 @@ impl GameContext {
         }
     }
 
-    fn find_the_fastest_event(&self, events: &mut Vec<TermEvent>) -> Option<Result<u8, HubManagerError>> {
+    fn find_the_fastest_event(
+        &self,
+        events: &mut Vec<TermEvent>,
+    ) -> Option<Result<u8, HubManagerError>> {
         for e in events {
             if e.state != Pressed {
                 log::debug!("Release event. Skipping: {:?}", e);
@@ -332,7 +389,11 @@ impl GameContext {
             };
 
             if !player.allowed_to_click() {
-                log::debug!("Player {} is not allowed to click. Skipping: {:?}", e.term_id, e);
+                log::debug!(
+                    "Player {} is not allowed to click. Skipping: {:?}",
+                    e.term_id,
+                    e
+                );
                 continue;
             }
 
@@ -366,8 +427,7 @@ impl GameContext {
     }
 
     fn get_player_keys(&self) -> Vec<u8> {
-        self.players.keys().copied()
-            .collect()
+        self.players.keys().copied().collect()
     }
 
     fn get_current_round_mut(&mut self) -> &mut Round {
@@ -381,7 +441,12 @@ impl GameContext {
         let active_id = self.get_active_player_id();
 
         self.players.iter_mut().for_each(|(id, p)| {
-            log::debug!("Game state: {:?}. Player: {}:{:?}", game_state, p.term_id, p.state);
+            log::debug!(
+                "Game state: {:?}. Player: {}:{:?}",
+                game_state,
+                p.term_id,
+                p.state
+            );
 
             if p.term_id == active_id {
                 log::debug!("Active player. Skipping");
@@ -393,7 +458,9 @@ impl GameContext {
                 p.state = PlayerState::Inactive;
             }
 
-            if *game_state == GameState::QuestionChoosing || (p.state != PlayerState::Dead && p.state != PlayerState::Inactive) {
+            if *game_state == GameState::QuestionChoosing
+                || (p.state != PlayerState::Dead && p.state != PlayerState::Inactive)
+            {
                 log::trace!("Player with id {} becomes idle", id);
                 p.state = PlayerState::Idle;
             }
@@ -403,59 +470,76 @@ impl GameContext {
     fn kill_players_with_negative_balance(&mut self) {
         self.players.iter_mut().for_each(|(_, player)| {
             if player.stats.score < 0 {
-                log::info!("Killing player {:?} because of the negative balance", player);
+                log::info!(
+                    "Killing player {:?} because of the negative balance",
+                    player
+                );
                 player.state = PlayerState::Dead;
             }
         });
     }
 }
 
-pub fn start_event_listener(hub: Arc<RwLock<HwHubManager>>, sender: Sender<TermEvent>) -> JoinHandle<()> {
+pub fn start_event_listener(
+    hub: Arc<RwLock<Box<dyn HubManager>>>,
+    sender: Sender<TermEvent>,
+    base_timestamp: Arc<AtomicU32>,
+) -> JoinHandle<()> {
     log::info!("Starting event listener");
 
     thread::spawn(move || {
-        listen_hub_events(hub, sender);
+        listen_hub_events(hub, sender, base_timestamp);
     })
 }
 
-fn listen_hub_events(hub: Arc<RwLock<HwHubManager>>, sender: Sender<TermEvent>) {
+fn listen_hub_events(
+    hub: Arc<RwLock<Box<dyn HubManager>>>,
+    sender: Sender<TermEvent>,
+    base_timestamp: Arc<AtomicU32>,
+) {
     loop {
         log::debug!("############# NEW ITERATION ###############");
         sleep(Duration::from_millis(EVT_POLLING_INTERVAL_MS));
-        let hub_guard = hub.read()
-            .expect("Mutex is poisoned");
-        let events = hub_guard.read_event_queue()
-            .unwrap_or_else(|error| {
-                log::error!("Can't get events. Err {:?}", error);
-                vec![]
-            });
+        let hub_guard = hub.read().expect("Mutex is poisoned");
+        let events = hub_guard.read_event_queue().unwrap_or_else(|error| {
+            log::error!("Can't get events. Err {:?}", error);
+            vec![]
+        });
 
         if events.is_empty() {
             log::debug!("No player events occurred");
             continue;
         }
 
-        events.iter()
-            .for_each(|e| {
-                process_term_event(&hub_guard, e, &sender);
-            });
+        events.iter().for_each(|e| {
+            let i = base_timestamp.load(Ordering::SeqCst);
+            process_term_event(&hub_guard, e, &sender, i);
+        });
     }
 }
 
-fn process_term_event(hub_guard: &RwLockReadGuard<HwHubManager>, e: &TermEvent, sender: &Sender<TermEvent>) {
-    hub_guard.set_term_feedback_led(e.term_id, &e.state)
+fn process_term_event(
+    hub_guard: &RwLockReadGuard<Box<dyn HubManager>>,
+    e: &TermEvent,
+    sender: &Sender<TermEvent>,
+    base_timestamp: u32,
+) {
+    hub_guard
+        .set_term_feedback_led(e.term_id, &e.state)
         .unwrap_or_else(|error| {
             log::error!("Can't set term_feedback let. Err {:?}", error);
         });
 
-    if e.timestamp >= hub_guard.allow_answer_timestamp {
+    if e.timestamp >= base_timestamp {
         log::info!("After answer allowed. Event {:?}", e);
-        sender.send((*e).clone()).map_err(|e| {
-            log::error!("Can't send the event: {}", e);
-        }).unwrap_or_default();
+        sender
+            .send((*e).clone())
+            .map_err(|e| {
+                log::error!("Can't send the event: {}", e);
+            })
+            .unwrap_or_default();
     } else {
         log::info!("Answer too early. Event {:?}", e);
         // TODO: add 1 sec of delay and forbid response
     }
 }
-

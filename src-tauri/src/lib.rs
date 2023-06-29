@@ -3,8 +3,8 @@ pub mod api {
     pub mod mapper;
 
     pub mod controller {
-        pub mod startup;
         pub mod gameplay;
+        pub mod startup;
     }
 }
 
@@ -14,11 +14,11 @@ pub mod core {
 }
 
 pub mod game_pack {
+    pub mod game_pack_entites;
+    pub mod game_pack_loader;
     mod pack_content_dto;
     pub mod pack_content_entities;
     pub mod pack_content_loader;
-    pub mod game_pack_entites;
-    pub mod game_pack_loader;
 }
 
 pub mod hub_comm {
@@ -31,8 +31,11 @@ pub mod hub_comm {
         pub mod virtual_hw_hub;
         pub mod internal {
             pub mod api_types;
-            pub mod hub_protocol_io_handler;
             pub mod byte_handler;
+            pub mod hub_protocol_io_handler;
         }
+    }
+    pub mod web {
+        pub mod web_hub;
     }
 }

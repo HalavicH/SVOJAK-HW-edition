@@ -1,8 +1,8 @@
+use crate::api::dto::HubRequestDto;
+use rgb::RGB8;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt;
-use rgb::RGB8;
-use crate::api::dto::HubRequestDto;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Serialize, Error)]
@@ -40,7 +40,9 @@ impl HwHubRequest {
             "set_timestamp" => HwHubRequest::SetTimestamp(request.param1),
             "get_timestamp" => HwHubRequest::GetTimestamp,
             "set_hub_radio_channel" => HwHubRequest::SetHubRadioChannel(request.param1 as u8),
-            "set_term_radio_channel" => HwHubRequest::SetTermRadioChannel(request.param1 as u8, request.param2 as u8),
+            "set_term_radio_channel" => {
+                HwHubRequest::SetTermRadioChannel(request.param1 as u8, request.param2 as u8)
+            }
             "ping_device" => HwHubRequest::PingDevice(request.param1 as u8),
             "set_light_color" => HwHubRequest::SetLightColor(request.param1 as u8, rgb),
             "set_feedback_led" => HwHubRequest::SetFeedbackLed(request.param1 as u8, state),
@@ -69,7 +71,9 @@ impl HwHubRequest {
             HwHubRequest::SetHubRadioChannel(channel_num) => vec![*channel_num],
             HwHubRequest::SetTermRadioChannel(term_id, channel_num) => vec![*term_id, *channel_num],
             HwHubRequest::PingDevice(term_id) => vec![*term_id],
-            HwHubRequest::SetLightColor(term_id, color) => vec![*term_id, color.r, color.g, color.b],
+            HwHubRequest::SetLightColor(term_id, color) => {
+                vec![*term_id, color.r, color.g, color.b]
+            }
             HwHubRequest::SetFeedbackLed(term_id, state) => vec![*term_id, *state as u8],
             HwHubRequest::ReadEventQueue => vec![],
         }
@@ -112,7 +116,6 @@ impl fmt::Display for ResponseStatus {
 }
 
 impl Error for ResponseStatus {}
-
 
 impl From<u8> for ResponseStatus {
     fn from(value: u8) -> Self {
@@ -162,8 +165,8 @@ pub enum TermButtonState {
 impl From<bool> for TermButtonState {
     fn from(state: bool) -> Self {
         match state {
-            true => { TermButtonState::Pressed }
-            false => { TermButtonState::Released }
+            true => TermButtonState::Pressed,
+            false => TermButtonState::Released,
         }
     }
 }
@@ -171,12 +174,11 @@ impl From<bool> for TermButtonState {
 impl TermButtonState {
     pub fn to_bool(&self) -> bool {
         match self {
-            TermButtonState::Pressed => { true }
-            TermButtonState::Released => { false }
+            TermButtonState::Pressed => true,
+            TermButtonState::Released => false,
         }
     }
 }
-
 
 #[derive(Debug, Clone, Serialize)]
 pub enum MyParseError {
@@ -202,5 +204,3 @@ impl TryFrom<u8> for TermButtonState {
         }
     }
 }
-
-
