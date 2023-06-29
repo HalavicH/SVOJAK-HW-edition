@@ -3,7 +3,8 @@ use crate::core::game_entities::{game, Player};
 use std::collections::HashMap;
 use crate::api::dto::{PackInfoDto, PlayerGameDto, QuestionDto};
 use crate::game_pack::pack_content_entities::{PackContent, Question, Round, RoundType};
-use crate::hub_comm::hw::hw_hub_manager::HwHubManager;
+use crate::hub_comm::common::hub_api::HubManager;
+use crate::hub_comm::hw::hw_hub_manager::discover_serial_ports;
 
 use super::dto::PlayerSetupDto;
 
@@ -12,7 +13,7 @@ pub fn get_config_dto() -> ConfigDto {
     let context = game();
     let hub_guard = context.get_unlocked_hub();
     ConfigDto {
-        available_ports: HwHubManager::discover_serial_ports(),
+        available_ports: discover_serial_ports(),
         hub_port: hub_guard.port_name.clone(),
         radio_channel: hub_guard.radio_channel,
         players: context
