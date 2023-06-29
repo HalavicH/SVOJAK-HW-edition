@@ -3,6 +3,8 @@
 #[allow(unused_imports)]
 
 use svoyak_tauri_app::api::controller::startup::*;
+use svoyak_tauri_app::api::controller::startup::hub::*;
+use svoyak_tauri_app::api::controller::startup::hw_hub::*;
 use svoyak_tauri_app::api::controller::gameplay::*;
 use svoyak_tauri_app::core::game_entities::*;
 

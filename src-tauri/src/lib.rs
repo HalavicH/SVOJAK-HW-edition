@@ -26,6 +26,7 @@ pub mod hub_comm {
         pub mod hub_api;
     }
     pub mod hw {
+        pub mod hw_hub;
         pub mod hw_hub_manager;
         pub mod virtual_hw_hub;
         pub mod internal {
