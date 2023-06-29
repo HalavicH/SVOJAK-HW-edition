@@ -2,7 +2,7 @@ use crate::api::dto::{PlayerGameDto, QuestionDataDto, QuestionType, RoundDto, Ro
 use tauri::command;
 use crate::api::mapper::*;
 use crate::core::game_entities::{game, GameplayError};
-use crate::core::hub_manager::HubManagerError;
+use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
 
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {

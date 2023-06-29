@@ -96,6 +96,7 @@ pub struct PackageDto {
     pub name: String,
     pub version: String,
     pub id: String,
+    #[serde(default = "String::default")]
     pub restriction: String,
     pub date: String,
     pub difficulty: u8,

@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use serde::Serialize;
 use crate::api::dto::QuestionType;
 
-pub struct PackContentLoaderError {}
-
 // Game entities
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub enum QuestionMediaType {

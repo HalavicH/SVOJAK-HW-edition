@@ -10,10 +10,10 @@ use error_stack::{IntoReport, ResultExt, Result, Report};
 use crate::api::dto::{PlayerStatsDto, RoundStatsDto};
 use crate::core::game_entities::{GameContext, GamePackError, GameplayError, GameState, Player, PlayerState};
 
-use crate::core::hub_manager::{get_epoch_ms, HubManager, HubManagerError};
 use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
-use crate::hw_comm::api_types::TermButtonState::Pressed;
-use crate::hw_comm::api_types::TermEvent;
+use crate::hub_comm::hw::hw_hub_manager::{get_epoch_ms, HubManagerError, HwHubManager};
+use crate::hub_comm::hw::internal::api_types::TermButtonState::Pressed;
+use crate::hub_comm::hw::internal::api_types::TermEvent;
 
 const EVT_POLLING_INTERVAL_MS: u64 = 1000;
 
@@ -408,7 +408,7 @@ impl GameContext {
     }
 }
 
-pub fn start_event_listener(hub: Arc<RwLock<HubManager>>, sender: Sender<TermEvent>) -> JoinHandle<()> {
+pub fn start_event_listener(hub: Arc<RwLock<HwHubManager>>, sender: Sender<TermEvent>) -> JoinHandle<()> {
     log::info!("Starting event listener");
 
     thread::spawn(move || {
@@ -416,7 +416,7 @@ pub fn start_event_listener(hub: Arc<RwLock<HubManager>>, sender: Sender<TermEve
     })
 }
 
-fn listen_hub_events(hub: Arc<RwLock<HubManager>>, sender: Sender<TermEvent>) {
+fn listen_hub_events(hub: Arc<RwLock<HwHubManager>>, sender: Sender<TermEvent>) {
     loop {
         log::debug!("############# NEW ITERATION ###############");
         sleep(Duration::from_millis(EVT_POLLING_INTERVAL_MS));
@@ -440,7 +440,7 @@ fn listen_hub_events(hub: Arc<RwLock<HubManager>>, sender: Sender<TermEvent>) {
     }
 }
 
-fn process_term_event(hub_guard: &RwLockReadGuard<HubManager>, e: &TermEvent, sender: &Sender<TermEvent>) {
+fn process_term_event(hub_guard: &RwLockReadGuard<HwHubManager>, e: &TermEvent, sender: &Sender<TermEvent>) {
     hub_guard.set_term_feedback_led(e.term_id, &e.state)
         .unwrap_or_else(|error| {
             log::error!("Can't set term_feedback let. Err {:?}", error);
