@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Tauri App</title>
     <script type="module" src="./scripts/index/index.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -237,23 +240,31 @@
         <span class="close" id="pack-error-close-modal">&times;</span>
         <h2 class="modal-name">Pack opening failed</h2>
 
-        <div class="items-block">
+        <div class="items-block" id="error-block">
             <p class="pack-info-title">Can't open pack:</p>
             <table class="grid" id="pack-error-info-table">
-                <tr>
-                    <td class="key">
-                        <div>Cause:</div>
-                    </td>
-                    <td>
-                        <div id="pack-error-cause" class="">Unknown error</div>
-                    </td>
-                </tr>
                 <tr>
                     <td class="key">
                         <div>Pack path:</div>
                     </td>
                     <td>
                         <div id="pack-path" class=""></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="key">
+                        <div>Cause:</div>
+                    </td>
+                    <td>
+                        <div id="pack-error-cause" class=""></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="key">
+                        <div>Details:</div>
+                    </td>
+                    <td>
+                        <div id="pack-error-details" class=""></div>
                     </td>
                 </tr>
             </table>
