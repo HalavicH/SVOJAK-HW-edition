@@ -3,26 +3,24 @@ use std::error::Error;
 use std::fmt;
 use rgb::RGB8;
 use crate::api::dto::HubRequestDto;
+use thiserror::Error;
 
-#[derive(Debug, Clone, Serialize)]
-pub enum HubIoError {
+#[derive(Debug, Clone, Serialize, Error)]
+pub enum HwHubIoError {
+    #[error("Hub not initialized")]
     NotInitializedError,
+    #[error("Serial port error")]
     SerialPortError,
+    #[error("No response from hub")]
     NoResponseFromHub,
+    #[error("Corrupted response from hub")]
     CorruptedResponseFromHub,
+    #[error("Internal error")]
     InternalError,
 }
 
-impl fmt::Display for HubIoError {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.write_str("Failed to perform hub communication:")
-    }
-}
-
-impl Error for HubIoError {}
-
 /// HUB REQUEST
-pub enum HubRequest {
+pub enum HwHubRequest {
     SetTimestamp(u32),
     GetTimestamp,
     SetHubRadioChannel(u8),
@@ -33,47 +31,47 @@ pub enum HubRequest {
     ReadEventQueue,
 }
 
-impl HubRequest {
+impl HwHubRequest {
     pub fn from_debug_request(request: HubRequestDto) -> Self {
         let x = request.param2.to_ne_bytes();
         let rgb = RGB8::new(x[0], x[1], x[2]);
         let state = if request.param2 != 0 { true } else { false };
         match request.cmd.as_str() {
-            "set_timestamp" => HubRequest::SetTimestamp(request.param1),
-            "get_timestamp" => HubRequest::GetTimestamp,
-            "set_hub_radio_channel" => HubRequest::SetHubRadioChannel(request.param1 as u8),
-            "set_term_radio_channel" => HubRequest::SetTermRadioChannel(request.param1 as u8, request.param2 as u8),
-            "ping_device" => HubRequest::PingDevice(request.param1 as u8),
-            "set_light_color" => HubRequest::SetLightColor(request.param1 as u8, rgb),
-            "set_feedback_led" => HubRequest::SetFeedbackLed(request.param1 as u8, state),
-            "read_event_queue" => HubRequest::ReadEventQueue,
+            "set_timestamp" => HwHubRequest::SetTimestamp(request.param1),
+            "get_timestamp" => HwHubRequest::GetTimestamp,
+            "set_hub_radio_channel" => HwHubRequest::SetHubRadioChannel(request.param1 as u8),
+            "set_term_radio_channel" => HwHubRequest::SetTermRadioChannel(request.param1 as u8, request.param2 as u8),
+            "ping_device" => HwHubRequest::PingDevice(request.param1 as u8),
+            "set_light_color" => HwHubRequest::SetLightColor(request.param1 as u8, rgb),
+            "set_feedback_led" => HwHubRequest::SetFeedbackLed(request.param1 as u8, state),
+            "read_event_queue" => HwHubRequest::ReadEventQueue,
             _ => todo!("Unknown string"), // Handle unknown strings if necessary
         }
     }
 
     pub fn cmd(&self) -> u8 {
         match self {
-            HubRequest::SetTimestamp(_) => 0x80,
-            HubRequest::GetTimestamp => 0x81,
-            HubRequest::SetHubRadioChannel(_) => 0x82,
-            HubRequest::SetTermRadioChannel(_, _) => 0x82,
-            HubRequest::PingDevice(_) => 0x90,
-            HubRequest::SetLightColor(_, _) => 0x91,
-            HubRequest::SetFeedbackLed(_, _) => 0x92,
-            HubRequest::ReadEventQueue => 0xA0,
+            HwHubRequest::SetTimestamp(_) => 0x80,
+            HwHubRequest::GetTimestamp => 0x81,
+            HwHubRequest::SetHubRadioChannel(_) => 0x82,
+            HwHubRequest::SetTermRadioChannel(_, _) => 0x82,
+            HwHubRequest::PingDevice(_) => 0x90,
+            HwHubRequest::SetLightColor(_, _) => 0x91,
+            HwHubRequest::SetFeedbackLed(_, _) => 0x92,
+            HwHubRequest::ReadEventQueue => 0xA0,
         }
     }
 
     pub fn payload(&self) -> Vec<u8> {
         match self {
-            HubRequest::SetTimestamp(timestamp) => timestamp.to_le_bytes().to_vec(),
-            HubRequest::GetTimestamp => vec![],
-            HubRequest::SetHubRadioChannel(channel_num) => vec![*channel_num],
-            HubRequest::SetTermRadioChannel(term_id, channel_num) => vec![*term_id, *channel_num],
-            HubRequest::PingDevice(term_id) => vec![*term_id],
-            HubRequest::SetLightColor(term_id, color) => vec![*term_id, color.r, color.g, color.b],
-            HubRequest::SetFeedbackLed(term_id, state) => vec![*term_id, *state as u8],
-            HubRequest::ReadEventQueue => vec![],
+            HwHubRequest::SetTimestamp(timestamp) => timestamp.to_le_bytes().to_vec(),
+            HwHubRequest::GetTimestamp => vec![],
+            HwHubRequest::SetHubRadioChannel(channel_num) => vec![*channel_num],
+            HwHubRequest::SetTermRadioChannel(term_id, channel_num) => vec![*term_id, *channel_num],
+            HwHubRequest::PingDevice(term_id) => vec![*term_id],
+            HwHubRequest::SetLightColor(term_id, color) => vec![*term_id, color.r, color.g, color.b],
+            HwHubRequest::SetFeedbackLed(term_id, state) => vec![*term_id, *state as u8],
+            HwHubRequest::ReadEventQueue => vec![],
         }
     }
 }

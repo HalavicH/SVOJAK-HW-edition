@@ -4,9 +4,9 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 use serialport::{SerialPort, TTYPort};
 use svoyak_tauri_app::hw_comm::api_types::{HubResponse, ResponseStatus};
-use svoyak_tauri_app::hw_comm::api_types::HubRequest::*;
+use svoyak_tauri_app::hw_comm::api_types::HwHubIoError::*;
 use svoyak_tauri_app::hw_comm::byte_handler::{ByteHandler};
-use svoyak_tauri_app::hw_comm::hub_protocol_io_handler::{format_bytes_hex, HubProtocolIoHandler, stuff_bytes};
+use svoyak_tauri_app::hw_comm::hub_protocol_io_handler::{format_bytes_hex, HwHubCommunicationHandler, stuff_bytes};
 
 const MOCK_ID: u8 = 6;
 const MOCK_TID: u8 = 0;
@@ -63,7 +63,7 @@ fn test_virtual_hub_communication() {
 #[test_log::test]
 fn test_send_request_timeout() {
     let (_, device_handle) = prepare_ports();
-    let hub_handler: HubProtocolIoHandler = HubProtocolIoHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
 
     let result = hub_handler.send_command(GetTimestamp);
     assert!(result.is_err());
@@ -72,7 +72,7 @@ fn test_send_request_timeout() {
 #[test_log::test]
 fn test_get_timestamp_command() {
     let (host_handle, device_handle) = prepare_ports();
-    let hub_handler: HubProtocolIoHandler = HubProtocolIoHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
 
     start_hub_mock(Box::new(host_handle));
 
@@ -92,7 +92,7 @@ fn test_get_timestamp_command() {
 #[test_log::test]
 fn test_get_events() {
     let (host_handle, device_handle) = prepare_ports();
-    let hub_handler: HubProtocolIoHandler = HubProtocolIoHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
 
     start_hub_mock(Box::new(host_handle));
 
@@ -112,7 +112,7 @@ fn test_get_events() {
 #[test_log::test]
 fn test_ping_device() {
     let (host_handle, device_handle) = prepare_ports();
-    let hub_handler: HubProtocolIoHandler = HubProtocolIoHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
 
     start_hub_mock(Box::new(host_handle));
 
