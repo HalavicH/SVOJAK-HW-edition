@@ -43,15 +43,9 @@ impl Theme {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum RoundType {
-    Normal,
-    Final,
-}
-
-#[derive(Debug, PartialEq, Clone)]
 pub struct Round {
     pub name: String,
-    pub round_type: RoundType,
+    pub round_type: String,
     pub themes: HashMap<String, Theme>,
     pub question_count: i32,
     pub normal_question_count: i32,

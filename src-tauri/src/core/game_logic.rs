@@ -13,7 +13,7 @@ use crate::core::game_entities::{
     GameContext, GamePackError, GameState, GameplayError, Player, PlayerState,
 };
 
-use crate::game_pack::pack_content_entities::{Question, Round, RoundType};
+use crate::game_pack::pack_content_entities::{Question, Round};
 use crate::hub_comm::hw::hw_hub_manager::{get_epoch_ms, HubManagerError};
 use crate::hub_comm::hw::internal::api_types::TermButtonState::Pressed;
 use crate::hub_comm::hw::internal::api_types::TermEvent;
@@ -268,7 +268,7 @@ impl GameContext {
         self.current.total_wrong_answers = 0;
         self.current.total_correct_answers = 0;
 
-        if round.round_type == RoundType::Final {
+        if self.is_already_last_round() {
             self.kill_players_with_negative_balance();
         }
     }
