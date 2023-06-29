@@ -4,6 +4,7 @@ use tauri::{command};
 use crate::api::dto::{ConfigDto, HubRequestDto, HubResponseDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
 use crate::core::game_entities::{game, GameplayError, HubStatus, Player, PlayerState};
+use crate::hub_comm::common::hub_api::HubManager;
 
 use crate::api::dto::PlayerSetupDto;
 
