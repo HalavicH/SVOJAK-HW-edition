@@ -229,7 +229,8 @@ impl GameContext {
 
     pub fn get_current_round(&self) -> &Round {
         let index = self.current.round_index;
-        let round = self.game_pack.content.rounds.get(index).unwrap();
+        let round = self.game_pack.content.rounds.get(index)
+            .expect(&format!("Expected to have round #{}", index));
         round
     }
 
@@ -248,17 +249,19 @@ impl GameContext {
     }
 
     pub fn init_next_round(&mut self) {
-        if (self.game_pack.content.rounds.len() - 1) == self.current.round_index {
+        if self.is_already_last_round() {
             log::error!("Already final round");
             return;
         }
+
         self.current.round_index += 1;
+        let index = self.current.round_index;
         let round: &Round = self
             .game_pack
             .content
             .rounds
-            .get(self.current.round_index)
-            .expect("Round should be present");
+            .get(index)
+            .expect(&format!("Expected to have round #{}", index));
         log::info!("Next round name {}", round.name);
 
         self.current.total_tries = 0;
@@ -268,6 +271,10 @@ impl GameContext {
         if round.round_type == RoundType::Final {
             self.kill_players_with_negative_balance();
         }
+    }
+
+    fn is_already_last_round(&mut self) -> bool {
+        (self.game_pack.content.rounds.len() - 1) == self.current.round_index
     }
 
     pub fn fetch_round_stats(&self) -> RoundStatsDto {
@@ -432,7 +439,8 @@ impl GameContext {
 
     fn get_current_round_mut(&mut self) -> &mut Round {
         let index = self.current.round_index;
-        let round = self.game_pack.content.rounds.get_mut(index).unwrap();
+        let round = self.game_pack.content.rounds.get_mut(index)
+            .expect(&format!("Expected to have round #{}", index));
         round
     }
 
