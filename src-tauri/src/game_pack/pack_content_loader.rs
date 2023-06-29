@@ -1,17 +1,17 @@
-#[allow(dead_code, unused, unused_imports)]
-use std::{collections::HashMap, io, fmt, error::Error, fs};
 use std::path::Path;
+#[allow(dead_code, unused, unused_imports)]
+use std::{collections::HashMap, error::Error, fmt, fs, io};
 
 use error_stack::{IntoReport, Result, ResultExt};
 use serde_xml_rs::from_str;
-use urlencoding::encode;
 use unic_normal::StrNormalForm;
+use urlencoding::encode;
 
 use crate::api::dto::QuestionType;
+use crate::game_pack::game_pack_entites::PackLocationData;
+use crate::game_pack::game_pack_loader::GamePackLoadingError;
 use crate::game_pack::pack_content_dto::*;
 use crate::game_pack::pack_content_entities::*;
-use crate::game_pack::game_pack_entites::{PackLocationData};
-use crate::game_pack::game_pack_loader::GamePackLoadingError;
 
 #[derive(Debug)]
 pub struct ParsePackContentError;
@@ -24,24 +24,33 @@ impl fmt::Display for ParsePackContentError {
 
 impl Error for ParsePackContentError {}
 
-pub fn load_pack_content(pack_location_data: &PackLocationData) -> Result<PackContent, GamePackLoadingError> {
-    let package_content_file_str = pack_location_data.content_file_path.to_str()
-        .ok_or(GamePackLoadingError::InvalidPathToPack("Can't get content file path".to_string()))
+pub fn load_pack_content(
+    pack_location_data: &PackLocationData,
+) -> Result<PackContent, GamePackLoadingError> {
+    let package_content_file_str = pack_location_data
+        .content_file_path
+        .to_str()
+        .ok_or(GamePackLoadingError::InvalidPathToPack(
+            "Can't get content file path".to_string(),
+        ))
         .into_report()
         .attach_printable("Can't get content file path. Check pack location data validity")?;
 
     let package: PackageDto = parse_package(package_content_file_str)
-        .change_context(GamePackLoadingError::CorruptedPack("Can't parse package".to_string()))
-        .attach_printable_lazy(|| {
-            "Can't load pack content: parsing failed".to_string()
-        })?;
+        .change_context(GamePackLoadingError::CorruptedPack(
+            "Can't parse package".to_string(),
+        ))
+        .attach_printable_lazy(|| "Can't load pack content: parsing failed".to_string())?;
 
     let mut mapped_content = map_package(package);
     expand_and_validate_package_paths(&mut mapped_content, pack_location_data)?;
     Ok(mapped_content)
 }
 
-fn expand_and_validate_package_paths(pack: &mut PackContent, locations: &PackLocationData) -> Result<(), GamePackLoadingError> {
+fn expand_and_validate_package_paths(
+    pack: &mut PackContent,
+    locations: &PackLocationData,
+) -> Result<(), GamePackLoadingError> {
     let mut result = Ok(());
 
     pack.rounds.iter_mut().for_each(|r| {
@@ -52,25 +61,40 @@ fn expand_and_validate_package_paths(pack: &mut PackContent, locations: &PackLoc
                     match a.atom_type {
                         QuestionMediaType::Say => {}
                         QuestionMediaType::Voice => {
-                            a.content = locations.audio_path.join(to_url_filename(a)).to_str()
-                                .unwrap_or_default().to_owned();
+                            a.content = locations
+                                .audio_path
+                                .join(to_url_filename(a))
+                                .to_str()
+                                .unwrap_or_default()
+                                .to_owned();
                         }
                         QuestionMediaType::Video => {
-                            a.content = locations.video_path.join(to_url_filename(a)).to_str()
-                                .unwrap_or_default().to_owned()
+                            a.content = locations
+                                .video_path
+                                .join(to_url_filename(a))
+                                .to_str()
+                                .unwrap_or_default()
+                                .to_owned()
                         }
                         QuestionMediaType::Marker => {}
                         QuestionMediaType::Image => {
-                            a.content = locations.images_path.join(to_url_filename(a)).to_str()
-                                .unwrap_or_default().to_owned()
+                            a.content = locations
+                                .images_path
+                                .join(to_url_filename(a))
+                                .to_str()
+                                .unwrap_or_default()
+                                .to_owned()
                         }
                     }
                     log::debug!("Atom {:?} after mapping: {}", a.atom_type, a.content);
                     if is_atom_media(&a.atom_type) && !Path::new(&a.content).exists() {
-                        let err_msg = format!("Atom corrupted! Round: {}, theme: {}, question: {}, atom {:?}",
-                                              r.name, theme.name, q.price, a);
+                        let err_msg = format!(
+                            "Atom corrupted! Round: {}, theme: {}, question: {}, atom {:?}",
+                            r.name, theme.name, q.price, a
+                        );
                         log::error!("{}", err_msg);
-                        result = Err(GamePackLoadingError::CorruptedPack(err_msg.clone())).into_report()
+                        result = Err(GamePackLoadingError::CorruptedPack(err_msg.clone()))
+                            .into_report()
                             .attach_printable(err_msg);
                     }
                 })
@@ -98,16 +122,12 @@ fn to_url_filename(a: &mut Atom) -> String {
 fn parse_package(file_path: &str) -> Result<PackageDto, ParsePackContentError> {
     let package_xml = fs::read_to_string(file_path)
         .into_report()
-        .attach_printable_lazy(|| {
-            format!("Can't open package content file: '{file_path}'")
-        })
+        .attach_printable_lazy(|| format!("Can't open package content file: '{file_path}'"))
         .change_context(ParsePackContentError)?;
 
     let package_dto = from_str(&package_xml)
         .into_report()
-        .attach_printable_lazy(|| {
-            format!("Can't parse pack content XML file: '{file_path}'")
-        })
+        .attach_printable_lazy(|| format!("Can't parse pack content XML file: '{file_path}'"))
         .change_context(ParsePackContentError)?;
 
     Ok(package_dto)
@@ -185,7 +205,7 @@ fn map_theme(t: &ThemeDto) -> (String, Theme) {
                     .map(|q| (q.price, { map_question(q) }))
                     .collect::<HashMap<i32, Question>>()
             },
-        }
+        },
     )
 }
 
@@ -211,8 +231,9 @@ fn map_round(r: &RoundDto) -> Round {
         pip_question_count: -1,
     };
     let vec = Vec::from_iter(round.themes.values());
-    round.question_count = vec.iter()
-        .map(|&theme| { theme.questions.len() as i32 })
+    round.question_count = vec
+        .iter()
+        .map(|&theme| theme.questions.len() as i32)
         .sum::<i32>();
 
     round.questions_left = round.question_count;

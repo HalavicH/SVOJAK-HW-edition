@@ -1,5 +1,5 @@
+use crate::hub_comm::hw::internal::hub_protocol_io_handler::format_bytes_hex;
 use std::fmt::Debug;
-use crate::hub_comm::hw::internal::hub_protocol_io_handler::{format_bytes_hex};
 
 pub type RawFrame = Vec<u8>;
 
@@ -24,7 +24,7 @@ impl Default for ByteHandler {
     fn default() -> Self {
         Self {
             state: ByteHandlerState::Byte,
-            framebuf: vec!(),
+            framebuf: vec![],
         }
     }
 }
@@ -65,7 +65,10 @@ impl ByteHandler {
             STOP_BYTE => {
                 self.state = ByteHandlerState::Byte;
                 log::trace!("Got end byte. Set state: {:?}", self.state);
-                log::trace!("Resulting frame: {:?}", format_bytes_hex(self.framebuf.as_slice()));
+                log::trace!(
+                    "Resulting frame: {:?}",
+                    format_bytes_hex(self.framebuf.as_slice())
+                );
             }
             _ => self.framebuf.push(byte),
         }

@@ -1,8 +1,8 @@
 use crate::api::dto::{PlayerGameDto, QuestionDataDto, QuestionType, RoundDto, RoundStatsDto};
-use tauri::command;
 use crate::api::mapper::*;
 use crate::core::game_entities::{game, GameplayError};
 use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
+use tauri::command;
 
 #[command]
 pub fn fetch_players() -> Vec<PlayerGameDto> {
@@ -20,8 +20,7 @@ pub fn fetch_round() -> RoundDto {
 
 #[command]
 pub fn get_question_data(topic: String, price: i32) -> Result<QuestionDataDto, GameplayError> {
-    let (question, q_num) = game()
-        .get_pack_question(&topic, &price).map_err(|e| {
+    let (question, q_num) = game().get_pack_question(&topic, &price).map_err(|e| {
         log::error!("Can't get question data: {:#?}", e);
         e.current_context().clone()
     })?;
@@ -31,20 +30,18 @@ pub fn get_question_data(topic: String, price: i32) -> Result<QuestionDataDto, G
 
 #[command]
 pub fn allow_answer() -> Result<(), HubManagerError> {
-    game().allow_answer()
-        .map_err(|e| {
-            log::error!("{:?}", e);
-            e.current_context().clone()
-        })
+    game().allow_answer().map_err(|e| {
+        log::error!("{:?}", e);
+        e.current_context().clone()
+    })
 }
 
 #[command]
 pub fn get_fastest_click() -> Result<i32, GameplayError> {
-    let id = game().get_fastest_click_player_id()
-        .map_err(|e| {
-            log::error!("{:?}", e);
-            e.current_context().clone()
-        })?;
+    let id = game().get_fastest_click_player_id().map_err(|e| {
+        log::error!("{:?}", e);
+        e.current_context().clone()
+    })?;
     Ok(id as i32)
 }
 

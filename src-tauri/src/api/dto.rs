@@ -1,7 +1,6 @@
-use serde::{Serialize, Deserialize};
 use crate::core::game_entities::PlayerState;
 use crate::game_pack::pack_content_entities::QuestionMediaType;
-
+use serde::{Deserialize, Serialize};
 
 ////////// Config ///////////
 #[derive(Debug, Serialize)]
@@ -145,4 +144,3 @@ pub struct HubResponseDto {
     pub generic_response_obj: String,
     pub response_obj: String,
 }
-

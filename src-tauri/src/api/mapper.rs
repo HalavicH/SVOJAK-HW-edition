@@ -1,8 +1,8 @@
 use crate::api::dto::{ConfigDto, QuestionDataDto, QuestionSceneDto, RoundDto, TopicDto};
-use crate::core::game_entities::{game, Player};
-use std::collections::HashMap;
 use crate::api::dto::{PackInfoDto, PlayerGameDto, QuestionDto};
+use crate::core::game_entities::{game, Player};
 use crate::game_pack::pack_content_entities::{PackContent, Question, Round, RoundType};
+use std::collections::HashMap;
 
 use crate::hub_comm::hw::hw_hub_manager::discover_serial_ports;
 
@@ -14,8 +14,8 @@ pub fn get_config_dto() -> ConfigDto {
     let hub_guard = context.get_unlocked_hub();
     ConfigDto {
         available_ports: discover_serial_ports(),
-        hub_port: hub_guard.port_name.clone(),
-        radio_channel: hub_guard.radio_channel,
+        hub_port: hub_guard.port_name(),
+        radio_channel: hub_guard.radio_channel(),
         players: context
             .players
             .iter()
@@ -33,11 +33,10 @@ pub fn get_config_dto() -> ConfigDto {
 pub fn update_players(players: &Vec<Player>) {
     let mut context = game();
 
-    context.players = players.iter()
-        .fold(HashMap::new(), |mut map, player| {
-            map.insert(player.term_id, player.clone());
-            map
-        });
+    context.players = players.iter().fold(HashMap::new(), |mut map, player| {
+        map.insert(player.term_id, player.clone());
+        map
+    });
 }
 
 pub fn map_package_to_pack_info_dto(package: &PackContent) -> PackInfoDto {
@@ -47,7 +46,11 @@ pub fn map_package_to_pack_info_dto(package: &PackContent) -> PackInfoDto {
     };
 
     let num_rounds = package.rounds.len() as i32;
-    let num_topics = package.rounds.iter().map(|round| round.themes.len()).sum::<usize>() as i32;
+    let num_topics = package
+        .rounds
+        .iter()
+        .map(|round| round.themes.len())
+        .sum::<usize>() as i32;
     let num_questions = package
         .rounds
         .iter()
@@ -72,19 +75,17 @@ pub fn map_package_to_pack_info_dto(package: &PackContent) -> PackInfoDto {
 }
 
 pub fn map_players_to_player_game_dto(players: &HashMap<u8, Player>) -> Vec<PlayerGameDto> {
-    players.values()
-        .map(|player| {
-            PlayerGameDto {
-                id: player.term_id as i32,
-                playerIconPath: player.icon.clone(),
-                playerName: player.name.clone(),
-                score: player.stats.score,
-                state: player.state.clone()
-            }
+    players
+        .values()
+        .map(|player| PlayerGameDto {
+            id: player.term_id as i32,
+            playerIconPath: player.icon.clone(),
+            playerName: player.name.clone(),
+            score: player.stats.score,
+            state: player.state.clone(),
         })
         .collect()
 }
-
 
 /// Converts a `Round` struct to a `RoundDto` struct.
 ///
@@ -125,22 +126,21 @@ pub fn map_round_to_dto(round: &Round) -> RoundDto {
     };
 
     let round_topics: Vec<TopicDto> = round
-        .themes.values().map(|theme| {
+        .themes
+        .values()
+        .map(|theme| {
             log::info!("{theme:#?}");
-            let mut game_questions: Vec<Question> = theme.questions
-                .values().cloned().collect::<Vec<Question>>();
-            game_questions.sort_by(|q1, q2| { q1.price.cmp(&q2.price) });
+            let mut game_questions: Vec<Question> =
+                theme.questions.values().cloned().collect::<Vec<Question>>();
+            game_questions.sort_by(|q1, q2| q1.price.cmp(&q2.price));
 
             let mut questions = Vec::new();
-            game_questions.iter()
-                .enumerate()
-                .for_each(|(i, q)| {
-                    questions.push(
-                        QuestionDto {
-                            index: i,
-                            price: q.price,
-                        });
+            game_questions.iter().enumerate().for_each(|(i, q)| {
+                questions.push(QuestionDto {
+                    index: i,
+                    price: q.price,
                 });
+            });
 
             TopicDto {
                 topicName: theme.name.clone(),
@@ -156,13 +156,19 @@ pub fn map_round_to_dto(round: &Round) -> RoundDto {
     }
 }
 
-pub fn map_question_to_question_dto(topic: String, question: Question, q_num: i32) -> QuestionDataDto {
+pub fn map_question_to_question_dto(
+    topic: String,
+    question: Question,
+    q_num: i32,
+) -> QuestionDataDto {
     QuestionDataDto {
         number: q_num,
         category: topic,
         price: question.price,
         questionType: question.question_type,
-        scenario: question.scenario.iter()
+        scenario: question
+            .scenario
+            .iter()
             .map(|a| QuestionSceneDto {
                 content: a.content.clone(),
                 mediaType: a.atom_type.clone(),
@@ -170,4 +176,3 @@ pub fn map_question_to_question_dto(topic: String, question: Question, q_num: i3
             .collect(),
     }
 }
-
