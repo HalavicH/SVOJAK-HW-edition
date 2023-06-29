@@ -7,21 +7,20 @@ use std::time::Duration;
 
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use serialport::SerialPort;
-
-use crate::hw_comm::api_types::{hub_frame_pos, HubIoError, HubRequest, HubResponse, ResponseStatus};
-use crate::hw_comm::api_types::ProtocolVersion::Version;
-use crate::hw_comm::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
+use crate::hub_comm::hw::internal::api_types::{hub_frame_pos, HubResponse, HwHubIoError, HwHubRequest, ResponseStatus};
+use crate::hub_comm::hw::internal::api_types::ProtocolVersion::Version;
+use crate::hub_comm::hw::internal::byte_handler::{ByteHandler, START_BYTE, STOP_BYTE};
 
 const HUB_REQUEST_PROCESSING_TIMEOUT_MS: u64 = 50;
 
 #[derive(Debug)]
-pub struct HubProtocolIoHandler {
+pub struct HwHubCommunicationHandler {
     fsm_byte_handler: Arc<Mutex<ByteHandler>>,
     port_handle: Arc<Mutex<Box<dyn SerialPort>>>,
     hub_mock_handle: Option<JoinHandle<()>>,
 }
 
-impl HubProtocolIoHandler {
+impl HwHubCommunicationHandler {
     pub fn new(port_handle: Box<dyn SerialPort>, hub_mock_handle: Option<JoinHandle<()>>) -> Self {
         Self {
             port_handle: Arc::new(Mutex::new(port_handle)),
@@ -30,16 +29,16 @@ impl HubProtocolIoHandler {
         }
     }
 
-    pub fn send_raw_frame(&self, request_frame: Vec<u8>) -> Result<Vec<u8>, HubIoError> {
+    pub fn send_raw_frame(&self, request_frame: Vec<u8>) -> Result<Vec<u8>, HwHubIoError> {
         log::debug!("Request frame: {:?}", format_bytes_hex(request_frame.as_slice()));
         {
             let mut port_handle = self.port_handle.lock()
                 .map_err(|_| {
-                    Report::new(HubIoError::InternalError)
+                    Report::new(HwHubIoError::InternalError)
                 })?;
 
             port_handle.write_all(&request_frame).into_report()
-                .change_context(HubIoError::SerialPortError)?;
+                .change_context(HwHubIoError::SerialPortError)?;
         }
 
         let response_frame = self.read_raw_response_frame()?;
@@ -47,18 +46,18 @@ impl HubProtocolIoHandler {
         Ok(response_frame)
     }
 
-    pub fn send_command(&self, request: HubRequest) -> Result<HubResponse, HubIoError> {
+    pub fn send_command(&self, request: HwHubRequest) -> Result<HubResponse, HwHubIoError> {
         let frame = assemble_frame(request.cmd(), request.payload());
         let stuffed_frame = stuff_bytes(&frame);
 
         {
             let mut port_handle = self.port_handle.lock()
                 .map_err(|_| {
-                    Report::new(HubIoError::InternalError)
+                    Report::new(HwHubIoError::InternalError)
                 })?;
 
             port_handle.write_all(&stuffed_frame).into_report()
-                .change_context(HubIoError::SerialPortError)?;
+                .change_context(HwHubIoError::SerialPortError)?;
         }
 
         let response_frame = self.read_response_frame()?;
@@ -72,7 +71,7 @@ impl HubProtocolIoHandler {
         Ok(response)
     }
 
-    fn read_raw_response_frame(&self) -> Result<Vec<u8>, HubIoError> {
+    fn read_raw_response_frame(&self) -> Result<Vec<u8>, HwHubIoError> {
         let port_handle_ptr = Arc::clone(&self.port_handle);
         let mut port_handle = port_handle_ptr.lock().unwrap();
         let mut buffer = [0; 1024];
@@ -80,14 +79,14 @@ impl HubProtocolIoHandler {
         // Give HUB some time to perform operation
         thread::sleep(Duration::from_millis(HUB_REQUEST_PROCESSING_TIMEOUT_MS));
         let bytes_read = port_handle.read(&mut buffer)
-            .into_report().change_context(HubIoError::NoResponseFromHub)
+            .into_report().change_context(HwHubIoError::NoResponseFromHub)
             .attach_printable("Probably timeout")?;
 
         let response = buffer[..bytes_read].to_vec();
         Ok(response)
     }
 
-    fn read_response_frame(&self) -> Result<Vec<u8>, HubIoError> {
+    fn read_response_frame(&self) -> Result<Vec<u8>, HwHubIoError> {
         let byte_handler_ptr = Arc::clone(&self.fsm_byte_handler);
         let port_handle_ptr = Arc::clone(&self.port_handle);
         let mut port_handle = port_handle_ptr.lock().unwrap();
@@ -102,7 +101,7 @@ impl HubProtocolIoHandler {
         while byte[0] != START_BYTE {
             log::trace!("Byte: {}", byte[0]);
             port_handle.read_exact(&mut byte)
-                .into_report().change_context(HubIoError::NoResponseFromHub)
+                .into_report().change_context(HwHubIoError::NoResponseFromHub)
                 .attach_printable("Probably timeout")?;
         }
         // Handle start byte
@@ -159,6 +158,8 @@ pub fn assemble_frame(cmd: u8, mut payload: Vec<u8>) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
+    use crate::hub_comm::hw::internal::api_types::ProtocolVersion::Version;
+    use crate::hub_comm::hw::internal::hub_protocol_io_handler::{assemble_frame, stuff_bytes};
     use crate::hw_comm::api_types::ProtocolVersion::Version;
     use crate::hw_comm::hub_protocol_io_handler::{assemble_frame, stuff_bytes};
 

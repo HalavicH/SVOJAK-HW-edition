@@ -11,12 +11,10 @@ use std::sync::{Arc, Mutex};
 
 use rand::thread_rng;
 use rand::seq::SliceRandom;
-use crate::core::hub_manager::get_epoch_ms;
-
-use crate::hw_comm::api_types::{hub_frame_pos, ResponseStatus, TermButtonState, TermEvent};
-use crate::hw_comm::byte_handler::ByteHandler;
-
-use crate::hw_comm::hub_protocol_io_handler::{format_bytes_hex, stuff_bytes};
+use crate::hub_comm::hw::hw_hub_manager::get_epoch_ms;
+use crate::hub_comm::hw::internal::api_types::{hub_frame_pos, ResponseStatus, TermButtonState, TermEvent};
+use crate::hub_comm::hw::internal::byte_handler::ByteHandler;
+use crate::hub_comm::hw::internal::hub_protocol_io_handler::{stuff_bytes, format_bytes_hex};
 
 pub fn run_hub_mock() -> Result<(Box<dyn SerialPort>, JoinHandle<()>), String> {
     let (host_handle, device_tty) = TTYPort::pair().expect("Unable to create ptty pair");

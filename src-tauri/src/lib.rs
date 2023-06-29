@@ -11,7 +11,6 @@ pub mod api {
 pub mod core {
     pub mod game_entities;
     pub mod game_logic;
-    pub mod hub_manager;
 }
 
 pub mod game_pack {
@@ -21,10 +20,18 @@ pub mod game_pack {
     pub mod game_pack_entites;
     pub mod game_pack_loader;
 }
-pub mod hw_comm {
-    pub mod api_types;
-    pub mod hub_protocol_io_handler;
-    pub mod byte_handler;
 
-    pub mod virtual_hw_hub;
+pub mod hub_comm {
+    pub mod common {
+        pub mod hub_api;
+    }
+    pub mod hw {
+        pub mod hw_hub_manager;
+        pub mod virtual_hw_hub;
+        pub mod internal {
+            pub mod api_types;
+            pub mod hub_protocol_io_handler;
+            pub mod byte_handler;
+        }
+    }
 }

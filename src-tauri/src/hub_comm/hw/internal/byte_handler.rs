@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::hw_comm::hub_protocol_io_handler::format_bytes_hex;
+use crate::hub_comm::hw::internal::hub_protocol_io_handler::{format_bytes_hex};
 
 pub type RawFrame = Vec<u8>;
 
