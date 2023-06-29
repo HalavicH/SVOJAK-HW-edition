@@ -1,19 +1,14 @@
-
-
-use tauri::{command};
 use crate::api::dto::{ConfigDto, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
 use crate::core::game_entities::{game, GameplayError, Player, PlayerState};
-
+use tauri::command;
 
 use crate::api::dto::PlayerSetupDto;
 
-use crate::game_pack::game_pack_loader::{GamePackLoadingError, load_game_pack};
+use crate::game_pack::game_pack_loader::{load_game_pack, GamePackLoadingError};
 
-
-
-pub mod hw_hub;
 pub mod hub;
+pub mod hw_hub;
 
 /// Provide saved game configuration
 #[command]
@@ -33,15 +28,13 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
 
     let player_entities = players
         .iter()
-        .map(|player| {
-            Player {
-                icon: player.icon.clone(),
-                name: player.name.clone(),
-                term_id: player.termId,
-                is_used: player.isUsed,
-                state: PlayerState::Idle,
-                stats: Default::default(),
-            }
+        .map(|player| Player {
+            icon: player.icon.clone(),
+            name: player.name.clone(),
+            term_id: player.termId,
+            is_used: player.isUsed,
+            state: PlayerState::Idle,
+            stats: Default::default(),
         })
         .collect();
 
@@ -85,4 +78,3 @@ pub fn start_the_game() -> Result<(), GameplayError> {
         e.current_context().clone()
     })
 }
-

@@ -1,15 +1,15 @@
-use std::{fmt, fs, io};
+use crate::game_pack::game_pack_entites::*;
+use crate::game_pack::pack_content_loader::load_pack_content;
+use error_stack::{IntoReport, Report, Result, ResultExt};
+use serde::Serialize;
 use std::error::Error;
 use std::path::Path;
 use std::sync::Arc;
-use error_stack::{IntoReport, Report, Result, ResultExt};
-use serde::Serialize;
+use std::{fmt, fs, io};
 use tempfile::TempDir;
+use unic_normal::StrNormalForm;
 use urlencoding::decode;
 use zip::ZipArchive;
-use crate::game_pack::game_pack_entites::*;
-use crate::game_pack::pack_content_loader::load_pack_content;
-use unic_normal::StrNormalForm;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum GamePackLoadingError {
@@ -36,7 +36,9 @@ pub fn load_game_pack(game_archive_path: &str) -> Result<GamePack, GamePackLoadi
         .attach_printable("Can't create temp directory")?;
 
     let temp_dir_path = temp_dir.path();
-    let tmp_dir_path_str = temp_dir_path.to_str().ok_or(GamePackLoadingError::InternalError)?;
+    let tmp_dir_path_str = temp_dir_path
+        .to_str()
+        .ok_or(GamePackLoadingError::InternalError)?;
 
     unarchive_zip(game_archive_path, tmp_dir_path_str)?;
 
@@ -61,17 +63,28 @@ pub fn load_game_pack(game_archive_path: &str) -> Result<GamePack, GamePackLoadi
     })
 }
 
-fn normalize_pack_entities_filenames(locations :&PackLocationData) -> Result<(), GamePackLoadingError> {
-    let image_dir_path = locations.images_path.to_str()
-        .ok_or(GamePackLoadingError::InternalError).into_report()?;
+fn normalize_pack_entities_filenames(
+    locations: &PackLocationData,
+) -> Result<(), GamePackLoadingError> {
+    let image_dir_path = locations
+        .images_path
+        .to_str()
+        .ok_or(GamePackLoadingError::InternalError)
+        .into_report()?;
     normalize_filenames_in_dir(image_dir_path).unwrap();
 
-    let video_dir_path = locations.video_path.to_str()
-        .ok_or(GamePackLoadingError::InternalError).into_report()?;
+    let video_dir_path = locations
+        .video_path
+        .to_str()
+        .ok_or(GamePackLoadingError::InternalError)
+        .into_report()?;
     normalize_filenames_in_dir(video_dir_path).unwrap();
 
-    let audio_dir_path = locations.audio_path.to_str()
-        .ok_or(GamePackLoadingError::InternalError).into_report()?;
+    let audio_dir_path = locations
+        .audio_path
+        .to_str()
+        .ok_or(GamePackLoadingError::InternalError)
+        .into_report()?;
     normalize_filenames_in_dir(audio_dir_path).unwrap();
     Ok(())
 }
@@ -80,11 +93,13 @@ fn normalize_filenames_in_dir(dir_path: &str) -> Result<(), GamePackLoadingError
     log::info!("Normalizing names for {}", dir_path);
 
     let files = fs::read_dir(dir_path)
-        .into_report().change_context(GamePackLoadingError::InternalError)?;
+        .into_report()
+        .change_context(GamePackLoadingError::InternalError)?;
 
     for file in files {
         let file_entry = file
-            .into_report().change_context(GamePackLoadingError::InternalError)?;
+            .into_report()
+            .change_context(GamePackLoadingError::InternalError)?;
         let file_path = file_entry.path();
 
         // Get the filename from the file path
@@ -93,7 +108,8 @@ fn normalize_filenames_in_dir(dir_path: &str) -> Result<(), GamePackLoadingError
 
         // Decode the partially encoded URI
         let decoded_filename = decode(&filename)
-            .into_report().change_context(GamePackLoadingError::InternalError)?;
+            .into_report()
+            .change_context(GamePackLoadingError::InternalError)?;
         log::debug!("Decoded name:          {}", decoded_filename);
 
         // Normalize the UTF-8 string
@@ -106,11 +122,15 @@ fn normalize_filenames_in_dir(dir_path: &str) -> Result<(), GamePackLoadingError
 
         // Create the new file path with the encoded filename
         let new_file_path = Path::new(dir_path).join(encoded_filename.as_ref());
-        log::debug!("New file path: {}", new_file_path.to_str().expect("Expect valid path"));
+        log::debug!(
+            "New file path: {}",
+            new_file_path.to_str().expect("Expect valid path")
+        );
 
         // Rename the file
         fs::rename(&file_path, &new_file_path)
-            .into_report().change_context(GamePackLoadingError::InternalError)?;
+            .into_report()
+            .change_context(GamePackLoadingError::InternalError)?;
     }
 
     Ok(())
@@ -121,16 +141,23 @@ fn validate_pack_path(game_archive_path: &str) -> Result<(), GamePackLoadingErro
     if !file_exists {
         let err_msg = format!("No pack found at: {}", game_archive_path);
         log::error!("{}", err_msg);
-        return Err(Report::new(GamePackLoadingError::InvalidPathToPack(game_archive_path.to_string()))
-            .attach_printable(err_msg));
+        return Err(Report::new(GamePackLoadingError::InvalidPathToPack(
+            game_archive_path.to_string(),
+        ))
+        .attach_printable(err_msg));
     }
 
     if !game_archive_path.ends_with(".siq") {
         let file_name = game_archive_path.split('/').last().unwrap_or_default();
-        let err_msg = format!("Provided file doesn't have '.siq' file extension. Yot file: {}", file_name);
+        let err_msg = format!(
+            "Provided file doesn't have '.siq' file extension. Yot file: {}",
+            file_name
+        );
         log::error!("{}", err_msg);
-        return Err(Report::new(GamePackLoadingError::InvalidPackFileExtension(game_archive_path.to_string()))
-            .attach_printable(err_msg));
+        return Err(Report::new(GamePackLoadingError::InvalidPackFileExtension(
+            game_archive_path.to_string(),
+        ))
+        .attach_printable(err_msg));
     }
 
     Ok(())
@@ -154,7 +181,8 @@ fn unarchive_zip(archive_path: &str, directory_path: &str) -> Result<(), GamePac
         .attach_printable(format!("Failed to read archive {archive_path:?}"))
         .change_context(GamePackLoadingError::InternalError)?;
 
-    archive.extract(directory_path)
+    archive
+        .extract(directory_path)
         .into_report()
         .attach_printable("Failed to unpack archive")
         .change_context(GamePackLoadingError::InternalError)?;

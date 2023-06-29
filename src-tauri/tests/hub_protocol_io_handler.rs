@@ -1,21 +1,20 @@
+use serialport::{SerialPort, TTYPort};
 use std::io::{ErrorKind, Read, Write};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
-use serialport::{SerialPort, TTYPort};
-use svoyak_tauri_app::hw_comm::api_types::{HubResponse, ResponseStatus};
-use svoyak_tauri_app::hw_comm::api_types::HwHubIoError::*;
-use svoyak_tauri_app::hw_comm::byte_handler::{ByteHandler};
-use svoyak_tauri_app::hw_comm::hub_protocol_io_handler::{format_bytes_hex, HwHubCommunicationHandler, stuff_bytes};
+use svoyak_tauri_app::hub_comm::hw::internal::api_types::HwHubRequest::*;
+use svoyak_tauri_app::hub_comm::hw::internal::api_types::{HubResponse, ResponseStatus};
+use svoyak_tauri_app::hub_comm::hw::internal::byte_handler::ByteHandler;
+use svoyak_tauri_app::hub_comm::hw::internal::hub_protocol_io_handler::*;
 
 const MOCK_ID: u8 = 6;
 const MOCK_TID: u8 = 0;
 const MOCK_STATUS: ResponseStatus = ResponseStatus::Ok;
 const MOCK_TIMESTAMP: u32 = 0xDEAD_BEEF;
 const MOCK_EVENTS: [u8; 18] = [
-    0x01, 0xDE, 0xAD, 0xBE, 0xEF, 0x01,
-    0x02, 0xDE, 0xAD, 0xBE, 0xEF, 0x01,
-    0x03, 0xDE, 0xAD, 0xBE, 0xEF, 0x01,
+    0x01, 0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02, 0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x03, 0xDE, 0xAD, 0xBE,
+    0xEF, 0x01,
 ];
 
 #[test_log::test]
@@ -24,7 +23,9 @@ fn test_virtual_pipe_communication() {
 
     // Host -> HUB
     let message_from_host = "Writing from host to HUB";
-    device_handle.write_all(message_from_host.as_bytes()).unwrap();
+    device_handle
+        .write_all(message_from_host.as_bytes())
+        .unwrap();
     let mut buffer = [0_u8; 1024];
     let result_from_host_len = host_handle.read(&mut buffer).unwrap();
 
@@ -63,7 +64,8 @@ fn test_virtual_hub_communication() {
 #[test_log::test]
 fn test_send_request_timeout() {
     let (_, device_handle) = prepare_ports();
-    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler =
+        HwHubCommunicationHandler::new(device_handle, None);
 
     let result = hub_handler.send_command(GetTimestamp);
     assert!(result.is_err());
@@ -72,7 +74,8 @@ fn test_send_request_timeout() {
 #[test_log::test]
 fn test_get_timestamp_command() {
     let (host_handle, device_handle) = prepare_ports();
-    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler =
+        HwHubCommunicationHandler::new(device_handle, None);
 
     start_hub_mock(Box::new(host_handle));
 
@@ -92,7 +95,8 @@ fn test_get_timestamp_command() {
 #[test_log::test]
 fn test_get_events() {
     let (host_handle, device_handle) = prepare_ports();
-    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler =
+        HwHubCommunicationHandler::new(device_handle, None);
 
     start_hub_mock(Box::new(host_handle));
 
@@ -112,7 +116,8 @@ fn test_get_events() {
 #[test_log::test]
 fn test_ping_device() {
     let (host_handle, device_handle) = prepare_ports();
-    let hub_handler: HwHubCommunicationHandler = HwHubCommunicationHandler::new(device_handle, None);
+    let hub_handler: HwHubCommunicationHandler =
+        HwHubCommunicationHandler::new(device_handle, None);
 
     start_hub_mock(Box::new(host_handle));
 
@@ -137,7 +142,9 @@ fn prepare_ports() -> (TTYPort, Box<dyn SerialPort>) {
     println!("\thost TTY: {:?}", host_handle);
     println!("\tHUB  TTY: {:?}", device_tty);
 
-    let device_handle = serialport::new(device_tty.name().unwrap(), 0).open().unwrap();
+    let device_handle = serialport::new(device_tty.name().unwrap(), 0)
+        .open()
+        .unwrap();
     println!("HUB handle: {:?}", device_handle);
     (host_handle, device_handle)
 }
@@ -154,9 +161,7 @@ fn hub_mock_routine(mut port_handle: Box<dyn SerialPort>) {
         // Read data from the virtual port
         let mut buffer = [0; 1024];
         let bytes_read = match port_handle.read(&mut buffer) {
-            Ok(val) => {
-                val
-            }
+            Ok(val) => val,
             Err(err) => {
                 println!("Error in hub_mock_routine: {}", err);
                 if err.kind() == ErrorKind::BrokenPipe {
@@ -194,23 +199,18 @@ fn process_request_frame(raw_frame: Vec<u8>) -> Vec<u8> {
     // let payload = input_frame[4..].to_vec();
 
     let mut response_payload = match cmd {
-        0x80 => vec![], // SetTimestamp
+        0x80 => vec![],                                // SetTimestamp
         0x81 => MOCK_TIMESTAMP.to_le_bytes().to_vec(), // GetTimestamp
-        0x82 => vec![], // SetHubRadioChannel
-        0x83 => vec![], // SetTermRadioChannel
-        0x90 => vec![], // PingDevice
-        0x91 => vec![], // SetLightColor
-        0x92 => vec![], // SetFeedbackLed
-        0xA0 => MOCK_EVENTS.to_vec(), // ReadEventQueue
+        0x82 => vec![],                                // SetHubRadioChannel
+        0x83 => vec![],                                // SetTermRadioChannel
+        0x90 => vec![],                                // PingDevice
+        0x91 => vec![],                                // SetLightColor
+        0x92 => vec![],                                // SetFeedbackLed
+        0xA0 => MOCK_EVENTS.to_vec(),                  // ReadEventQueue
         _ => panic!("Invalid command value {}", cmd),
     };
 
-    let mut response_frame = vec![
-        version,
-        tid,
-        0x00,
-        response_payload.len() as u8,
-    ];
+    let mut response_frame = vec![version, tid, 0x00, response_payload.len() as u8];
 
     response_frame.append(&mut response_payload);
     response_frame
