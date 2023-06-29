@@ -20,7 +20,7 @@ lazy_static::lazy_static! {
 }
 
 pub fn game() -> MutexGuard<'static, GameContext> {
-    CONTEXT.lock().unwrap()
+    CONTEXT.lock().expect("Mutex is poisoned")
 }
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -204,7 +204,7 @@ mod game_entities_test {
         ctx.players.insert(2, Player::default());
         ctx.players.insert(3, Player::default());
         ctx.players.insert(4, Player::default());
-        let i = ctx.get_fastest_click_player_id().unwrap();
+        let i = ctx.get_fastest_click_player_id().expect("Test");
         log::info!("Fastest click from: {i}");
     }
 }

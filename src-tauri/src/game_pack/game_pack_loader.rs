@@ -50,7 +50,7 @@ pub fn load_game_pack(game_archive_path: &str) -> Result<GamePack, GamePackLoadi
         video_path: temp_dir_path.join(PACKAGE_VIDEO_DIR_NAME),
     };
 
-    normalize_pack_entities_filenames(&locations).unwrap();
+    normalize_pack_entities_filenames(&locations)?;
 
     let err_message = format!("Can't load pack {game_archive_path}");
     let game_package = load_pack_content(&locations)
@@ -69,23 +69,20 @@ fn normalize_pack_entities_filenames(
     let image_dir_path = locations
         .images_path
         .to_str()
-        .ok_or(GamePackLoadingError::InternalError)
-        .into_report()?;
-    normalize_filenames_in_dir(image_dir_path).unwrap();
+        .ok_or(Report::new(GamePackLoadingError::InternalError))?;
+    normalize_filenames_in_dir(image_dir_path)?;
 
     let video_dir_path = locations
         .video_path
         .to_str()
-        .ok_or(GamePackLoadingError::InternalError)
-        .into_report()?;
-    normalize_filenames_in_dir(video_dir_path).unwrap();
+        .ok_or(Report::new(GamePackLoadingError::InternalError))?;
+    normalize_filenames_in_dir(video_dir_path)?;
 
     let audio_dir_path = locations
         .audio_path
         .to_str()
-        .ok_or(GamePackLoadingError::InternalError)
-        .into_report()?;
-    normalize_filenames_in_dir(audio_dir_path).unwrap();
+        .ok_or(Report::new(GamePackLoadingError::InternalError))?;
+    normalize_filenames_in_dir(audio_dir_path)?;
     Ok(())
 }
 
@@ -103,7 +100,9 @@ fn normalize_filenames_in_dir(dir_path: &str) -> Result<(), GamePackLoadingError
         let file_path = file_entry.path();
 
         // Get the filename from the file path
-        let filename = file_path.file_name().unwrap().to_string_lossy().to_string();
+        let filename = file_path.file_name()
+            .ok_or(Report::new(GamePackLoadingError::InternalError))?
+            .to_string_lossy().to_string();
         log::debug!("Normalizing name for:  {}", filename);
 
         // Decode the partially encoded URI
@@ -122,9 +121,8 @@ fn normalize_filenames_in_dir(dir_path: &str) -> Result<(), GamePackLoadingError
 
         // Create the new file path with the encoded filename
         let new_file_path = Path::new(dir_path).join(encoded_filename.as_ref());
-        log::debug!(
-            "New file path: {}",
-            new_file_path.to_str().expect("Expect valid path")
+        log::debug!("New file path: {}",
+            new_file_path.to_str().ok_or(GamePackLoadingError::InternalError)?
         );
 
         // Rename the file
@@ -144,7 +142,7 @@ fn validate_pack_path(game_archive_path: &str) -> Result<(), GamePackLoadingErro
         return Err(Report::new(GamePackLoadingError::InvalidPathToPack(
             game_archive_path.to_string(),
         ))
-        .attach_printable(err_msg));
+            .attach_printable(err_msg));
     }
 
     if !game_archive_path.ends_with(".siq") {
@@ -157,7 +155,7 @@ fn validate_pack_path(game_archive_path: &str) -> Result<(), GamePackLoadingErro
         return Err(Report::new(GamePackLoadingError::InvalidPackFileExtension(
             game_archive_path.to_string(),
         ))
-        .attach_printable(err_msg));
+            .attach_printable(err_msg));
     }
 
     Ok(())

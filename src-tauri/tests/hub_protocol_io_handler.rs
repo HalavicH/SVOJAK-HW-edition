@@ -25,23 +25,23 @@ fn test_virtual_pipe_communication() {
     let message_from_host = "Writing from host to HUB";
     device_handle
         .write_all(message_from_host.as_bytes())
-        .unwrap();
+        .expect("Test");
     let mut buffer = [0_u8; 1024];
-    let result_from_host_len = host_handle.read(&mut buffer).unwrap();
+    let result_from_host_len = host_handle.read(&mut buffer).expect("Test");
 
     let vec_host = buffer[..result_from_host_len].to_vec();
-    let result_from_host = std::str::from_utf8(&vec_host).unwrap();
+    let result_from_host = std::str::from_utf8(&vec_host).expect("Test");
     println!("Result from host: {:?}", result_from_host);
     assert_eq!(message_from_host, result_from_host);
 
     // HUB -> host
     let message_from_hub = "Writing from HUB to host";
-    host_handle.write_all(message_from_hub.as_bytes()).unwrap();
+    host_handle.write_all(message_from_hub.as_bytes()).expect("Test");
     let mut buffer = [0_u8; 1024];
-    let result_from_hub_len = device_handle.read(&mut buffer).unwrap();
+    let result_from_hub_len = device_handle.read(&mut buffer).expect("Test");
 
     let vec_hub = buffer[..result_from_hub_len].to_vec();
-    let result_from_hub = std::str::from_utf8(&vec_hub).unwrap();
+    let result_from_hub = std::str::from_utf8(&vec_hub).expect("Test");
     println!("Result from HUB: {:?}", result_from_hub);
     assert_eq!(message_from_hub, result_from_hub);
 }
@@ -49,15 +49,15 @@ fn test_virtual_pipe_communication() {
 #[test_log::test]
 fn test_virtual_hub_communication() {
     let (host_handle, mut device_handle) = prepare_ports();
-    device_handle.write_all("Test".as_bytes()).unwrap();
+    device_handle.write_all("Test".as_bytes()).expect("Test");
 
     start_hub_mock(Box::new(host_handle));
 
     let request_frame = [0xC0, 0x03, 0x00, 0x81, 0x00, 0xCF];
-    device_handle.write_all(&request_frame).unwrap();
+    device_handle.write_all(&request_frame).expect("Test");
     let mut buffer = [0_u8; 1024];
     thread::sleep(Duration::from_millis(10));
-    let response_len = device_handle.read(&mut buffer).unwrap();
+    let response_len = device_handle.read(&mut buffer).expect("Test");
     println!("Response {}", format_bytes_hex(&buffer[..response_len]));
 }
 
@@ -89,7 +89,7 @@ fn test_get_timestamp_command() {
     let result = hub_handler.send_command(GetTimestamp);
     println!("Result {:#?}", result);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), expected);
+    assert_eq!(result.expect("Test"), expected);
 }
 
 #[test_log::test]
@@ -110,7 +110,7 @@ fn test_get_events() {
     let result = hub_handler.send_command(ReadEventQueue);
     println!("Result {:#?}", result);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), expected);
+    assert_eq!(result.expect("Test"), expected);
 }
 
 #[test_log::test]
@@ -131,7 +131,7 @@ fn test_ping_device() {
     let result = hub_handler.send_command(PingDevice(MOCK_ID));
     println!("Result {:#?}", result);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), expected);
+    assert_eq!(result.expect("Test"), expected);
 }
 
 //////// Helpers /////////
@@ -142,9 +142,9 @@ fn prepare_ports() -> (TTYPort, Box<dyn SerialPort>) {
     println!("\thost TTY: {:?}", host_handle);
     println!("\tHUB  TTY: {:?}", device_tty);
 
-    let device_handle = serialport::new(device_tty.name().unwrap(), 0)
+    let device_handle = serialport::new(device_tty.name().expect("Test"), 0)
         .open()
-        .unwrap();
+        .expect("Test");
     println!("HUB handle: {:?}", device_handle);
     (host_handle, device_handle)
 }
@@ -179,7 +179,7 @@ fn hub_mock_routine(mut port_handle: Box<dyn SerialPort>) {
         let stuffed = stuff_bytes(&response_frame);
 
         println!("Responding with: {}", format_bytes_hex(&stuffed));
-        let bytes_written = port_handle.write(&stuffed).unwrap();
+        let bytes_written = port_handle.write(&stuffed).expect("Test");
         println!("Responded with {} bytes", bytes_written);
     }
 }

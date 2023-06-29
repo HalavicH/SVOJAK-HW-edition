@@ -212,7 +212,9 @@ impl HubManager for HwHubManager {
             log::trace!("Chunk {:?}", chunk);
 
             let term_id = chunk[0];
-            let timestamp = u32::from_le_bytes(chunk[1..5].try_into().unwrap());
+            let bytes = chunk[1..5].try_into().into_report()
+                .change_context(HubManagerError::InternalError)?;
+            let timestamp = u32::from_le_bytes(bytes);
             let state_byte = chunk[5];
             let state = TermButtonState::try_from(state_byte)
                 .into_report()
@@ -235,11 +237,8 @@ impl HubManager for HwHubManager {
     }
 
     fn probe(&mut self, port: &str) -> Result<HubStatus, HubManagerError> {
-        if self.hub_io_handler.is_some() {
-            log::info!(
-                "Previous HUB io handle found: {:?}. Erasing",
-                self.hub_io_handler.as_ref().unwrap()
-            );
+        if let Some(hub) = &self.hub_io_handler {
+            log::info!("Previous HUB io handle found: {:?}. Erasing", hub);
             self.hub_io_handler = None;
         }
 
@@ -319,7 +318,8 @@ fn map_status_to_result(status: ResponseStatus) -> Result<(), HubManagerError> {
 
 /// Queries OS for all available serial ports
 pub fn discover_serial_ports() -> Vec<String> {
-    let ports = serialport::available_ports().expect("No ports found!");
+    let ports = serialport::available_ports()
+        .expect("Couldn't discover ports");
     let mut ports_vec = vec![VIRTUAL_HUB_PORT.to_owned()];
 
     log::info!("Serial ports: {:?}", ports);
@@ -366,7 +366,7 @@ mod tests {
     fn test_get_epoch_ms() {
         // Get the expected result manually
         let now = SystemTime::now();
-        let since_the_epoch = now.duration_since(UNIX_EPOCH).unwrap();
+        let since_the_epoch = now.duration_since(UNIX_EPOCH).expect("Test");
 
         let _expected_milliseconds_since_base: u32 = since_the_epoch
             .as_secs()
@@ -376,7 +376,7 @@ mod tests {
                 stripped_ms.checked_add(u64::from(since_the_epoch.subsec_nanos()) / 1_000_000)
             })
             .and_then(|ms| ms.try_into().ok())
-            .unwrap();
+            .expect("Test");
 
         // Call the actual function
         let result = get_epoch_ms();
@@ -384,7 +384,7 @@ mod tests {
         // Check the result
         assert!(result.is_ok());
         let _execution_offset = 100;
-        let _timestamp = result.unwrap();
+        let _timestamp = result.expect("Test");
         // assert!(timestamp > expected_milliseconds_since_base &&
         //     timestamp < (expected_milliseconds_since_base + execution_offset));
     }
@@ -394,40 +394,27 @@ mod tests {
         let mut hub = HwHubManager::default();
         assert_eq!(hub.base_timestamp, 0);
 
-        hub.init_timestamp().unwrap();
-        assert_eq!(hub.base_timestamp, get_epoch_ms().unwrap());
+        hub.init_timestamp().expect("Test");
+        assert_eq!(hub.base_timestamp, get_epoch_ms().expect("Test"));
     }
 
     #[test]
     fn test_event_time_offset() {
         let execution_offset = 50;
         let mut hub = HwHubManager::default();
-        hub.init_timestamp().unwrap();
-        let terminal_timestamp = get_epoch_ms().unwrap();
+        hub.init_timestamp().expect("Test");
+        let terminal_timestamp = get_epoch_ms().expect("Test");
         assert!(
             terminal_timestamp > hub.base_timestamp
                 && terminal_timestamp < (hub.base_timestamp + execution_offset)
         );
 
         sleep(Duration::from_secs(1));
-        let terminal_timestamp = get_epoch_ms().unwrap();
+        let terminal_timestamp = get_epoch_ms().expect("Test");
 
         assert!(
             terminal_timestamp > hub.base_timestamp
                 && terminal_timestamp < (hub.base_timestamp + 1000 + execution_offset)
         );
     }
-
-    // #[test]
-    // fn test_probe() {
-    //     let mut hub = HubManager::default();
-    //     hub.probe("/dev/tty.Bluetooth-Incoming-Port").unwrap();
-    //     assert_eq!(hub.base_timestamp, get_epoch_ms().unwrap());
-    //
-    //     sleep(Duration::from_secs(1));
-    //     let terminal_timestamp = get_epoch_ms().unwrap();
-    //
-    //     let execution_offset = 5;
-    //     assert_eq!(terminal_timestamp, hub.base_timestamp + 1000 + execution_offset);
-    // }
 }
