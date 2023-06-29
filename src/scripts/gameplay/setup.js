@@ -167,15 +167,17 @@ export async function loadRoundFromBackend() {
         tr.appendChild(tdTheme);
 
         ////////// 1-5 questions //////////
+        let questionWidth = 65 / topic.questions.length;
         topic.questions.forEach((question) => {
-            addQuestion(question.price, topicMarker, tr);
+            addQuestion(question.price, topicMarker, tr, questionWidth);
         })
     });
 }
 
-function addQuestion(price, marker, tr) {
+function addQuestion(price, marker, tr, questionWidth) {
     let tdQuestion = document.createElement("td");
     tdQuestion.className = "round-td-price";
+    tdQuestion.style.width = `${questionWidth}%`;
     tdQuestion.innerText = price;
     tdQuestion.appendChild(marker.cloneNode(true));
     tdQuestion.addEventListener("click", processQuestionSelection);
