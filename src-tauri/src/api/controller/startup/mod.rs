@@ -1,4 +1,4 @@
-use crate::api::dto::{ConfigDto, PackInfoDto};
+use crate::api::dto::{ConfigDto, PackErrorData, PackInfoDto};
 use crate::api::mapper::{get_config_dto, map_package_to_pack_info_dto, update_players};
 use crate::core::game_entities::{game, GameplayError, Player, PlayerState};
 use tauri::command;
@@ -45,7 +45,7 @@ pub fn save_players(players: Vec<PlayerSetupDto>) {
 
 /// Load game pack into the game
 #[command]
-pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> {
+pub fn get_pack_info(path: String) -> Result<PackInfoDto, PackErrorData> {
     log::info!("Obtained package path: {}", path);
 
     let result = load_game_pack(path.as_str());
@@ -60,7 +60,25 @@ pub fn get_pack_info(path: String) -> Result<PackInfoDto, GamePackLoadingError> 
         }
         Err(err) => {
             log::error!("\n{err:?}");
-            Err(err.current_context().clone())
+
+            let stack_trace = format!("{:?}", err);
+            let split = stack_trace
+                .split("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                .collect::<Vec<&str>>();
+            let &details = split.get(0).unwrap_or(&"");
+            let html_details = ansi_to_html::convert_escaped(details)
+                .unwrap_or_else(|e| {
+                log::error!("Can't map ASNI to HTML for {}\nError {}", details, e);
+                details.to_string()
+            });
+
+            let data = PackErrorData {
+                path,
+                cause: err.current_context().to_string(),
+                details: html_details,
+            };
+
+            Err(data)
         }
     }
 }
