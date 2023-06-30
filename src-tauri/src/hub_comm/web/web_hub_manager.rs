@@ -4,12 +4,16 @@ use std::thread::{JoinHandle, sleep};
 use std::time::Duration;
 use rgb::RGB8;
 
-use crate::hub_comm::common::hub_api::HubManager;
-use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
-use crate::hub_comm::hw::internal::api_types::{TermButtonState, TermEvent};
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use reqwest::Url;
 use tokio::runtime::Runtime;
+use std::net::{Ipv4Addr};
+use network_interface::{Addr, NetworkInterface};
+use network_interface::NetworkInterfaceConfig;
+
+use crate::hub_comm::common::hub_api::HubManager;
+use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
+use crate::hub_comm::hw::internal::api_types::{TermButtonState, TermEvent};
 use crate::core::game_entities::{HubStatus, Player};
 use crate::hub_comm::web::web_server::internal_api::{TermFeedbackState, TermLightColorDto, TimestampDto};
 use crate::hub_comm::web::web_server::internal_api::INTERNAL_API::*;
@@ -29,7 +33,7 @@ pub struct WebHubManager {
 impl Default for WebHubManager {
     fn default() -> Self {
         let manager = Self {
-            base_url: Url::from_str("http://127.0.0.1:8000/").expect("Bad base url"),
+            base_url: Url::from_str("http://127.0.0.1:80/").expect("Bad base url"),
             server_handle: None,
             client: Default::default(),
             rt: Runtime::new().expect("No runtime - no game :D"),
@@ -74,7 +78,7 @@ impl Drop for WebHubManager {
 #[allow(dead_code, unused_variables)]
 impl HubManager for WebHubManager {
     fn get_hub_address(&self) -> String {
-        self.base_url.to_string()
+        get_ipv4_interfaces_ip().join(";")
     }
 
     fn probe(&mut self, _port: &str) -> Result<HubStatus, HubManagerError> {
@@ -85,7 +89,7 @@ impl HubManager for WebHubManager {
         }
 
         self.start_hub_server();
-        for i in 0..5 {
+        for i in 0..50 {
             sleep(Duration::from_millis(RETRY_INTERVAL_MS));
             match self.get_hub_timestamp() {
                 Ok(_) => return Ok(HubStatus::Detected),
@@ -189,4 +193,27 @@ impl HubManager for WebHubManager {
         log::debug!("Received events: {:?}", events);
         Ok(events)
     }
+}
+
+fn get_ipv4_interfaces_ip() -> Vec<String> {
+    let network_interfaces = NetworkInterface::show().unwrap();
+    let localhost = Ipv4Addr::from_str("127.0.0.1").unwrap();
+    let mut ips: Vec<String> = vec![];
+
+    for itf in network_interfaces.iter() {
+        itf.addr.iter()
+            .for_each(|a|{
+                match a {
+                    Addr::V4(ip) => {
+                        if localhost != ip.ip {
+                            println!("{:#?}", ip.ip);
+                            ips.push(ip.ip.to_string());
+                        }
+                    }
+                    Addr::V6(_) => {}
+                }
+            });
+    }
+
+    return ips;
 }
