@@ -6,9 +6,18 @@ use crate::hub_comm::hw::internal::api_types::{TermButtonState, TermEvent};
 use error_stack::Result;
 use crate::core::game_entities::Player;
 
-#[derive(Debug, Default)]
-pub struct WebHubManager {
-    // ...
+mod server;
+mod internal_api;
+mod player_api;
+
+#[derive(Debug)]
+pub struct WebHubManager {}
+
+impl Default for WebHubManager {
+    fn default() -> Self {
+        server::main();
+        Self {}
+    }
 }
 
 #[allow(dead_code, unused_variables)]
