@@ -4,6 +4,7 @@ use crate::core::game_entities::{game, Player};
 use crate::game_pack::pack_content_entities::{PackContent, Question, Round};
 use std::collections::HashMap;
 
+
 use crate::hub_comm::hw::hw_hub_manager::discover_serial_ports;
 
 use super::dto::PlayerSetupDto;
@@ -12,21 +13,24 @@ use super::dto::PlayerSetupDto;
 pub fn get_config_dto() -> ConfigDto {
     let context = game();
     let hub_guard = context.get_unlocked_hub();
+    let players = context.players.values().cloned().collect();
     ConfigDto {
         available_ports: discover_serial_ports(),
         hub_port: hub_guard.port_name(),
         radio_channel: hub_guard.radio_channel(),
-        players: context
-            .players
-            .iter()
-            .map(|p| PlayerSetupDto {
-                icon: p.1.icon.clone(),
-                isUsed: p.1.is_used,
-                name: p.1.name.clone(),
-                termId: p.1.term_id,
-            })
-            .collect(),
+        players: map_players_to_players_setup_dto(&players),
     }
+}
+
+pub fn map_players_to_players_setup_dto(players: &Vec<Player>) -> Vec<PlayerSetupDto> {
+        players.iter()
+        .map(|p| PlayerSetupDto {
+            icon: p.icon.clone(),
+            isUsed: p.is_used,
+            name: p.name.clone(),
+            termId: p.term_id,
+        })
+        .collect()
 }
 
 /// Takes whole game context and maps to config which contains only required elements
