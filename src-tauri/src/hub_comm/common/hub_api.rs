@@ -17,6 +17,8 @@ pub enum HubType {
 
 pub trait HubManager: Debug + Send + Sync {
     // Common
+    fn get_hub_address(&self) -> String;
+    fn probe(&mut self, port: &str) -> Result<HubStatus, HubManagerError>;
     fn discover_players(&mut self) -> Result<Vec<Player>, HubManagerError>;
     fn get_hub_timestamp(&self) -> Result<u32, HubManagerError>;
     fn set_hub_timestamp(&self, timestamp: u32) -> Result<(), HubManagerError>;
@@ -29,16 +31,10 @@ pub trait HubManager: Debug + Send + Sync {
     fn read_event_queue(&self) -> Result<Vec<TermEvent>, HubManagerError>;
 
     // HW-specific
-    fn port_name(&self) -> String {
-        String::default()
-    }
     fn radio_channel(&self) -> i32 {
         i32::default()
     }
     fn hub_io_handler(&self) -> Result<&HwHubCommunicationHandler, HubManagerError> {
-        Err(Report::new(HubManagerError::ApiNotSupported))
-    }
-    fn probe(&mut self, _port: &str) -> Result<HubStatus, HubManagerError> {
         Err(Report::new(HubManagerError::ApiNotSupported))
     }
     fn setup_hub_connection(&mut self, _port: &str) -> Result<(), HubManagerError> {
