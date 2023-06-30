@@ -3,7 +3,16 @@ use crate::api::dto::PlayerSetupDto;
 use crate::api::mapper::{map_players_to_players_setup_dto};
 
 use crate::core::game_entities::{game, HubStatus};
+use crate::hub_comm::common::hub_api::HubType;
 use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
+
+/// Set hub type to web or serial
+#[command]
+pub fn set_hub_type(hub_type: HubType) {
+    log::debug!("Got request to set hub type: {:?}", hub_type);
+    let mut game = game();
+    game.select_hub_type(hub_type);
+}
 
 /// Tries to detect hub at given serial port. If successful saves port name
 #[command]

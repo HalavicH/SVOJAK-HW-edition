@@ -1,5 +1,9 @@
 const {invoke} = window.__TAURI__.tauri;
 
+export async function setHubType(hubType) {
+    return await invoke("set_hub_type", {hubType});
+}
+
 export async function getSettingsConfig() {
     return await invoke("fetch_configuration");
 }

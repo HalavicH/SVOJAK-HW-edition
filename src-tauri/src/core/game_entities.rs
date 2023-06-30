@@ -9,11 +9,12 @@ use std::sync::mpsc::Receiver;
 
 use crate::api::dto::QuestionType;
 use crate::game_pack::game_pack_entites::GamePack;
-use crate::hub_comm::common::hub_api::HubManager;
+use crate::hub_comm::common::hub_api::{HubManager, HubType};
 use crate::hub_comm::hw::hw_hub_manager::HwHubManager;
 use crate::hub_comm::hw::internal::api_types::TermEvent;
 use error_stack::Report;
 use serde::{Deserialize, Serialize};
+use crate::hub_comm::web::web_hub::WebHubManager;
 
 lazy_static::lazy_static! {
     static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::default()));
@@ -87,6 +88,7 @@ pub enum GamePackError {
 pub struct GameContext {
     pub players: HashMap<u8, Player>,
     pub game_pack: GamePack,
+    pub hub_type: HubType,
     hub: Arc<RwLock<Box<dyn HubManager>>>,
     pub current: CurrentContext,
     pub event_queue: Option<Receiver<TermEvent>>,
@@ -98,6 +100,7 @@ unsafe impl Send for GameContext {}
 impl Default for GameContext {
     fn default() -> Self {
         Self {
+            hub_type: HubType::default(),
             hub: Arc::new(RwLock::new(Box::new(HwHubManager::default()))),
             players: HashMap::default(),
             game_pack: GamePack::default(),
@@ -109,6 +112,24 @@ impl Default for GameContext {
 }
 
 impl GameContext {
+    pub fn select_hub_type(&mut self, hub_type: HubType) {
+        if self.hub_type == hub_type {
+            log::info!("Hub is already set to: {:?}. Nothing to do", hub_type);
+            return;
+        }
+
+        self.hub_type = hub_type;
+        match hub_type {
+            HubType::HwHub => {
+                log::info!("||| --> Selecting SERIAL hub <---");
+                self.hub = Arc::new(RwLock::new(Box::new(HwHubManager::default())))
+            }
+            HubType::WebHub => {
+                log::info!("||| --> Selecting WEB hub <---");
+                self.hub = Arc::new(RwLock::new(Box::new(WebHubManager::default())))
+            }
+        }
+    }
     pub fn get_hub_ref(&self) -> &Arc<RwLock<Box<dyn HubManager>>> {
         &self.hub
     }

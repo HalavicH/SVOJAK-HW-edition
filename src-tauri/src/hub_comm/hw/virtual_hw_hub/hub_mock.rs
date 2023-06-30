@@ -68,7 +68,7 @@ impl HubMock {
                         thread::sleep(Duration::from_millis(50));
                         continue;
                     } else {
-                        log::error!("Error in hub_mock_routine: {}", err);
+                        log::error!("Error in hub_mock_routine: {}", Report::new(err));
                         break;
                     }
                 }

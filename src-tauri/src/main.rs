@@ -15,6 +15,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             // Startup API
+            set_hub_type,
             fetch_configuration,
             discover_hub,
             set_hub_radio_channel,
