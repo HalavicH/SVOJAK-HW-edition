@@ -3,7 +3,7 @@ import {
     getSettingsConfig,
     savePlayers,
     probeHub,
-    discoverTerminals,
+    discoverPlayers,
     setHubRadioChannel
 } from "../../service/back-end-com.js";
 import {getImagePathOrDefault} from "../../service/utils.js";
@@ -162,7 +162,7 @@ function fillPlayersData(newPlayersData) {
 }
 
 export async function handleDiscoverTerminals() {
-    const terminals = await discoverTerminals();
+    const terminals = await discoverPlayers();
 
     console.info("result = " + terminals);
 
@@ -176,7 +176,7 @@ export async function handleDiscoverTerminals() {
         });
     });
 
-    fillPlayersData(mockPlayers);
+    fillPlayersData(terminals);
 }
 
 function discoverHubAndSetStatus(selectedOption) {

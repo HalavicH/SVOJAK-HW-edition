@@ -18,7 +18,7 @@ fn main() {
             fetch_configuration,
             discover_hub,
             set_hub_radio_channel,
-            discover_terminals,
+            discover_players,
             save_players,
             get_pack_info,
             save_round_duration,

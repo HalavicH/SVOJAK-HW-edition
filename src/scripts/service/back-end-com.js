@@ -14,8 +14,8 @@ export async function setHubRadioChannel(value) {
     });
 }
 
-export async function discoverTerminals() {
-    return await invoke("discover_terminals");
+export async function discoverPlayers() {
+    return await invoke("discover_players");
 }
 
 export async function savePlayers(playersList) {

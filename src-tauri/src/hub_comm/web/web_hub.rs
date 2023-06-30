@@ -4,6 +4,7 @@ use crate::hub_comm::common::hub_api::HubManager;
 use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
 use crate::hub_comm::hw::internal::api_types::{TermButtonState, TermEvent};
 use error_stack::Result;
+use crate::core::game_entities::Player;
 
 #[derive(Debug, Default)]
 pub struct WebHubManager {
@@ -12,7 +13,7 @@ pub struct WebHubManager {
 
 #[allow(dead_code, unused_variables)]
 impl HubManager for WebHubManager {
-    fn discover_terminals(&mut self) -> Result<Vec<u8>, HubManagerError> {
+    fn discover_players(&mut self) -> Result<Vec<Player>, HubManagerError> {
         todo!()
     }
 

@@ -1,4 +1,6 @@
 use tauri::command;
+use crate::api::dto::PlayerSetupDto;
+use crate::api::mapper::{map_players_to_players_setup_dto};
 
 use crate::core::game_entities::{game, HubStatus};
 use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
@@ -20,16 +22,16 @@ pub fn discover_hub(path: String) -> Result<HubStatus, HubManagerError> {
     }
 }
 
-/// Calls HUB to ping all devices on selected channel, devices which
-/// replied considered as available. All available devices are returned as vector
+/// Calls HUB to get all available players
 #[command]
-pub fn discover_terminals() -> Result<Vec<u8>, HubManagerError> {
+pub fn discover_players() -> Result<Vec<PlayerSetupDto>, HubManagerError> {
     log::info!("Discovering terminals");
     let guard = game();
     let mut hub_guard = guard.get_locked_hub_mut();
 
-    hub_guard.discover_terminals().map_err(|e| {
+    let players = hub_guard.discover_players().map_err(|e| {
         log::error!("{:#?}", e);
         e.current_context().clone()
-    })
+    })?;
+    Ok(map_players_to_players_setup_dto(&players))
 }

@@ -1,4 +1,4 @@
-use crate::core::game_entities::HubStatus;
+use crate::core::game_entities::{HubStatus, Player};
 use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
 use crate::hub_comm::hw::internal::api_types::{TermButtonState, TermEvent};
 use crate::hub_comm::hw::internal::hub_protocol_io_handler::HwHubCommunicationHandler;
@@ -9,7 +9,7 @@ use std::fmt::Debug;
 
 pub trait HubManager: Debug + Send + Sync {
     // Common
-    fn discover_terminals(&mut self) -> Result<Vec<u8>, HubManagerError>;
+    fn discover_players(&mut self) -> Result<Vec<Player>, HubManagerError>;
     fn get_hub_timestamp(&self) -> Result<u32, HubManagerError>;
     fn set_hub_timestamp(&self, timestamp: u32) -> Result<(), HubManagerError>;
     fn set_term_light_color(&self, term_id: u8, color: RGB8) -> Result<(), HubManagerError>;
@@ -20,6 +20,7 @@ pub trait HubManager: Debug + Send + Sync {
     ) -> Result<(), HubManagerError>;
     fn read_event_queue(&self) -> Result<Vec<TermEvent>, HubManagerError>;
 
+    // HW-specific
     fn port_name(&self) -> String {
         String::default()
     }
