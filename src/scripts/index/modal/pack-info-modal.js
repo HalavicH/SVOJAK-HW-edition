@@ -82,7 +82,7 @@ export function closePackInfoModal() {
     closeModal(modalPackInfoContainer);
 }
 
-export function handleStartTheGame() {
+export async function handleStartTheGame() {
     const roundDurationOptions = document
         .querySelector("#round-duration")
         .querySelectorAll("option");
@@ -96,8 +96,10 @@ export function handleStartTheGame() {
 
     saveRoundDuration(duration);
 
-    startTheGame();
-    window.location.href = "./gameplay.html";
+    startTheGame()
+        .then(() => {
+            window.location.href = "./gameplay.html";
+        });
 }
 
 function openPackErrorModel(error) {

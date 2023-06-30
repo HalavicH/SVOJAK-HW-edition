@@ -11,7 +11,7 @@ use error_stack::{IntoReport, Report, Result, ResultExt};
 use reqwest::Url;
 use tokio::runtime::Runtime;
 use crate::core::game_entities::{HubStatus, Player};
-use crate::hub_comm::web::web_hub::internal_api::{TermFeedbackColor, TermLightColorDto, TimestampDto};
+use crate::hub_comm::web::web_hub::internal_api::{TermFeedbackState, TermLightColorDto, TimestampDto};
 use crate::hub_comm::web::web_hub::internal_api::INTERNAL_API::*;
 use crate::hub_comm::web::web_hub::server::PlayerIdentityDto;
 
@@ -31,23 +31,47 @@ pub struct WebHubManager {
 
 impl Default for WebHubManager {
     fn default() -> Self {
-        let mut manager = Self {
-            base_url: Url::from_str("http://localhost:8000/").expect("Bad base url"),
+        let manager = Self {
+            base_url: Url::from_str("http://127.0.0.1:8000/").expect("Bad base url"),
             server_handle: None,
             client: Default::default(),
             rt: Runtime::new().expect("No runtime - no game :D"),
         };
-        manager.probe("").unwrap();
         manager
     }
 }
 
-fn start_hub_server() -> JoinHandle<()> {
-    server::main();
+impl WebHubManager {
+    fn start_hub_server(&mut self) {
+        let handle = thread::spawn(move || {
+            server::main();
+        });
+        self.server_handle = Some(handle);
+    }
+}
 
-    thread::spawn(move || {
-        server::main();
-    })
+impl Drop for WebHubManager {
+    fn drop(&mut self) {
+        log::info!("--> Trying to drop WebHubManager <--");
+
+        if let Some(handle) = self.server_handle.take() {
+            let result = self.rt.block_on(async {
+                self.client
+                    .get(self.base_url.join(SHUTDOWN).expect("Bad URL join"))
+                    .send().await
+            }).into_report().change_context(HubManagerError::HttpCommunicationError);
+
+            match result {
+                Ok(_) => {
+                    handle.join().expect("Can't join thread");
+                }
+                Err(err) => {
+                    log::error!("Ну.. Прес F. Хз що робити. Err {:?}", err);
+                }
+            }
+
+        }
+    }
 }
 
 #[allow(dead_code, unused_variables)]
@@ -57,7 +81,13 @@ impl HubManager for WebHubManager {
     }
 
     fn probe(&mut self, _port: &str) -> Result<HubStatus, HubManagerError> {
-        self.server_handle = Some(start_hub_server());
+        if self.server_handle.is_some() {
+            log::debug!("Web HUB already initialized. Nothing to do");
+            self.get_hub_timestamp()?;
+            return Ok(HubStatus::Detected)
+        }
+
+        self.start_hub_server();
         for i in 0..5 {
             sleep(Duration::from_millis(RETRY_INTERVAL_MS));
             match self.get_hub_timestamp() {
@@ -75,7 +105,7 @@ impl HubManager for WebHubManager {
     fn discover_players(&mut self) -> Result<Vec<Player>, HubManagerError> {
         let players: Vec<PlayerIdentityDto> = self.rt.block_on(async {
             self.client
-                .get(self.base_url.join("players").expect("Bad URL join"))
+                .get(self.base_url.join(GET_PLAYERS).expect("Bad URL join"))
                 .send().await?
                 .json().await
         }).into_report().change_context(HubManagerError::HttpCommunicationError)?;
@@ -96,7 +126,7 @@ impl HubManager for WebHubManager {
     fn get_hub_timestamp(&self) -> Result<u32, HubManagerError> {
         let timestamp: TimestampDto = self.rt.block_on(async {
             self.client
-                .get(self.base_url.join("timestamp").expect("Bad URL join"))
+                .get(self.base_url.join(GET_TIMESTAMP).expect("Bad URL join"))
                 .send().await?
                 .json().await
         }).into_report().change_context(HubManagerError::HttpCommunicationError)?;
@@ -111,7 +141,7 @@ impl HubManager for WebHubManager {
         self.rt.block_on(async {
             let dto = TimestampDto { timestamp };
             self.client
-                .post(self.base_url.join("timestamp").expect("Bad URL join"))
+                .post(self.base_url.join(SET_TIMESTAMP).expect("Bad URL join"))
                 .json(&dto)
                 .send().await
         }).into_report().change_context(HubManagerError::HttpCommunicationError)?;
@@ -127,7 +157,7 @@ impl HubManager for WebHubManager {
                 color: color.into(),
             };
             self.client
-                .post(self.base_url.join("term-color").expect("Bad URL join"))
+                .post(self.base_url.join(SET_TERM_COLOR).expect("Bad URL join"))
                 .json(&dto)
                 .send().await
         }).into_report().change_context(HubManagerError::HttpCommunicationError)?;
@@ -139,12 +169,12 @@ impl HubManager for WebHubManager {
         log::debug!("Setting feedback light for {} to {:?}", term_id, state);
 
         self.rt.block_on(async {
-            let dto = TermFeedbackColor {
+            let dto = TermFeedbackState {
                 id: term_id,
                 state: state.to_bool(),
             };
             self.client
-                .post(self.base_url.join("term-color").expect("Bad URL join"))
+                .post(self.base_url.join(SET_FEEDBACK_STATE).expect("Bad URL join"))
                 .json(&dto)
                 .send().await
         }).into_report().change_context(HubManagerError::HttpCommunicationError)?;

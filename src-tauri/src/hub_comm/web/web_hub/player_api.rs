@@ -4,10 +4,11 @@ use rocket::{routes, post};
 use rocket::serde::json::{Json, Value};
 use rocket::fairing::AdHoc;
 use rocket::serde::json::serde_json::json;
-use crate::hub_comm::web::web_hub::server::{Persistence, PlayerEvent};
+use crate::hub_comm::hw::hw_hub_manager::get_epoch_ms;
+use crate::hub_comm::web::web_hub::server::{Persistence, PlayerEvent, PlayerIdentityDto};
 
 #[post("/register", data = "<name>")]
-fn register_player(name: String, state: Persistence) -> Value {
+fn register_player(name: Json<PlayerIdentityDto>, state: Persistence) -> Value {
     log::info!("Got new? player: {:?}", name);
 
     let mut guard = state.lock().expect("Poisoned");
@@ -15,7 +16,7 @@ fn register_player(name: String, state: Persistence) -> Value {
     //     log::info!("Ip collision. Skip for now :D");
     // }
 
-    let id = guard.add_player(&name);
+    let id = guard.add_player(&name.name);
 
     json!({
         "playerId": id,
@@ -35,8 +36,14 @@ fn process_event(event: Json<PlayerEvent>, state: Persistence) -> Value {
         "#000000"
     };
 
-    // TODO: Add check for player existanse
-    guard.push_event(event.0);
+    let e = PlayerEvent {
+        id: event.id,
+        timestamp: get_epoch_ms().expect("Can't get epoch"),
+        state: event.state,
+    };
+
+    // TODO: Add check for player existense
+    guard.push_event(e);
 
     json!({"color": color})
 }

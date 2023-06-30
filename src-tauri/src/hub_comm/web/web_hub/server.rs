@@ -77,7 +77,7 @@ pub type Persistence<'a> = &'a State<Mutex<ServerState>>;
 
 
 pub fn setup() -> rocket::fairing::AdHoc {
-    rocket::fairing::AdHoc::on_ignite("Player-API", |rocket| async {
+    rocket::fairing::AdHoc::on_ignite("Persistence-API", |rocket| async {
         rocket
             .manage(SharedServerState::default())
             .mount("/", FileServer::from(relative!("static")))

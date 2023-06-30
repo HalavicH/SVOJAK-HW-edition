@@ -101,7 +101,7 @@ impl Default for GameContext {
     fn default() -> Self {
         Self {
             hub_type: HubType::default(),
-            hub: Arc::new(RwLock::new(Box::new(WebHubManager::default()))),
+            hub: Arc::new(RwLock::new(Box::new(HwHubManager::default()))),
             players: HashMap::default(),
             game_pack: GamePack::default(),
             current: CurrentContext::default(),
