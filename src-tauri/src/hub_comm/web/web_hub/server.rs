@@ -1,16 +1,12 @@
 #![allow(unused)]
 
-use rocket::{Build, Rocket, routes, get, post};
-use rocket::serde::json::{Json, Value};
+use rocket::{Build, Rocket};
 use rocket::State;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use rgb::{RGB, RGB8};
+use std::sync::{Mutex};
 use rocket::form::FromForm;
 use rocket::fs::{FileServer, relative};
-use rocket::futures::SinkExt;
 use rocket::serde::{Deserialize, Serialize};
-use rocket::serde::json::serde_json::json;
 use crate::hub_comm::web::web_hub::{internal_api, player_api};
 
 pub type PlayerId = u8;
@@ -48,7 +44,7 @@ impl ServerState {
             .count();
         players_with_such_name > 0
     }
-    pub fn has_ip(&self, ip: &String) -> bool {
+    pub fn has_ip(&self, _ip: &String) -> bool {
         false
     }
     // pub fn add_player(&mut self, player: &Player) -> PlayerId {
