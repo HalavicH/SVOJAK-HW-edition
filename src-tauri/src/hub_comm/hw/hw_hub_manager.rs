@@ -28,6 +28,8 @@ pub enum HubManagerError {
     NotInitializedError,
     #[error("Serial port error")]
     SerialPortError,
+    #[error("HTTP communication error")]
+    HttpCommunicationError,
     #[error("No response from hub")]
     NoResponseFromHub,
     #[error("No response from terminal")]
@@ -223,7 +225,7 @@ impl HubManager for HwHubManager {
         Ok(events)
     }
 
-    fn port_name(&self) -> String {
+    fn get_hub_address(&self) -> String {
         self.port_name.clone()
     }
 
