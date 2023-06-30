@@ -29,12 +29,19 @@ async function registerPlayer() {
         return;
     }
 
+    console.log("Name: " + playerName);
+
+    let body = JSON.stringify({
+        id: 0,
+        name: playerName,
+        ip: "0.0.0.0",
+    });
     const response = await fetch("/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(playerName),
+        body: body,
     });
     if (response.ok) {
         const {playerId, baseTimestamp} = await response.json();

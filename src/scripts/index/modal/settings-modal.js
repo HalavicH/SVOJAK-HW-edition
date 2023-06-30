@@ -17,8 +17,12 @@ let hwHubSettingsModal = document.querySelector("#hw-hub-settings-modal");
 let webHubSettingsModal = document.querySelector("#web-hub-settings-modal");
 
 // Tables
-const webPlayerTable = hwHubSettingsModal.querySelector("#players-data-table");
 const serialTerminalTable = hwHubSettingsModal.querySelector("#terminal-data-table");
+const webPlayerTable = webHubSettingsModal.querySelector("#players-data-table");
+
+// Status
+const serialHubStatusDiv = hwHubSettingsModal.querySelector("#hub-status-field");
+const webHubStatusDiv = webHubSettingsModal.querySelector("#web-hub-status-field");
 
 function commonSettingsCallbacks() {
     document
@@ -105,7 +109,7 @@ export async function openHwHubSettingsModal() {
     const config = await getSettingsConfig();
 
     if (config.hub_port !== "") {
-        discoverHubAndSetStatus(config.hub_port);
+        discoverHubAndSetStatus(config.hub_port, serialHubStatusDiv);
     }
 
     fillSerialPortMenu(config.available_ports, config.hub_port);
@@ -152,8 +156,7 @@ function processPlayerDataSaving(playersTable) {
     savePlayers(playerDataList);
 }
 
-function setHubStatus(status) {
-    const hubStatusElement = hwHubSettingsModal.querySelector("#hub-status-field");
+function setHubStatus(status, hubStatusElement) {
     console.log("Hub status received: " + status);
 
     if (status === "Detected") {
@@ -260,10 +263,10 @@ export async function handleDiscoverTerminals(playersTable) {
     fillPlayersData(terminals, playersTable);
 }
 
-function discoverHubAndSetStatus(selectedOption) {
+function discoverHubAndSetStatus(selectedOption, hubStatusDiv) {
     probeHub(selectedOption)
-        .then(setHubStatus)
-        .catch(setHubStatus);
+        .then((status => setHubStatus(status, hubStatusDiv)))
+        .catch((err => setHubStatus(err, hubStatusDiv)))
 }
 
 export async function serialPortSelectHandler(event) {
@@ -272,7 +275,7 @@ export async function serialPortSelectHandler(event) {
 
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
-    discoverHubAndSetStatus(selectedOption);
+    discoverHubAndSetStatus(selectedOption, serialHubStatusDiv);
     await handleDiscoverTerminals(serialTerminalTable);
 }
 
@@ -290,6 +293,16 @@ async function openWebHubSettingsModal() {
 
     closeModal(settingsModal);
     openModal(webHubSettingsModal);
+
+    const config = await getSettingsConfig();
+
+    discoverHubAndSetStatus(config.hub_port, serialHubStatusDiv);
+
+    discoverHubAndSetStatus("Nothing", webHubStatusDiv);
+    let hubIpDiv = webHubSettingsModal.querySelector("#hub-ip-field");
+
+    hubIpDiv.innerText = config.hub_port;
+    // TODO: Set player polling
 }
 
 function closeWebHubSettingsModal() {
