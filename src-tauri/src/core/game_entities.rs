@@ -14,7 +14,7 @@ use crate::hub_comm::hw::hw_hub_manager::HwHubManager;
 use crate::hub_comm::hw::internal::api_types::TermEvent;
 use error_stack::Report;
 use serde::{Deserialize, Serialize};
-use crate::hub_comm::web::web_hub::WebHubManager;
+use crate::hub_comm::web::web_hub_manager::WebHubManager;
 
 lazy_static::lazy_static! {
     static ref CONTEXT: Arc<Mutex<GameContext>> = Arc::new(Mutex::new(GameContext::default()));
