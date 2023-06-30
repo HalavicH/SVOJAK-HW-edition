@@ -1,28 +1,17 @@
 import {
-    openSettingsModal,
-    closeSettingsModal,
     serialPortSelectHandler,
-    handleSetHubRadioChannel, handleDiscoverTerminals
+    handleSetHubRadioChannel, handleDiscoverTerminals, setupSettingsModalCallbacks
 } from "./modal/settings-modal.js";
-import {openPackInfoModal, closePackInfoModal, handleStartTheGame, closePackErrorModal} from "./modal/pack-info-modal.js";
-import {setupHubDebugCallbacks} from "./modal/hub-debug-modal.js";
-const { convertFileSrc } = window.__TAURI__.tauri;
+import {
+    openPackInfoModal,
+    closePackInfoModal,
+    handleStartTheGame,
+    closePackErrorModal
+} from "./modal/pack-info-modal.js";
 
 window.addEventListener("DOMContentLoaded", () => {
     // modal processing
-
-    // const settingsBtn = document.querySelector("#settings-button");
-    // settingsBtn.addEventListener("click", openSettingsModal);
-
-    document
-        .querySelector("#settings-button")
-        .addEventListener("click", openSettingsModal);
-
-    document
-        .querySelector("#close-settings-modal")
-        .addEventListener("click", closeSettingsModal);
-
-    setupHubDebugCallbacks();
+    setupSettingsModalCallbacks();
 
     document
         .querySelector("#open-pack")
@@ -31,23 +20,6 @@ window.addEventListener("DOMContentLoaded", () => {
     document
         .querySelector("#close-pack-info-modal")
         .addEventListener("click", closePackInfoModal);
-
-    // TODO: REWORK
-    document
-        .querySelector("#term-one")
-        .addEventListener("click", selectImage);
-
-    document
-        .querySelector("#set-hub-radio-channel")
-        .addEventListener("click", handleSetHubRadioChannel);
-
-    document
-        .querySelector("#refresh-terminals-btn")
-        .addEventListener("click", handleDiscoverTerminals);
-
-    document
-        .querySelector("#serial-port-menu")
-        .addEventListener("change", serialPortSelectHandler);
 
     document
         .querySelector("#start-the-game")
@@ -61,7 +33,6 @@ window.addEventListener("DOMContentLoaded", () => {
         .querySelector("#pack-error-close-modal")
         .addEventListener("click", closePackErrorModal)
 });
-
 
 function selectImage() {
     // Create an input element of type "file"
