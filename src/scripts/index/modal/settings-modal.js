@@ -7,12 +7,99 @@ import {
     setHubRadioChannel
 } from "../../service/back-end-com.js";
 import {getImagePathOrDefault} from "../../service/utils.js";
+import {setupHubDebugCallbacks} from "./hub-debug-modal.js";
 
 const {invoke} = window.__TAURI__.tauri;
 
-export async function openSettingsModal() {
-    const modalContainer = document.querySelector("#settings-modal");
-    openModal(modalContainer);
+// Global
+let settingsModal = document.querySelector("#settings-modal");
+let hwHubSettingsModal = document.querySelector("#hw-hub-settings-modal");
+let webHubSettingsModal = document.querySelector("#web-hub-settings-modal");
+
+// Tables
+const webPlayerTable = hwHubSettingsModal.querySelector("#players-data-table");
+const serialTerminalTable = hwHubSettingsModal.querySelector("#terminal-data-table");
+
+function commonSettingsCallbacks() {
+    document
+        .querySelector("#settings-button")
+        .addEventListener("click", openSettingsModal);
+
+    document
+        .querySelector("#close-settings-modal")
+        .addEventListener("click", closeSettingsModal);
+}
+
+function hwSettingsCallbacks() {
+    document
+        .querySelector("#hw-hub-btn")
+        .addEventListener("click", openHwHubSettingsModal);
+
+    document
+        .querySelector("#close-hw-hub-settings-modal")
+        .addEventListener("click", closeHwHubSettingsModal);
+
+    document
+        .querySelector("#save-hw-hub-settings-modal")
+        .addEventListener("click", saveHwHubSettingsModal);
+
+    document
+        .querySelector("#set-hub-radio-channel")
+        .addEventListener("click", handleSetHubRadioChannel);
+
+    document
+        .querySelector("#refresh-terminals-btn")
+        .addEventListener("click", async () => {
+            await handleDiscoverTerminals(serialTerminalTable);
+        });
+
+    document
+        .querySelector("#serial-port-menu")
+        .addEventListener("change", serialPortSelectHandler);
+}
+
+function webSettingsCallbacks() {
+    document
+        .querySelector("#web-hub-btn")
+        .addEventListener("click", openWebHubSettingsModal);
+
+    document
+        .querySelector("#close-web-hub-settings-modal")
+        .addEventListener("click", closeWebHubSettingsModal);
+
+    document
+        .querySelector("#save-web-hub-settings-modal")
+        .addEventListener("click", saveWebHubSettingsModal);
+
+    document
+        .querySelector("#refresh-web-players-btn")
+        .addEventListener("click", async () => {
+            await handleDiscoverTerminals(webPlayerTable);
+        });
+}
+
+// SETUP //
+export function setupSettingsModalCallbacks() {
+    commonSettingsCallbacks();
+    hwSettingsCallbacks();
+    webSettingsCallbacks();
+
+    setupHubDebugCallbacks();
+}
+
+// Settings modal
+function openSettingsModal() {
+    openModal(settingsModal);
+}
+
+function closeSettingsModal() {
+    closeModal(settingsModal);
+}
+
+// Hw HUB settings //
+export async function openHwHubSettingsModal() {
+    closeModal(settingsModal);
+    openModal(hwHubSettingsModal);
     const config = await getSettingsConfig();
 
     if (config.hub_port !== "") {
@@ -21,19 +108,22 @@ export async function openSettingsModal() {
 
     fillSerialPortMenu(config.available_ports, config.hub_port);
     setRadioChannel(config.radio_channel);
-    fillPlayersData(config.players);
+    const playerTable = hwHubSettingsModal.querySelector("#terminal-data-table");
+    fillPlayersData(config.players, playerTable);
 }
 
-export function closeSettingsModal() {
-    const modalContainer = document.querySelector("#settings-modal");
-
-    processPlayerDataSaving();
-
-    closeModal(modalContainer);
+export function closeHwHubSettingsModal() {
+    closeModal(hwHubSettingsModal);
 }
 
-function processPlayerDataSaving() {
-    let playerElementList = document.querySelector("#terminal-data-table").querySelectorAll(".terminal-data");
+export function saveHwHubSettingsModal() {
+    processPlayerDataSaving(serialTerminalTable);
+
+    closeModal(hwHubSettingsModal);
+}
+
+function processPlayerDataSaving(playersTable) {
+    let playerElementList = playersTable.querySelectorAll(".terminal-data");
 
     let playerDataList = [];
 
@@ -61,7 +151,7 @@ function processPlayerDataSaving() {
 }
 
 function setHubStatus(status) {
-    const hubStatusElement = document.querySelector("#hub-status-field");
+    const hubStatusElement = hwHubSettingsModal.querySelector("#hub-status-field");
     console.log("Hub status received: " + status);
 
     if (status === "Detected") {
@@ -80,7 +170,7 @@ function setHubStatus(status) {
 }
 
 function fillSerialPortMenu(availablePorts, activePort) {
-    const serialPortMenu = document.querySelector("#serial-port-menu");
+    const serialPortMenu = hwHubSettingsModal.querySelector("#serial-port-menu");
     serialPortMenu.innerHTML = "";
 
     let optionElement = document.createElement("option");
@@ -100,7 +190,7 @@ function fillSerialPortMenu(availablePorts, activePort) {
 }
 
 function setRadioChannel(radioChannel) {
-    const radioChannelInput = document.querySelector("#radio-channel");
+    const radioChannelInput = hwHubSettingsModal.querySelector("#radio-channel");
 
     if (radioChannel === undefined || radioChannel === 0) {
         radioChannelInput.value = "";
@@ -110,13 +200,12 @@ function setRadioChannel(radioChannel) {
     radioChannelInput.value = radioChannel;
 }
 
-function fillPlayersData(newPlayersData) {
+function fillPlayersData(newPlayersData, playerTable) {
     // Get elements to work with
-    const playerTable = document.querySelector("#terminal-data-table");
     const tbody = playerTable.childNodes[1];
 
     // Clear old data
-    const oldPlayers = tbody.querySelectorAll(".terminal-data");
+    const oldPlayers= tbody.querySelectorAll(".terminal-data");
     oldPlayers.forEach((oldPlayer) => {
         tbody.removeChild(oldPlayer);
     });
@@ -161,22 +250,12 @@ function fillPlayersData(newPlayersData) {
     });
 }
 
-export async function handleDiscoverTerminals() {
+export async function handleDiscoverTerminals(playersTable) {
     const terminals = await discoverPlayers();
 
     console.info("result = " + terminals);
 
-    let mockPlayers = [];
-    terminals.forEach((id) => {
-        mockPlayers.push({
-            termId: id,
-            icon: "",
-            name: "",
-            isUsed: true
-        });
-    });
-
-    fillPlayersData(terminals);
+    fillPlayersData(terminals, playersTable);
 }
 
 function discoverHubAndSetStatus(selectedOption) {
@@ -192,14 +271,31 @@ export async function serialPortSelectHandler(event) {
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
     discoverHubAndSetStatus(selectedOption);
-    await handleDiscoverTerminals();
+    await handleDiscoverTerminals(serialTerminalTable);
 }
 
 export async function handleSetHubRadioChannel() {
     console.log("Set radio channel...");
-    const channelIdObject = document.querySelector("#radio-channel");
+    const channelIdObject = hwHubSettingsModal.querySelector("#radio-channel");
 
     await setHubRadioChannel(channelIdObject.value);
-    await handleDiscoverTerminals()
+    await handleDiscoverTerminals(serialTerminalTable)
 }
 
+// WEB HUB settings //
+function openWebHubSettingsModal() {
+    closeModal(settingsModal);
+    openModal(webHubSettingsModal);
+
+
+}
+
+function closeWebHubSettingsModal() {
+    closeModal(webHubSettingsModal);
+}
+
+function saveWebHubSettingsModal() {
+    processPlayerDataSaving(webPlayerTable);
+
+    closeModal(webHubSettingsModal);
+}

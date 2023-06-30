@@ -10,10 +10,10 @@ export async function openPackInfoModal() {
     const filePath = await open({
         multiple: false,
         filters: [{
-          name: 'Select game package',
-          extensions: ['siq']
+            name: 'Select game package',
+            extensions: ['siq']
         }]
-      });
+    });
 
     if (filePath === null) {
         console.error("Game package file wasn't selected");
