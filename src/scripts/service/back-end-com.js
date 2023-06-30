@@ -44,7 +44,7 @@ export async function saveRoundDuration(roundDurationMinutes) {
 }
 
 export function startTheGame() {
-    invoke("start_the_game");
+    return invoke("start_the_game");
 }
 
 export async function fetchPlayers() {
