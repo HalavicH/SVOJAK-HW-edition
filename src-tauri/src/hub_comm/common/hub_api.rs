@@ -6,6 +6,14 @@ use error_stack::{Report, Result};
 use rgb::RGB8;
 use std::default::Default;
 use std::fmt::Debug;
+use serde::Deserialize;
+
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize)]
+pub enum HubType {
+    #[default]
+    HwHub,
+    WebHub,
+}
 
 pub trait HubManager: Debug + Send + Sync {
     // Common

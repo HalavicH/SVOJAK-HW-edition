@@ -4,7 +4,7 @@ import {
     savePlayers,
     probeHub,
     discoverPlayers,
-    setHubRadioChannel
+    setHubRadioChannel, setHubType
 } from "../../service/back-end-com.js";
 import {getImagePathOrDefault} from "../../service/utils.js";
 import {setupHubDebugCallbacks} from "./hub-debug-modal.js";
@@ -98,8 +98,10 @@ function closeSettingsModal() {
 
 // Hw HUB settings //
 export async function openHwHubSettingsModal() {
+    await setHubType("HwHub");
     closeModal(settingsModal);
     openModal(hwHubSettingsModal);
+
     const config = await getSettingsConfig();
 
     if (config.hub_port !== "") {
@@ -283,11 +285,11 @@ export async function handleSetHubRadioChannel() {
 }
 
 // WEB HUB settings //
-function openWebHubSettingsModal() {
+async function openWebHubSettingsModal() {
+    await setHubType("WebHub");
+
     closeModal(settingsModal);
     openModal(webHubSettingsModal);
-
-
 }
 
 function closeWebHubSettingsModal() {
