@@ -21,7 +21,7 @@ pub struct PlayerEvent {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub struct Player {
+pub struct PlayerIdentityDto {
     pub id: PlayerId,
     pub name: String,
     pub ip: String,
@@ -31,7 +31,7 @@ pub struct Player {
 #[serde(crate = "rocket::serde")]
 pub struct ServerState {
     pub base_timestamp: u32,
-    pub players: HashMap<PlayerId, Player>,
+    pub players: HashMap<PlayerId, PlayerIdentityDto>,
     pub events: Vec<PlayerEvent>,
 }
 
@@ -59,7 +59,7 @@ impl ServerState {
     // }
     pub fn add_player(&mut self, name: &String) -> PlayerId {
         let id = (self.players.len() + 1) as PlayerId;
-        let p = Player {
+        let p = PlayerIdentityDto {
             id,
             name: name.clone(),
             ip: "0.0.0.0".to_string(),

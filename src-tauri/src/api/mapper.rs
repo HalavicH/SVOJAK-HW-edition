@@ -16,7 +16,7 @@ pub fn get_config_dto() -> ConfigDto {
     let players = context.players.values().cloned().collect();
     ConfigDto {
         available_ports: discover_serial_ports(),
-        hub_port: hub_guard.port_name(),
+        hub_port: hub_guard.get_hub_address(),
         radio_channel: hub_guard.radio_channel(),
         players: map_players_to_players_setup_dto(&players),
     }
