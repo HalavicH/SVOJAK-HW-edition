@@ -1,7 +1,7 @@
 use crate::hub_comm::common::hub_api::HubManager;
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::{Ordering};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc, RwLock, RwLockReadGuard};
 use std::thread;

@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use rgb::{RGB, RGB8};
-use rocket::{routes, get, post, Shutdown};
+use rocket::{routes, get, post, Shutdown, Config, State};
 use rocket::serde::json::{Json, Value};
 use rocket::serde::json::serde_json::json;
 use crate::hub_comm::web::web_server::server::{Persistence, PlayerIdentityDto, PlayerId, PlayerEvent};
@@ -134,6 +134,11 @@ fn take_event_queue(state: Persistence) -> Json<Vec<TermEvent>> {
 fn shutdown(shutdown: Shutdown) -> &'static str {
     shutdown.notify();
     "Shutting down..."
+}
+
+#[get("/config")]
+fn read_config(rocket_config: &Config) -> String {
+    format!("{:#?}", rocket_config)
 }
 
 fn map_player_events_to_term_events(events: Vec<PlayerEvent>) -> Vec<TermEvent> {
