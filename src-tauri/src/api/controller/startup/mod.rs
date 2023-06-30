@@ -5,7 +5,7 @@ use tauri::command;
 
 use crate::api::dto::PlayerSetupDto;
 
-use crate::game_pack::game_pack_loader::{load_game_pack, GamePackLoadingError};
+use crate::game_pack::game_pack_loader::{load_game_pack};
 
 pub mod hub;
 pub mod hw_hub;
