@@ -34,8 +34,7 @@ impl GameContext {
 
         start_event_listener(
             self.get_hub_ref().clone(),
-            event_tx,
-            self.allow_answer_timestamp.clone(),
+            event_tx
         );
 
         let q_picker_id = match self.get_fastest_click_player_id() {
@@ -174,6 +173,7 @@ impl GameContext {
         }
 
         self.current.answer_allowed = false;
+        self.allow_answer_timestamp.swap(u32::MAX, Ordering::Relaxed);
 
         let active_player_id = self.get_active_player_id();
         log::info!(
@@ -358,13 +358,27 @@ impl GameContext {
                 return Err(Report::new(HubManagerError::NoResponseFromTerminal));
             }
 
-            let mut events = match Self::get_events(receiver) {
+            let events = match Self::get_events(receiver) {
                 Ok(events) => events,
                 Err(_) => {
                     sleep(Duration::from_millis(100));
                     continue;
                 }
             };
+
+            let base_timestamp = self.allow_answer_timestamp.load(Ordering::Relaxed);
+            let mut events: Vec<TermEvent> = events.iter()
+                .filter(|&e| {
+                    return if e.timestamp >= base_timestamp {
+                        log::info!("After answer allowed. Event {:?}", e);
+                        true
+                    } else {
+                        log::info!("Answer too early. Event {:?}", e);
+                        false
+                    }
+                })
+                .map(|e| e.clone())
+                .collect();
 
             events.sort_by(|e1, e2| e1.timestamp.cmp(&e2.timestamp));
 
@@ -490,20 +504,18 @@ impl GameContext {
 
 pub fn start_event_listener(
     hub: Arc<RwLock<Box<dyn HubManager>>>,
-    sender: Sender<TermEvent>,
-    base_timestamp: Arc<AtomicU32>,
+    sender: Sender<TermEvent>
 ) -> JoinHandle<()> {
     log::info!("Starting event listener");
 
     thread::spawn(move || {
-        listen_hub_events(hub, sender, base_timestamp);
+        listen_hub_events(hub, sender);
     })
 }
 
 fn listen_hub_events(
     hub: Arc<RwLock<Box<dyn HubManager>>>,
-    sender: Sender<TermEvent>,
-    base_timestamp: Arc<AtomicU32>,
+    sender: Sender<TermEvent>
 ) {
     loop {
         log::debug!("############# NEW ITERATION ###############");
@@ -520,8 +532,7 @@ fn listen_hub_events(
         }
 
         events.iter().for_each(|e| {
-            let i = base_timestamp.load(Ordering::SeqCst);
-            process_term_event(&hub_guard, e, &sender, i);
+            process_term_event(&hub_guard, e, &sender);
         });
     }
 }
@@ -529,8 +540,7 @@ fn listen_hub_events(
 fn process_term_event(
     hub_guard: &RwLockReadGuard<Box<dyn HubManager>>,
     e: &TermEvent,
-    sender: &Sender<TermEvent>,
-    base_timestamp: u32,
+    sender: &Sender<TermEvent>
 ) {
     hub_guard
         .set_term_feedback_led(e.term_id, &e.state)
@@ -538,16 +548,10 @@ fn process_term_event(
             log::error!("Can't set term_feedback let. Err {:?}", error);
         });
 
-    if e.timestamp >= base_timestamp {
-        log::info!("After answer allowed. Event {:?}", e);
-        sender
-            .send((*e).clone())
-            .map_err(|e| {
-                log::error!("Can't send the event: {}", e);
-            })
-            .unwrap_or_default();
-    } else {
-        log::info!("Answer too early. Event {:?}", e);
-        // TODO: add 1 sec of delay and forbid response
-    }
+
+    sender.send((*e).clone())
+        .map_err(|e| {
+            log::error!("Can't send the event: {}", e);
+        })
+        .unwrap_or_default();
 }
