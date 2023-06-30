@@ -5,7 +5,7 @@ use rocket::serde::json::{Json, Value};
 use rocket::fairing::AdHoc;
 use rocket::serde::json::serde_json::json;
 use crate::hub_comm::hw::hw_hub_manager::get_epoch_ms;
-use crate::hub_comm::web::web_hub::server::{Persistence, PlayerEvent, PlayerIdentityDto};
+use crate::hub_comm::web::web_server::server::{Persistence, PlayerEvent, PlayerIdentityDto};
 
 #[post("/register", data = "<name>")]
 fn register_player(name: Json<PlayerIdentityDto>, state: Persistence) -> Value {

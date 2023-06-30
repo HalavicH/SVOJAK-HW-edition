@@ -7,7 +7,7 @@ use std::sync::{Mutex};
 use rocket::form::FromForm;
 use rocket::fs::{FileServer, relative};
 use rocket::serde::{Deserialize, Serialize};
-use crate::hub_comm::web::web_hub::{internal_api, player_api};
+use crate::hub_comm::web::web_server::{internal_api, player_api};
 
 pub type PlayerId = u8;
 
