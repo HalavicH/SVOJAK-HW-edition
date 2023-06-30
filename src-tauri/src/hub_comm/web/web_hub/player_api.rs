@@ -1,18 +1,9 @@
 #![allow(unused)]
 
-use rocket::{Build, Rocket, routes, get, post};
+use rocket::{routes, post};
 use rocket::serde::json::{Json, Value};
-use rocket::State;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use rgb::{RGB, RGB8};
 use rocket::fairing::AdHoc;
-use rocket::form::FromForm;
-use rocket::fs::{FileServer, relative};
-use rocket::futures::SinkExt;
-use rocket::serde::{Deserialize, Serialize};
 use rocket::serde::json::serde_json::json;
-use crate::hub_comm::hw::internal::api_types::TermEvent;
 use crate::hub_comm::web::web_hub::server::{Persistence, PlayerEvent};
 
 #[post("/register", data = "<name>")]

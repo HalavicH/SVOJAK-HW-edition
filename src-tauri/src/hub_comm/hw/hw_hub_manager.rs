@@ -100,18 +100,6 @@ impl HwHubManager {
 }
 
 impl HubManager for HwHubManager {
-    fn port_name(&self) -> String {
-        self.port_name.clone()
-    }
-    fn radio_channel(&self) -> i32 {
-        self.radio_channel
-    }
-    fn hub_io_handler(&self) -> Result<&HwHubCommunicationHandler, HubManagerError> {
-        Ok(self
-            .hub_io_handler
-            .as_ref()
-            .ok_or(HubManagerError::NotInitializedError)?)
-    }
     fn discover_players(&mut self) -> Result<Vec<Player>, HubManagerError> {
         let mut players = vec![];
 
@@ -126,7 +114,6 @@ impl HubManager for HwHubManager {
 
         Ok(players)
     }
-
     /// ### get hub timestamp
     /// #### response payload
     /// `[tid] [status] [response length] [response payload (timestamp)]`
@@ -152,7 +139,6 @@ impl HubManager for HwHubManager {
 
         Ok(timestamp)
     }
-
     fn set_hub_timestamp(&self, timestamp: u32) -> Result<(), HubManagerError> {
         log::info!("Setting timestamp of 0x{:X?}", timestamp);
         let handle = self.get_hub_handle_or_err()?;
@@ -164,7 +150,6 @@ impl HubManager for HwHubManager {
 
         map_status_to_result(response.status)
     }
-
     fn set_term_light_color(&self, term_id: u8, color: RGB8) -> Result<(), HubManagerError> {
         log::info!("Setting terminal #{} light color to: {:?}", term_id, color);
         let handle = self.get_hub_handle_or_err()?;
@@ -236,6 +221,21 @@ impl HubManager for HwHubManager {
         }
 
         Ok(events)
+    }
+
+    fn port_name(&self) -> String {
+        self.port_name.clone()
+    }
+
+    fn radio_channel(&self) -> i32 {
+        self.radio_channel
+    }
+
+    fn hub_io_handler(&self) -> Result<&HwHubCommunicationHandler, HubManagerError> {
+        Ok(self
+            .hub_io_handler
+            .as_ref()
+            .ok_or(HubManagerError::NotInitializedError)?)
     }
 
     fn probe(&mut self, port: &str) -> Result<HubStatus, HubManagerError> {

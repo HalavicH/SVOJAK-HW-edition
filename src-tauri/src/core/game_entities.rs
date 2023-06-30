@@ -101,7 +101,7 @@ impl Default for GameContext {
     fn default() -> Self {
         Self {
             hub_type: HubType::default(),
-            hub: Arc::new(RwLock::new(Box::new(HwHubManager::default()))),
+            hub: Arc::new(RwLock::new(Box::new(WebHubManager::default()))),
             players: HashMap::default(),
             game_pack: GamePack::default(),
             current: CurrentContext::default(),
@@ -118,7 +118,7 @@ impl GameContext {
             return;
         }
 
-        self.hub_type = hub_type;
+        self.hub_type = hub_type.clone();
         match hub_type {
             HubType::HwHub => {
                 log::info!("||| --> Selecting SERIAL hub <---");
