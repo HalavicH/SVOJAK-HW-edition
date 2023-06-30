@@ -36,6 +36,11 @@ pub mod hub_comm {
         }
     }
     pub mod web {
-        pub mod web_hub;
+        pub mod web_hub_manager;
+        pub mod web_server {
+            pub mod server;
+            pub mod internal_api;
+            pub mod player_api;
+        }
     }
 }

@@ -11,13 +11,10 @@ use error_stack::{IntoReport, Report, Result, ResultExt};
 use reqwest::Url;
 use tokio::runtime::Runtime;
 use crate::core::game_entities::{HubStatus, Player};
-use crate::hub_comm::web::web_hub::internal_api::{TermFeedbackState, TermLightColorDto, TimestampDto};
-use crate::hub_comm::web::web_hub::internal_api::INTERNAL_API::*;
-use crate::hub_comm::web::web_hub::server::PlayerIdentityDto;
-
-mod server;
-mod internal_api;
-mod player_api;
+use crate::hub_comm::web::web_server::internal_api::{TermFeedbackState, TermLightColorDto, TimestampDto};
+use crate::hub_comm::web::web_server::internal_api::INTERNAL_API::*;
+use crate::hub_comm::web::web_server::server;
+use crate::hub_comm::web::web_server::server::PlayerIdentityDto;
 
 const RETRY_INTERVAL_MS: u64 = 100;
 
