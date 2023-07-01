@@ -96,6 +96,7 @@ export async function handleStartTheGame() {
 
     saveRoundDuration(duration);
 
+    countdown()
     startTheGame()
         .then(() => {
             window.location.href = "./gameplay.html";
@@ -115,3 +116,22 @@ export async function closePackErrorModal() {
     let modal = document.querySelector("#pack-error-modal");
     closeModal(modal);
 }
+
+function countdown() {
+    let element = document.querySelector("#first-player-modal");
+    openModal(element);
+
+    var countdown = 10;
+    var countdownElement = document.getElementById("countdown");
+    countdownElement.innerText = countdown;
+
+    var interval = setInterval(function() {
+        countdown--;
+        countdownElement.innerText = countdown;
+
+        if (countdown <= 0) {
+            clearInterval(interval);
+            countdownElement.innerText = "Time's up!";
+        }
+    }, 1000);
+};

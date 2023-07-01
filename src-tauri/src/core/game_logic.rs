@@ -37,6 +37,9 @@ impl GameContext {
             event_tx
         );
 
+        let ts = get_epoch_ms().expect("No epoch today");
+        self.allow_answer_timestamp.swap(ts, Ordering::Relaxed);
+
         let q_picker_id = match self.get_fastest_click_player_id() {
             Ok(id) => id,
             Err(err) => {
