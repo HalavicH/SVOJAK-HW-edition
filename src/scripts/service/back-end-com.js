@@ -89,6 +89,10 @@ export async function allowAnswer() {
     return await invoke("allow_answer");
 }
 
+export async function finishQuestionPrematurely(topic, price) {
+    return await invoke("finish_question_prematurely", {topic: topic, price: price});
+}
+
 export async function waitForFirstClick() {
     return await invoke("get_fastest_click");
 }

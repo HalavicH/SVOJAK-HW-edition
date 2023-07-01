@@ -80,10 +80,10 @@ impl GameContext {
         self.current.set_active_player_id(0);
         self.update_non_target_player_states();
 
-        if *self.current.game_state() != GameState::QuestionChoosing {
-            return Err(Report::new(GamePackError::QuestionNotPresent)
-                .change_context(GameplayError::PackElementNotPresent));
-        }
+        // if *self.current.game_state() != GameState::QuestionChoosing {
+        //     return Err(Report::new(GamePackError::QuestionNotPresent)
+        //         .change_context(GameplayError::PackElementNotPresent));
+        // }
 
         let (question, question_number) = self
             .get_question(theme, price)
@@ -114,6 +114,25 @@ impl GameContext {
 
         round.questions_left -= 1;
         log::info!("Question left: {}", round.questions_left);
+        Ok(())
+    }
+
+    pub fn finish_question_prematurely(&mut self) -> Result<(), GameplayError> {
+        self.current.answer_allowed = false;
+        self.allow_answer_timestamp.swap(u32::MAX, Ordering::Relaxed);
+
+        self.current.total_tries += 1;
+        self.current.total_wrong_answers += 1;
+
+        let theme = self.current.question_theme.clone();
+        let price = self.current.question_price;
+        log::info!(">>> Trying to remove question from category: {theme}, price: {price}");
+
+        self.update_game_state(GameState::QuestionChoosing);
+        self.update_non_target_player_states();
+
+        self.remove_question(&theme, &price)
+            .change_context(GameplayError::PackElementNotPresent)?;
         Ok(())
     }
 

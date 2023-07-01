@@ -173,5 +173,6 @@ pub fn map_question_to_question_dto(
                 mediaType: a.atom_type.clone(),
             })
             .collect(),
+        answer: question.right_answer.clone(),
     }
 }
