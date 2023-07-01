@@ -39,6 +39,7 @@ lazy_static = "1.4.0"
 
 # Misc
 rand = "0.8"
+home = "0.5.5"
 
 # Infrastructure
 log = "0.4.0"
