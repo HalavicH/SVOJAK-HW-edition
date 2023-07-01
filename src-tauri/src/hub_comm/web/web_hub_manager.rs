@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use std::thread;
+use std::{env, thread};
 use std::thread::{JoinHandle, sleep};
 use std::time::Duration;
 use rgb::RGB8;
@@ -25,6 +25,7 @@ const RETRY_INTERVAL_MS: u64 = 100;
 #[derive(Debug)]
 pub struct WebHubManager {
     pub base_url: Url,
+    pub port: String,
     pub server_handle: Option<JoinHandle<()>>,
     pub client: reqwest::Client,
     pub rt: Runtime,
@@ -32,8 +33,15 @@ pub struct WebHubManager {
 
 impl Default for WebHubManager {
     fn default() -> Self {
+        let port = env::var("ROCKET_PORT").unwrap_or("8888".to_string());
+        let endpoint = format!("http://127.0.0.1:{}/", port);
+        log::info!("###################################");
+        log::info!("Configuring manager to call port {}", port);
+        log::info!("###################################");
+
         let manager = Self {
-            base_url: Url::from_str("http://127.0.0.1:80/").expect("Bad base url"),
+            port,
+            base_url: Url::from_str(&endpoint).expect("Bad base url"),
             server_handle: None,
             client: Default::default(),
             rt: Runtime::new().expect("No runtime - no game :D"),
@@ -78,7 +86,7 @@ impl Drop for WebHubManager {
 #[allow(dead_code, unused_variables)]
 impl HubManager for WebHubManager {
     fn get_hub_address(&self) -> String {
-        get_ipv4_interfaces_ip().join(";")
+        get_ipv4_interfaces_ip(&self.port).join("\n")
     }
 
     fn probe(&mut self, _port: &str) -> Result<HubStatus, HubManagerError> {
@@ -195,7 +203,7 @@ impl HubManager for WebHubManager {
     }
 }
 
-fn get_ipv4_interfaces_ip() -> Vec<String> {
+fn get_ipv4_interfaces_ip(port: &String) -> Vec<String> {
     let network_interfaces = NetworkInterface::show().unwrap();
     let localhost = Ipv4Addr::from_str("127.0.0.1").unwrap();
     let mut ips: Vec<String> = vec![];
@@ -207,7 +215,7 @@ fn get_ipv4_interfaces_ip() -> Vec<String> {
                     Addr::V4(ip) => {
                         if localhost != ip.ip {
                             println!("{:#?}", ip.ip);
-                            ips.push(ip.ip.to_string());
+                            ips.push(format!("Interface: {} --> {}:{}", itf.name, ip.ip.to_string(), port));
                         }
                     }
                     Addr::V6(_) => {}

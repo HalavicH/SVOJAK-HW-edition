@@ -130,6 +130,9 @@ impl GameContext {
             }
         }
     }
+    pub fn drop_hub(&mut self) {
+        self.hub = Arc::new(RwLock::new(Box::new(HwHubManager::default())))
+    }
     pub fn get_hub_ref(&self) -> &Arc<RwLock<Box<dyn HubManager>>> {
         &self.hub
     }
