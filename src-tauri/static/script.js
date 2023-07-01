@@ -106,7 +106,7 @@ async function sendEvent(buttonState) {
 
         if (!response.ok) {
             console.error("Failed to send event");
-            return;
+            throw new Error("Bad bad error. Idk It's 4:30 am");
         }
     } catch (e) {
         console.log("Can't send event");
