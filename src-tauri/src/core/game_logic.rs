@@ -14,6 +14,7 @@ use crate::core::game_entities::{
 };
 
 use crate::game_pack::pack_content_entities::{Question, Round};
+use crate::game_pack::translator::determine_lang;
 use crate::hub_comm::hw::hw_hub_manager::{get_epoch_ms, HubManagerError};
 use crate::hub_comm::hw::internal::api_types::TermButtonState::Pressed;
 use crate::hub_comm::hw::internal::api_types::TermEvent;
@@ -22,6 +23,8 @@ const EVT_POLLING_INTERVAL_MS: u64 = 1000;
 
 impl GameContext {
     pub fn start_the_game(&mut self) -> Result<(), GameplayError> {
+        self.translate_if_ru_pack();
+
         self.update_game_state(GameState::QuestionChoosing);
 
         if self.players.len() < 2 {
@@ -502,6 +505,28 @@ impl GameContext {
                 player.state = PlayerState::Dead;
             }
         });
+    }
+
+    fn translate_if_ru_pack(&mut self) {
+        let ru_tolerance = 1;
+        let mut ru_counter = 0;
+        let translation_language = "uk";
+        let rounds = &self.game_pack.content.rounds;
+
+        for round in rounds {
+            for theme in round.themes.values() {
+                let lang = determine_lang(theme.name.as_str());
+                if lang == "ru" {
+                    ru_counter += 1;
+                }
+            }
+        }
+
+        log::info!("Game translation started. Please wait, it could take some time.");
+        if ru_counter > ru_tolerance {
+            self.game_pack.content.translate(translation_language);
+        }
+        log::info!("Game was translated to {} language.", translation_language);
     }
 }
 

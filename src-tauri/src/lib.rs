@@ -19,6 +19,7 @@ pub mod game_pack {
     mod pack_content_dto;
     pub mod pack_content_entities;
     pub mod pack_content_loader;
+    pub mod translator;
 }
 
 pub mod hub_comm {
