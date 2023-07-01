@@ -303,6 +303,8 @@ async function openWebHubSettingsModal() {
 
     hubIpDiv.innerText = config.hub_port;
     // TODO: Set player polling
+
+    setInterval(queryWebPlayers, 1000)
 }
 
 function closeWebHubSettingsModal() {
@@ -313,4 +315,20 @@ function saveWebHubSettingsModal() {
     processPlayerDataSaving(webPlayerTable);
 
     closeModal(webHubSettingsModal);
+}
+
+function modalIsOpen() {
+    return webHubSettingsModal.style !== "none";
+}
+
+// Start the interval
+let intervalId = undefined;
+
+async function queryWebPlayers() {
+    if (!modalIsOpen()) {
+        console.log("Modal is closed! Clearing the interval");
+        clearInterval(intervalId);
+    } else {
+        await handleDiscoverTerminals(webPlayerTable);
+    }
 }
