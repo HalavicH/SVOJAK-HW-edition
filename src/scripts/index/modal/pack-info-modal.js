@@ -4,6 +4,8 @@ import {getPackInfo, saveRoundDuration, startTheGame} from "../../service/back-e
 const {invoke} = window.__TAURI__.tauri;
 const {open} = window.__TAURI__.dialog;
 
+let countDownModal = document.querySelector("#first-player-modal");
+
 export async function openPackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 
@@ -100,6 +102,10 @@ export async function handleStartTheGame() {
     startTheGame()
         .then(() => {
             window.location.href = "./gameplay.html";
+        })
+        .catch(err => {
+            console.log("Error during gamestar");
+            closeModal(countDownModal);
         });
 }
 
@@ -118,8 +124,7 @@ export async function closePackErrorModal() {
 }
 
 function countdown() {
-    let element = document.querySelector("#first-player-modal");
-    openModal(element);
+    openModal(countDownModal);
 
     var countdown = 10;
     var countdownElement = document.getElementById("countdown");
