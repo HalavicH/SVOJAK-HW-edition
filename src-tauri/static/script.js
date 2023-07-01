@@ -1,6 +1,7 @@
 // Views
 let registerView = document.querySelector('#register');
-let waitGameView = document.querySelector('#wait-for-game');
+let collisionView = document.querySelector('#collision');
+let unauthorizedView = document.querySelector('#unauthorized');
 let gameView = document.querySelector('#content');
 
 // Buttons
@@ -11,7 +12,7 @@ let answerButton = document.querySelector('#answer');
 let playerNameInput = document.querySelector('#name');
 
 // Info
-let baseTimestampDiv = document.querySelector('#base-timestamp');
+let ipDiv = document.querySelector('#ip-address');
 let playerIdDiv = document.querySelector('#player-id');
 let playerNameDiv = document.querySelector('#player-name');
 let playerStatusDiv = document.querySelector('#player-status');
@@ -19,6 +20,7 @@ let playerStatusDiv = document.querySelector('#player-status');
 STATE = {
     playerId: undefined,
     baseTimestamp: undefined,
+    ip: undefined,
 }
 
 async function registerPlayer() {
@@ -28,61 +30,90 @@ async function registerPlayer() {
         console.log("Empty input");
         return;
     }
-
     console.log("Name: " + playerName);
 
-    let body = JSON.stringify({
-        id: 0,
-        name: playerName,
-        ip: "0.0.0.0",
+    const responseIp = await fetch("/ip-loopback", {
+        method: "GET"
     });
-    const response = await fetch("/register", {
+
+    if (!responseIp.ok) {
+        console.log("Can't receive IP");
+        return;
+    }
+    const ipObj = await responseIp.json();
+    const ipAddr = ipObj.ip;
+
+    let body = JSON.stringify({
+        id: 0, name: playerName, ip: ipAddr,
+    });
+
+    let params = {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: body,
-    });
-    if (response.ok) {
-        const {playerId, baseTimestamp} = await response.json();
-        // Store the playerId and baseTimestamp in your application as needed
-        STATE.playerId = playerId;
-        STATE.baseTimestamp = baseTimestamp;
+    };
 
-        console.log("Player state: " + STATE);
+    let response = undefined;
+    try {
+        response = await fetch("/register", params)
+        if (!response.ok) {
+            console.error("Failed to register player");
+            throw Error("Conflict");
+        }
 
-        baseTimestampDiv.innerText = baseTimestamp;
-        playerIdDiv.innerText = playerId;
-        playerNameDiv.innerText = playerName;
-
-        // Disable the register screen and enable the content screen
+    } catch (e) {
         registerView.style.display = "none";
-        gameView.style.display = "flex";
-    } else {
-        console.error("Failed to register player");
+        collisionView.style.display = 'flex';
     }
+
+    const {playerId, baseTimestamp} = await response.json();
+
+    // Store the playerId and baseTimestamp in your application as needed
+    STATE.playerId = playerId;
+    STATE.baseTimestamp = baseTimestamp;
+    STATE.ip = ipAddr;
+
+    console.log("Player state: " + STATE);
+
+    ipDiv.innerText = ipAddr + " |";
+    playerIdDiv.innerText = playerId + " |";
+    playerNameDiv.innerText = playerName;
+
+    // Disable the register screen and enable the content screen
+    registerView.style.display = "none";
+    gameView.style.display = "flex";
 }
 
 async function sendEvent(buttonState) {
-    const playerId = STATE.playerId; // Replace with the actual playerId
     const eventData = {
-        id: playerId,
+        id: STATE.playerId,
+        ip: STATE.ip,
         state: buttonState,
         timestamp: STATE.baseTimestamp,
     };
 
-    const response = await fetch("/event", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(eventData),
-    });
+    let response = undefined;
+    try {
+        response = await fetch("/event", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(eventData),
+        });
 
-    if (!response.ok) {
-        console.error("Failed to send event");
-        return;
+        if (!response.ok) {
+            console.error("Failed to send event");
+            return;
+        }
+    } catch (e) {
+        console.log("Can't send event");
+        gameView.style.display = "none";
+        unauthorizedView.style.display = 'flex';
     }
+
 
     response.json()
         .then(value => {
@@ -94,7 +125,8 @@ async function sendEvent(buttonState) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    waitGameView.style.display = 'none';
+    collisionView.style.display = 'none';
+    unauthorizedView.style.display = 'none';
     gameView.style.display = 'none';
 
     submitPlayer.addEventListener("click", registerPlayer);

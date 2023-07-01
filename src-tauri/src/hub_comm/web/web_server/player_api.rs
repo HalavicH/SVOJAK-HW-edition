@@ -1,34 +1,55 @@
 #![allow(unused)]
 
-use rocket::{routes, post};
+use rocket::{routes, post, get};
 use rocket::serde::json::{Json, Value};
 use rocket::fairing::AdHoc;
+use rocket::http::Status;
 use rocket::serde::json::serde_json::json;
+use rocket_client_addr::ClientAddr;
 use crate::hub_comm::hw::hw_hub_manager::get_epoch_ms;
 use crate::hub_comm::web::web_server::server::{Persistence, PlayerEvent, PlayerIdentityDto};
 
-#[post("/register", data = "<name>")]
-fn register_player(name: Json<PlayerIdentityDto>, state: Persistence) -> Value {
-    log::info!("Got new? player: {:?}", name);
+#[get("/ip-loopback")]
+fn ip_loopback(addr: ClientAddr) -> Value {
+    log::info!("Got request from ip: {:?}", addr);
+
+    json!({"ip": addr.ip})
+}
+
+#[post("/register", data = "<player>")]
+fn register_player(player: Json<PlayerIdentityDto>, state: Persistence) -> Result<Value, Status> {
+    log::info!("Got player registration attempt: {:?}", player);
 
     let mut guard = state.lock().expect("Poisoned");
-    // if guard.has_ip(&player.ip) {
-    //     log::info!("Ip collision. Skip for now :D");
-    // }
+    if guard.is_known_ip(&player.ip) {
+        log::info!("Ip collision. Skip for now :D");
+        return Err(Status::Conflict);
+    }
 
-    let id = guard.add_player(&name.name);
+    let id = guard.add_player(player.0);
 
-    json!({
+    Ok(json!({
         "playerId": id,
         "baseTimestamp": guard.base_timestamp,
-    })
+    }))
 }
 
 #[post("/event", format = "application/json", data = "<event>")]
-fn process_event(event: Json<PlayerEvent>, state: Persistence) -> Value {
+fn process_event(event: Json<PlayerEvent>, state: Persistence) -> Result<Value, Status> {
     log::info!("Received event {:?}", event);
 
     let mut guard = state.lock().expect("Poisoned");
+
+    if !guard.is_known_ip(&event.ip) {
+        log::warn!("Not known IP: {}", event.ip);
+        return Err(Status::Unauthorized);
+    }
+
+    if  guard.players.get(&event.id).is_none() {
+        log::warn!("Not known Id: {}", event.id);
+        return Err(Status::Unauthorized);
+    }
+
     // TODO: Move to the gameplay
     let color = if event.state == true {
         "#00FFFF"
@@ -36,16 +57,11 @@ fn process_event(event: Json<PlayerEvent>, state: Persistence) -> Value {
         "#000000"
     };
 
-    let e = PlayerEvent {
-        id: event.id,
-        timestamp: get_epoch_ms().expect("Can't get epoch"),
-        state: event.state,
-    };
+    let mut event = event.0;
+    event.timestamp = get_epoch_ms().expect("Failed to get epoch");
+    guard.push_event(event);
 
-    // TODO: Add check for player existense
-    guard.push_event(e);
-
-    json!({"color": color})
+    Ok(json!({"color": color}))
 }
 
 pub fn setup() -> AdHoc {
@@ -53,7 +69,8 @@ pub fn setup() -> AdHoc {
         rocket
             .mount("/", routes![
                 register_player,
-                process_event
+                process_event,
+                ip_loopback
             ])
     })
 }
