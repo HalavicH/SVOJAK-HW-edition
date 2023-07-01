@@ -99,6 +99,7 @@ pub struct QuestionDataDto {
     pub price: i32,
     pub questionType: QuestionType,
     pub scenario: Vec<QuestionSceneDto>,
+    pub answer: String,
 }
 
 #[derive(Debug, Serialize)]

@@ -426,7 +426,8 @@ body {
     border-radius: 10px;
 
     font-size: 1.5rem;
-    background-color: #4d4d4d;
+    background-color: var(--items-block-border-color);
+    /*background-color: #4d4d4d;*/
 }
 
 #exit-dialog-text {

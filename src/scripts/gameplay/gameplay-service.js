@@ -2,7 +2,7 @@ const {convertFileSrc} = window.__TAURI__.tauri;
 
 import {
     allowAnswer,
-    answerQuestion,
+    answerQuestion, finishQuestionPrematurely,
     getActivePlayerId,
     getQuestionData,
     hasNextQuestion,
@@ -13,6 +13,13 @@ import {processPipPlayers} from "./modal/pig-in-poke-modal.js";
 import {processAuctionPlayers} from "./modal/auction-modal.js";
 import {showRoundStats} from "./modal/round-stats-modal.js";
 import {displayPlayers} from "./setup.js";
+
+let qCtx = {
+    price: undefined,
+    category: undefined,
+    answer: undefined,
+    slider: undefined
+}
 
 export async function processQuestionSelection(event) {
     const question = event.target;
@@ -35,6 +42,7 @@ function placeQuestionContent(question) {
     document.querySelector("#question-number").innerText = "Question: " + question.number;
     document.querySelector("#question-category").innerText = "Category: " + question.category;
     document.querySelector("#question-price").innerText = "Price: " + question.price;
+    document.querySelector("#question-price").innerText = "Answer: " + question.answer;
 
     const questionViewport = document.querySelector("#question-slider");
     if (questionViewport.currentSlider !== undefined) {
@@ -42,15 +50,17 @@ function placeQuestionContent(question) {
     }
     questionViewport.innerHTML = "";
 
-    const slider = new Slider(question.scenario, questionViewport);
+    const slider = new Slider(question.scenario, questionViewport, question.answer);
     questionViewport.currentSlider = slider;
     slider.init();
+    qCtx.slider = slider;
 }
 
 class Slider {
-    constructor(scenario, questionViewport) {
+    constructor(scenario, questionViewport, answer) {
         this.scenario = scenario;
         this.questionViewport = questionViewport;
+        this.answer = answer;
         this.currentIndex = 0;
         this.currentSlide = null;
     }
@@ -73,6 +83,26 @@ class Slider {
             prevButton.style.display = "unset";
             nextButton.style.display = "unset";
         }
+    }
+
+    showAnswer() {
+        this.questionViewport.innerHTML = "";
+
+        const text = document.createElement("p");
+        text.innerText = this.answer;
+        text.className = "question-text";
+
+        let colDiv = document.createElement("div");
+        colDiv.style.display = "flex";
+        colDiv.style.flexDirection = "column";
+        colDiv.style.justifyContent = "center";
+        colDiv.style.alignItems = "center";
+        this.questionViewport.appendChild(colDiv);
+        colDiv.appendChild(text);
+        let toRound = document.createElement("button");
+        toRound.addEventListener("click", displayRoundScreen);
+        toRound.innerText = "Go to round screen";
+        colDiv.appendChild(toRound);
     }
 
     destroy() {
@@ -210,6 +240,10 @@ export async function processQuestionDisplay(topic, price) {
         question.scenario[0].content
     );
 
+    qCtx.price = question.price;
+    qCtx.category = question.category;
+    qCtx.answer = question.answer;
+
     await setAnswerButtonsAccordingToQuestionType();
 
     placeQuestionContent(question);
@@ -316,4 +350,21 @@ export async function setActivePlayerBadgeState(state) {
 export function updatePlayers() {
     console.log("Updating players view");
     displayPlayers();
+}
+
+function showAnswerModal() {
+    qCtx.slider.showAnswer()
+}
+
+export async function processShowAnswer() {
+    finishQuestionPrematurely()
+        .then(() => {
+            console.log("Answer: " + qCtx.answer);
+            showAnswerModal()
+        })
+        .catch((err) => {
+            console.error("Can't finish question: " + err);
+            showAnswerModal()
+            // displayRoundScreen();
+        })
 }

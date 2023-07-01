@@ -1,6 +1,7 @@
 html {
     box-sizing: border-box;
     touch-action: manipulation;
+    background-color: var(--background-color);
 }
 
 p {
@@ -8,6 +9,7 @@ p {
 }
 
 body {
+    background-color: var(--background-color);
     overflow: hidden;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -56,7 +58,7 @@ input {
     color: var(--text-color);
     background-color: #c5cef5;
     transition: border-color 0.25s, filter 0.5s;
-    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1em 1em rgba(0, 0, 0, 0.2);
     will-change: filter;
     cursor: pointer;
     outline: 0;
@@ -82,10 +84,10 @@ input::placeholder {
 /*    filter: drop-shadow(0 0 0.5em #24c8db);*/
 /*}*/
 
-button:active {
-    border-color: #396cd8;
-    background-color: var(--primary-button-active-color);
-}
+/*button:active {*/
+/*    border-color: #396cd8;*/
+/*    background-color: var(--primary-button-active-color);*/
+/*}*/
 
 img {
     max-width: 100%;
