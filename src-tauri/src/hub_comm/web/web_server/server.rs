@@ -51,7 +51,14 @@ impl ServerState {
             .count() > 0
     }
 
-    pub fn add_player(&mut self, mut player: PlayerIdentityDto) -> PlayerId {
+    pub fn add_player(&mut self, mut player: PlayerIdentityDto) -> PlayerIdentityDto {
+        let id = (self.players.len() + 1) as PlayerId;
+        player.id = id;
+        self.players.insert(id, player.clone());
+        player
+    }
+
+    pub fn update_player(&mut self, mut player: PlayerIdentityDto) -> PlayerId {
         let id = (self.players.len() + 1) as PlayerId;
         player.id = id;
         self.players.insert(id, player);
@@ -60,6 +67,19 @@ impl ServerState {
 
     pub fn push_event(&mut self, event: PlayerEvent) {
         self.events.push(event);
+    }
+
+    pub fn get_by_ip(&self, ip: &String) -> Option<PlayerIdentityDto> {
+        let players: Vec<PlayerIdentityDto> = self.players.values()
+            .filter(|&p| p.ip == *ip)
+            .map(|p| p.clone())
+            .collect();
+
+        if players.is_empty() {
+            return None;
+        }
+
+        return Some(players[0].clone());
     }
 }
 
