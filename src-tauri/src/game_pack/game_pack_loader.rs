@@ -3,9 +3,10 @@ use crate::game_pack::pack_content_loader::load_pack_content;
 use error_stack::{IntoReport, Report, Result, ResultExt};
 use serde::Serialize;
 use std::error::Error;
-use std::path::Path;
+use std::path::{Path};
 use std::sync::Arc;
-use std::{fmt, fs, io};
+use std::{fmt, fs};
+use std::fs::create_dir_all;
 use tempfile::TempDir;
 use unic_normal::StrNormalForm;
 use urlencoding::decode;
@@ -163,10 +164,19 @@ fn validate_pack_path(game_archive_path: &str) -> Result<(), GamePackLoadingErro
     Ok(())
 }
 
-fn create_temp_directory() -> Result<Arc<TempDir>, io::Error> {
-    let tmp_dir = TempDir::new()?;
-    let temp_dir = Arc::new(tmp_dir);
+fn create_temp_directory() -> Result<Arc<TempDir>, GamePackLoadingError> {
+    let home_dir_path = home::home_dir().expect("Get home dir");
 
+    let svojak_path = home_dir_path.join(".svojak");
+    create_dir_all(&svojak_path).into_report()
+        .change_context(GamePackLoadingError::InternalError)
+        .attach_printable(format!("Can't create svojak base dir dir: {:?}", svojak_path))?;
+
+    let tmp_dir = TempDir::new_in(svojak_path.clone()).into_report()
+        .change_context(GamePackLoadingError::InternalError)
+        .attach_printable(format!("Can't create temporary dir in {:?}", svojak_path))?;
+
+    let temp_dir = Arc::new(tmp_dir);
     Ok(temp_dir)
 }
 
