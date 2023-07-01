@@ -7,7 +7,7 @@ use rocket::http::Status;
 use rocket::serde::json::serde_json::json;
 use rocket_client_addr::ClientAddr;
 use crate::hub_comm::hw::hw_hub_manager::get_epoch_ms;
-use crate::hub_comm::web::web_server::server::{Persistence, PlayerEvent, PlayerIdentityDto};
+use crate::hub_comm::web::web_server::server::{Persistence, PlayerEvent, PlayerId, PlayerIdentityDto};
 
 #[get("/ip-loopback")]
 fn ip_loopback(addr: ClientAddr) -> Value {
@@ -17,21 +17,18 @@ fn ip_loopback(addr: ClientAddr) -> Value {
 }
 
 #[post("/register", data = "<player>")]
-fn register_player(player: Json<PlayerIdentityDto>, state: Persistence) -> Result<Value, Status> {
+fn register_player(player: Json<PlayerIdentityDto>, state: Persistence) -> Result<Json<PlayerIdentityDto>, Status> {
     log::info!("Got player registration attempt: {:?}", player);
 
     let mut guard = state.lock().expect("Poisoned");
-    if guard.is_known_ip(&player.ip) {
-        log::info!("Ip collision. Skip for now :D");
-        return Err(Status::Conflict);
-    }
+    let player: PlayerIdentityDto = if guard.is_known_ip(&player.ip) {
+        log::info!("Ip collision. Retrieving old");
+        guard.get_by_ip(&player.ip).expect("Expected to be present")
+    } else {
+        guard.add_player(player.0)
+    };
 
-    let id = guard.add_player(player.0);
-
-    Ok(json!({
-        "playerId": id,
-        "baseTimestamp": guard.base_timestamp,
-    }))
+    Ok(Json::from(player))
 }
 
 #[post("/event", format = "application/json", data = "<event>")]
