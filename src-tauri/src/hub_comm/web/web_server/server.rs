@@ -15,6 +15,7 @@ pub type PlayerId = u8;
 #[serde(crate = "rocket::serde")]
 pub struct PlayerEvent {
     pub id: PlayerId,
+    pub ip: String,
     pub timestamp: u32,
     pub state: bool,
 }
@@ -44,29 +45,19 @@ impl ServerState {
             .count();
         players_with_such_name > 0
     }
-    pub fn has_ip(&self, _ip: &String) -> bool {
-        false
+    pub fn is_known_ip(&self, ip: &String) -> bool {
+        self.players.values()
+            .filter(|&p| p.ip == *ip)
+            .count() > 0
     }
-    // pub fn add_player(&mut self, player: &Player) -> PlayerId {
-    //     let id = self.players.len() as PlayerId;
-    //     let p = Player {
-    //         id,
-    //         name: player.name.clone(),
-    //         ip: player.ip.clone(),
-    //     };
-    //     self.players.insert(id, p);
-    //     id
-    // }
-    pub fn add_player(&mut self, name: &String) -> PlayerId {
+
+    pub fn add_player(&mut self, mut player: PlayerIdentityDto) -> PlayerId {
         let id = (self.players.len() + 1) as PlayerId;
-        let p = PlayerIdentityDto {
-            id,
-            name: name.clone(),
-            ip: "0.0.0.0".to_string(),
-        };
-        self.players.insert(id, p);
+        player.id = id;
+        self.players.insert(id, player);
         id
     }
+
     pub fn push_event(&mut self, event: PlayerEvent) {
         self.events.push(event);
     }
