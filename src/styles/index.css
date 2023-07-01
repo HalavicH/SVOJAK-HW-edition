@@ -52,3 +52,13 @@
     max-width: 100%;
     overflow-x: auto;
 }
+
+#countdown-holder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.first-title {
+    text-align: center;
+}

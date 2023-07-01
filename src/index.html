@@ -9,6 +9,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata&display=swap" rel="stylesheet">
+    <style>
+        .circle {
+            width: 200px;
+            height: 200px;
+            background-color: #e9e9e9;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #countdown {
+            font-size: 24px;
+            color: #333;
+        }
+    </style>
 </head>
 
 <body>
@@ -225,6 +241,23 @@
 
         <div class="action-block">
             <button id="start-the-game" type="button">Start the game</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pack-error window -->
+<div class="modal" id="first-player-modal">
+    <div class="modal-content">
+        <h1 class="modal-name">Race!</h1>
+        <h2 class="modal-name">Press button to select first!</h2>
+
+        <div class="items-block">
+            <p class="first-title">Time left</p>
+            <div id="countdown-holder">
+                <div class="circle">
+                    <div id="countdown"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
