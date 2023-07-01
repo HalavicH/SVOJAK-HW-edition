@@ -3,6 +3,7 @@ use serialport::SerialPort;
 use std::thread::JoinHandle;
 
 use crate::hub_comm::hw::hw_hub_manager::HubManagerError;
+#[cfg(unix)]
 use crate::hub_comm::hw::virtual_hw_hub::hub_mock::run_hub_mock;
 
 #[cfg(unix)]
