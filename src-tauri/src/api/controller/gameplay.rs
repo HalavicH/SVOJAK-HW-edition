@@ -61,6 +61,14 @@ pub fn has_next_question() -> bool {
 }
 
 #[command]
+pub fn finish_question_prematurely() -> Result<(), GameplayError> {
+    game().finish_question_prematurely().map_err(|e|{
+        log::error!("Operation failed: {:?}", e);
+        e.current_context().clone()
+    })
+}
+
+#[command]
 pub fn init_next_round() {
     game().init_next_round();
 }

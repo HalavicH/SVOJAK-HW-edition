@@ -5,7 +5,7 @@ import {
     processCorrectAnswer,
     processWrongAnswer,
     processQuestionSelection,
-    allowAnswerHandler
+    allowAnswerHandler, processShowAnswer
 } from "./gameplay-service.js";
 import {nextRoundHandler} from "./modal/round-stats-modal.js";
 
@@ -36,6 +36,10 @@ function addButtonEventListeners() {
     document
         .querySelector("#wrong-answer-btn")
         .addEventListener("click", processWrongAnswer);
+
+    document
+        .querySelector("#show-answer-btn")
+        .addEventListener("click", processShowAnswer);
 
     document
         .querySelector("#allow-answer-btn")

@@ -1,5 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use svoyak_tauri_app::api::controller::gameplay::*;
 use svoyak_tauri_app::api::controller::startup::hub::*;
 use svoyak_tauri_app::api::controller::startup::hw_hub::*;
@@ -37,6 +38,7 @@ fn main() {
             get_fastest_click,
             answer_question,
             has_next_question,
+            finish_question_prematurely,
             init_next_round,
             send_pip_victim,
             get_active_player_id,
