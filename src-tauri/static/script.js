@@ -19,7 +19,7 @@ let playerStatusDiv = document.querySelector('#player-status');
 
 STATE = {
     playerId: undefined,
-    baseTimestamp: undefined,
+    name: undefined,
     ip: undefined,
 }
 
@@ -68,18 +68,18 @@ async function registerPlayer() {
         collisionView.style.display = 'flex';
     }
 
-    const {playerId, baseTimestamp} = await response.json();
+    const {id, name, ip} = await response.json();
 
     // Store the playerId and baseTimestamp in your application as needed
-    STATE.playerId = playerId;
-    STATE.baseTimestamp = baseTimestamp;
-    STATE.ip = ipAddr;
+    STATE.playerId = id;
+    STATE.name = name;
+    STATE.ip = ip;
 
     console.log("Player state: " + STATE);
 
     ipDiv.innerText = ipAddr + " |";
-    playerIdDiv.innerText = playerId + " |";
-    playerNameDiv.innerText = playerName;
+    playerIdDiv.innerText = id + " |";
+    playerNameDiv.innerText = name;
 
     // Disable the register screen and enable the content screen
     registerView.style.display = "none";
@@ -91,7 +91,7 @@ async function sendEvent(buttonState) {
         id: STATE.playerId,
         ip: STATE.ip,
         state: buttonState,
-        timestamp: STATE.baseTimestamp,
+        timestamp: 0,
     };
 
     let response = undefined;
