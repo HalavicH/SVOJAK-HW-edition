@@ -84,12 +84,14 @@ pub enum GamePackError {
     QuestionNotPresent,
 }
 
+type HubManagerHandle = Arc<RwLock<Box<dyn HubManager>>>;
+
 #[derive(Debug)]
 pub struct GameContext {
     pub players: HashMap<u8, Player>,
     pub game_pack: GamePack,
     pub hub_type: HubType,
-    hub: Arc<RwLock<Box<dyn HubManager>>>,
+    hub: HubManagerHandle,
     pub current: CurrentContext,
     pub event_queue: Option<Receiver<TermEvent>>,
     pub allow_answer_timestamp: Arc<AtomicU32>,

@@ -66,7 +66,7 @@ impl Drop for WebHubManager {
         if let Some(handle) = self.server_handle.take() {
             let result = self.rt.block_on(async {
                 self.client
-                    .get(self.base_url.join(SHUTDOWN).expect("Bad URL join"))
+                    .post("localhost:8888/shout")
                     .send().await
             }).into_report().change_context(HubManagerError::HttpCommunicationError);
 
@@ -78,7 +78,6 @@ impl Drop for WebHubManager {
                     log::error!("Ну.. Прес F. Хз що робити. Err {:?}", err);
                 }
             }
-
         }
     }
 }

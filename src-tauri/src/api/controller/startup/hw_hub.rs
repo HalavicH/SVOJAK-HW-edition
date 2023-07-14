@@ -61,8 +61,8 @@ pub fn send_hub_command(request: HubRequestDto) -> Result<HubResponseDto, HubMan
     let result = process_hub_command(&mut hub_guard, request_enum)
         .map_err(|e| {
             log::error!("{:?}",e);
-            e.current_context().clone() })?;
-
+            e.current_context().clone()
+        })?;
     let dto = HubResponseDto {
         request_frame: "Watch logs (DEBUG)".to_string(),
         response_frame: "Watch logs (DEBUG)".to_string(),
