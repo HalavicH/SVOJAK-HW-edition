@@ -27,6 +27,16 @@ impl From<RGB8> for Rgb8Dto {
     }
 }
 
+impl From<bool> for Rgb8Dto {
+    fn from(value: bool) -> Self {
+        Rgb8Dto {
+            r: 0,
+            g: 0,
+            b: 0,
+        }
+    }
+}
+
 impl Rgb8Dto {
     pub fn into_rgb8(&self) -> RGB8 {
         RGB8 {
@@ -130,7 +140,7 @@ fn take_event_queue(state: Persistence) -> Json<Vec<TermEvent>> {
     Json::from(term_events)
 }
 
-#[get("/shutdown")]
+#[post("/shutdown")]
 fn shutdown(shutdown: Shutdown) -> &'static str {
     shutdown.notify();
     "Shutting down..."
