@@ -1,20 +1,34 @@
-import {openModal, closeModal} from "../../service/modal-common.js";
-import {getPackInfo, saveRoundDuration, startTheGame} from "../../service/back-end-com.js";
+import { openModal, closeModal } from "../../service/modal-common.js";
+import { getPackInfo, saveRoundDuration, startTheGame } from "../../service/back-end-com.js";
 
-const {invoke} = window.__TAURI__.tauri;
-const {open} = window.__TAURI__.dialog;
+const { invoke } = window.__TAURI__.tauri;
+const { open } = window.__TAURI__.dialog;
 
 let countDownModal = document.querySelector("#first-player-modal");
+
+export function setupPackInfoCallbacks() {
+    document.querySelector("#open-pack").addEventListener("click", openPackInfoModal);
+
+    document.querySelector("#close-pack-info-modal").addEventListener("click", closePackInfoModal);
+
+    document.querySelector("#start-the-game").addEventListener("click", handleStartTheGame);
+
+    document.querySelector("#pack-error-ok-btn").addEventListener("click", closePackErrorModal);
+
+    document.querySelector("#pack-error-close-modal").addEventListener("click", closePackErrorModal);
+}
 
 export async function openPackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 
     const filePath = await open({
         multiple: false,
-        filters: [{
-            name: 'Select game package',
-            extensions: ['siq']
-        }]
+        filters: [
+            {
+                name: "Select game package",
+                extensions: ["siq"],
+            },
+        ],
     });
 
     if (filePath === null) {
@@ -85,25 +99,23 @@ export function closePackInfoModal() {
 }
 
 export async function handleStartTheGame() {
-    const roundDurationOptions = document
-        .querySelector("#round-duration")
-        .querySelectorAll("option");
+    const roundDurationOptions = document.querySelector("#round-duration").querySelectorAll("option");
 
     let duration = 0;
     roundDurationOptions.forEach((option) => {
         if (option.selected) {
-            duration = parseInt(option.value)
+            duration = parseInt(option.value);
         }
     });
 
     saveRoundDuration(duration);
 
-    countdown()
+    countdown();
     startTheGame()
         .then(() => {
             window.location.href = "./gameplay.html";
         })
-        .catch(err => {
+        .catch((err) => {
             console.log("Error during gamestar");
             closeModal(countDownModal);
         });
@@ -130,7 +142,7 @@ function countdown() {
     var countdownElement = document.getElementById("countdown");
     countdownElement.innerText = countdown;
 
-    var interval = setInterval(function() {
+    var interval = setInterval(function () {
         countdown--;
         countdownElement.innerText = countdown;
 
@@ -139,4 +151,4 @@ function countdown() {
             countdownElement.innerText = "Time's up!";
         }
     }, 1000);
-};
+}
