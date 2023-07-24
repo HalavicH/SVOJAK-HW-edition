@@ -1,105 +1,101 @@
-import {openModal, closeModal} from "../../service/modal-common.js";
-import {getSettingsConfig} from "../../service/back-end-com.js";
+import { openModal, closeModal } from "../../service/modal-common.js";
+import { getSettingsConfig } from "../../service/back-end-com.js";
 
-const {invoke} = window.__TAURI__.tauri;
-const {open} = window.__TAURI__.dialog;
+const { invoke } = window.__TAURI__.tauri;
+const { open } = window.__TAURI__.dialog;
+
+const REFS = {
+    openHubDebug: document.querySelector("#open-hub-debug"),
+    closeHubDebugModal: document.querySelector("#close-hub-debug-modal"),
+    sendRequestBtn: document.querySelector("#send-request-btn"),
+    devSerialPortMenu: document.querySelector("#dev-serial-port-menu"),
+    devHubCommandMenu: document.querySelector("#dev-hub-command-menu"),
+    sendComandBtn: document.querySelector("#send-command-btn"),
+    parameter1Input: document.querySelector("#request-parameter-1"),
+    parameter2Input: document.querySelector("#request-parameter-2"),
+    requestFrame: document.querySelector("#request-frame"),
+    responseFrame: document.querySelector("#response-frame"),
+    responseObject: document.querySelector("#response-object"),
+    modal: document.querySelector("#hub-debug-modal"),
+    portStatusElement: document.querySelector("#port-status-field"),
+    requestStatusValue: document.querySelector("#request-status-value"),
+    commandStatusValue: document.querySelector("#command-status-value"),
+    requestFromInput: document.querySelector("#request-from-input"),
+    responseContentValue: document.querySelector("#response-content-value"),
+};
 
 export function setupHubDebugCallbacks() {
-    document
-        .querySelector("#open-hub-debug")
-        .addEventListener("click", openHubDebugModal);
-
-    document
-        .querySelector("#close-hub-debug-modal")
-        .addEventListener("click", closeHubDebugModal);
-
-    document
-        .querySelector("#send-request-btn")
-        .addEventListener("click", sendRawHubRequest);
-
-    document
-        .querySelector("#dev-serial-port-menu")
-        .addEventListener("change", serialPortSelectHandler);
-
-    document
-        .querySelector("#dev-hub-command-menu")
-        .addEventListener("change", onCommandMenuChange);
-
-    document.querySelector("#send-command-btn")
-        .addEventListener("click", createRequest);
-
+    REFS.openHubDebug.addEventListener("click", openHubDebugModal);
+    REFS.closeHubDebugModal.addEventListener("click", closeHubDebugModal);
+    REFS.sendRequestBtn.addEventListener("click", sendRawHubRequest);
+    REFS.devSerialPortMenu.addEventListener("change", serialPortSelectHandler);
+    REFS.devHubCommandMenu.addEventListener("change", onCommandMenuChange);
+    REFS.sendComandBtn.addEventListener("click", createRequest);
 }
 
 function onCommandMenuChange() {
-    const commandMenu = document.querySelector("#dev-hub-command-menu");
-    const parameter1Input = document.querySelector("#request-parameter-1");
-    const parameter2Input = document.querySelector("#request-parameter-2");
     // Get the selected option value
-    const selectedOption = commandMenu.value;
+    const selectedOption = REFS.devHubCommandMenu.value;
 
     setUndefinedCommandStatus();
     // Perform actions based on the selected option
     switch (selectedOption) {
         case "set_timestamp":
-            parameter1Input.style.visibility = "visible";
-            parameter2Input.style.visibility = "hidden";
-            parameter1Input.placeholder = "Timestamp (0xDEADBEEF)";
+            REFS.parameter1Input.style.visibility = "visible";
+            REFS.parameter2Input.style.visibility = "hidden";
+            REFS.parameter1Input.placeholder = "Timestamp (0xDEADBEEF)";
             break;
         case "get_timestamp":
-            parameter1Input.style.visibility = "hidden";
-            parameter2Input.style.visibility = "hidden";
+            REFS.parameter1Input.style.visibility = "hidden";
+            REFS.parameter2Input.style.visibility = "hidden";
             break;
         case "set_hub_radio_channel":
-            parameter1Input.style.visibility = "visible";
-            parameter2Input.style.visibility = "hidden";
-            parameter1Input.placeholder = "Channel (0x06)";
+            REFS.parameter1Input.style.visibility = "visible";
+            REFS.parameter2Input.style.visibility = "hidden";
+            REFS.parameter1Input.placeholder = "Channel (0x06)";
             break;
         case "set_term_radio_channel":
-            parameter1Input.style.visibility = "visible";
-            parameter2Input.style.visibility = "visible";
+            REFS.parameter1Input.style.visibility = "visible";
+            REFS.parameter2Input.style.visibility = "visible";
 
-            parameter1Input.placeholder = "Term ID (0x06)";
-            parameter2Input.placeholder = "Channel (0x06)";
+            REFS.parameter1Input.placeholder = "Term ID (0x06)";
+            REFS.parameter2Input.placeholder = "Channel (0x06)";
             break;
         case "ping_device":
-            parameter1Input.style.visibility = "visible";
-            parameter2Input.style.visibility = "hidden";
-            parameter1Input.placeholder = "Term ID (0x06)";
+            REFS.parameter1Input.style.visibility = "visible";
+            REFS.parameter2Input.style.visibility = "hidden";
+            REFS.parameter1Input.placeholder = "Term ID (0x06)";
             break;
         case "set_light_color":
-            parameter1Input.style.visibility = "visible";
-            parameter2Input.style.visibility = "visible";
-            parameter1Input.placeholder = "Term ID (0x06)";
-            parameter2Input.placeholder = "Color RGB (0xFFAABB)";
+            REFS.parameter1Input.style.visibility = "visible";
+            REFS.parameter2Input.style.visibility = "visible";
+            REFS.parameter1Input.placeholder = "Term ID (0x06)";
+            REFS.parameter2Input.placeholder = "Color RGB (0xFFAABB)";
             break;
         case "set_feedback_led":
-            parameter1Input.style.visibility = "visible";
-            parameter2Input.style.visibility = "visible";
-            parameter1Input.placeholder = "Term ID (0x06)";
-            parameter2Input.placeholder = "State (0x1/0x0)";
+            REFS.parameter1Input.style.visibility = "visible";
+            REFS.parameter2Input.style.visibility = "visible";
+            REFS.parameter1Input.placeholder = "Term ID (0x06)";
+            REFS.parameter2Input.placeholder = "State (0x1/0x0)";
             break;
         case "read_event_queue":
-            parameter1Input.style.visibility = "hidden";
-            parameter2Input.style.visibility = "hidden";
+            REFS.parameter1Input.style.visibility = "hidden";
+            REFS.parameter2Input.style.visibility = "hidden";
             break;
         default:
-            parameter1Input.style.visibility = "hidden";
-            parameter2Input.style.visibility = "hidden";
+            REFS.parameter1Input.style.visibility = "hidden";
+            REFS.parameter2Input.style.visibility = "hidden";
             break;
     }
 }
 
 function createRequest() {
-    const commandMenu = document.querySelector("#dev-hub-command-menu");
-    const parameter1Input = document.querySelector("#request-parameter-1");
-    const parameter2Input = document.querySelector("#request-parameter-2");
-
     // Get the selected option value and parameter values
-    const selectedOption = commandMenu.value;
-    const param1Hex = parameter1Input.value.trim();
-    const param2Hex = parameter2Input.value.trim();
+    const selectedOption = REFS.devHubCommandMenu.value;
+    const param1Hex = REFS.parameter1Input.value.trim();
+    const param2Hex = REFS.parameter2Input.value.trim();
 
-    const shouldHaveParameters = (selectedOption !== "get_timestamp") && (selectedOption !== "read_event_queue");
+    const shouldHaveParameters = selectedOption !== "get_timestamp" && selectedOption !== "read_event_queue";
     if (shouldHaveParameters && param1Hex === "" && param2Hex === "") {
         console.log("No input. Do nothing");
         return;
@@ -263,29 +259,24 @@ function createRequest() {
 
     // Perform further actions with the request object
     console.log(request); // Example: Log the request object to the console
-    invoke("send_hub_command", {request: request})
-        .then(response => {
+    invoke("send_hub_command", { request: request })
+        .then((response) => {
             setOkCommandStatus();
             console.log("Response object: ", response);
 
             // Fill response fields
-            const requestFrame = document.querySelector("#request-frame");
-            const responseFrame = document.querySelector("#response-frame");
-            const responseObject = document.querySelector("#response-object");
 
-            requestFrame.textContent = response.request_frame;
-            responseFrame.textContent = response.response_frame;
-            responseObject.innerHTML = `<pre>${response.response_obj}</pre>`;
+            REFS.requestFrame.textContent = response.request_frame;
+            REFS.responseFrame.textContent = response.response_frame;
+            REFS.responseObject.innerHTML = `<pre>${response.response_obj}</pre>`;
         })
-        .catch(err => {
+        .catch((err) => {
             console.error("Can't process request: " + err);
             setErrorCommandStatus(err);
         });
 }
 async function openHubDebugModal() {
     console.log("opened");
-    const modal = document.querySelector("#hub-debug-modal");
-
     const config = await getSettingsConfig();
 
     // if (config.hub_port !== "") {
@@ -293,16 +284,15 @@ async function openHubDebugModal() {
     // }
     //
     fillSerialPortMenu(config.available_ports, config.hub_port);
-    openModal(modal);
+    openModal(REFS.modal);
 }
 
 function fillSerialPortMenu(availablePorts, activePort) {
-    const serialPortMenu = document.querySelector("#dev-serial-port-menu");
-    serialPortMenu.innerHTML = "";
+    REFS.devSerialPortMenu.innerHTML = "";
 
     let optionElement = document.createElement("option");
     optionElement.innerText = "Select port";
-    serialPortMenu.appendChild(optionElement);
+    REFS.devSerialPortMenu.appendChild(optionElement);
 
     availablePorts.forEach((portName) => {
         var optionElement = document.createElement("option");
@@ -312,7 +302,7 @@ function fillSerialPortMenu(availablePorts, activePort) {
             optionElement.selected = true;
         }
 
-        serialPortMenu.appendChild(optionElement);
+        REFS.devSerialPortMenu.appendChild(optionElement);
     });
 }
 
@@ -322,73 +312,62 @@ export async function serialPortSelectHandler(event) {
 
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
-    invoke("setup_hub_connection", {portName: selectedOption})
-        .then(setPortStatus)
-        .catch(setPortStatus);
+    invoke("setup_hub_connection", { portName: selectedOption }).then(setPortStatus).catch(setPortStatus);
 }
 
 function setPortStatus(status) {
-    const portStatusElement = document.querySelector("#port-status-field");
     console.log("Port status received: " + status);
 
     if (status === null) {
-        portStatusElement.className = "hub-status detected";
-        portStatusElement.innerText = "Port Opened";
+        REFS.portStatusElement.className = "hub-status detected";
+        REFS.portStatusElement.innerText = "Port Opened";
     } else if (status === "SerialPortError") {
-        portStatusElement.className = "hub-status serial-port-error";
-        portStatusElement.innerText = "Serial port error";
+        REFS.portStatusElement.className = "hub-status serial-port-error";
+        REFS.portStatusElement.innerText = "Serial port error";
     } else {
-        portStatusElement.className = "hub-status serial-port-error";
-        portStatusElement.innerText = "Internal Error";
+        REFS.portStatusElement.className = "hub-status serial-port-error";
+        REFS.portStatusElement.innerText = "Internal Error";
     }
 }
 async function closeHubDebugModal() {
     console.log("closing");
-    const modalPackInfoContainer = document.querySelector("#hub-debug-modal");
-
-    closeModal(modalPackInfoContainer);
+    closeModal(REFS.modal);
 }
 
 function setOkStatus() {
-    let status = document.querySelector("#request-status-value");
-    status.textContent = "Operation successful";
-    status.className = "request-status ok";
+    REFS.requestStatusValue.textContent = "Operation successful";
+    REFS.requestStatusValue.className = "request-status ok";
 }
 
 function setErrorStatus(statusText) {
-    let status = document.querySelector("#request-status-value");
-    status.textContent = statusText;
-    status.className = "request-status";
+    REFS.requestStatusValue.textContent = statusText;
+    REFS.requestStatusValue.className = "request-status";
 }
 
 function setOkCommandStatus() {
-    let status = document.querySelector("#command-status-value");
-    status.textContent = "Operation successful";
-    status.className = "request-status ok";
+    REFS.commandStatusValue.textContent = "Operation successful";
+    REFS.commandStatusValue.className = "request-status ok";
 }
 
 function setUndefinedCommandStatus() {
-    let status = document.querySelector("#command-status-value");
-    status.textContent = "Undefined";
-    status.className = "request-status undefined";
+    REFS.commandStatusValue.textContent = "Undefined";
+    REFS.commandStatusValue.className = "request-status undefined";
 }
 
 function setErrorCommandStatus(statusText) {
-    let status = document.querySelector("#command-status-value");
-    status.textContent = statusText;
-    status.className = "request-status";
+    REFS.commandStatusValue.textContent = statusText;
+    REFS.commandStatusValue.className = "request-status";
 }
 
 function toHexList(responseFrame) {
-    const hexString = responseFrame
-        .map(decimalValue => decimalValue.toString(16).padStart(2, '0').toUpperCase())
+    const hexString = REFS.responseFrame
+        .map((decimalValue) => decimalValue.toString(16).padStart(2, "0").toUpperCase())
         .join(" ");
     return hexString;
 }
 
 async function sendRawHubRequest() {
-    const input = document.querySelector("#request-from-input");
-    let innerText = input.value;
+    let innerText = REFS.requestFromInput.value;
 
     if (innerText.trim().length === 0) {
         console.log("Empty request. Doing nothing");
@@ -397,9 +376,9 @@ async function sendRawHubRequest() {
 
     let frame = [];
     let inputTokens = innerText.trim().split(" ");
-    inputTokens.forEach(token => {
+    inputTokens.forEach((token) => {
         if (token.length !== 2) {
-            console.log("Byte '" + token + "' is not two characters like 'XX'")
+            console.log("Byte '" + token + "' is not two characters like 'XX'");
             setErrorStatus("Invalid input");
             throw new Error("Invalid input aborting...");
         }
@@ -411,20 +390,19 @@ async function sendRawHubRequest() {
             throw new Error("Invalid input aborting...");
         }
         frame.push(number);
-    })
+    });
 
     console.log("Parsed request frame as dec: " + frame);
-    invoke("send_raw_request_frame", {requestFrame: frame})
-        .then(responseFrame => {
+    invoke("send_raw_request_frame", { requestFrame: frame })
+        .then((responseFrame) => {
             setOkStatus();
-            console.log("Response frame as dec: " + responseFrame);
-            const hexString = toHexList(responseFrame);
+            console.log("Response frame as dec: " + REFS.responseFrame);
+            const hexString = toHexList(REFS.responseFrame);
             console.log("Response frame as HEX string: " + hexString);
 
-            const output = document.querySelector("#response-content-value");
-            output.innerText = hexString;
+            REFS.responseContentValue.innerText = hexString;
         })
-        .catch(err => {
+        .catch((err) => {
             console.error("Can't process request: " + err);
             setErrorStatus(err);
         });
