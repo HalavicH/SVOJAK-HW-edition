@@ -4,23 +4,26 @@ import { getPackInfo, saveRoundDuration, startTheGame } from "../../service/back
 const { invoke } = window.__TAURI__.tauri;
 const { open } = window.__TAURI__.dialog;
 
-let countDownModal = document.querySelector("#first-player-modal");
+const REFS = {
+    // Setup Pack Info Callbacks //
+    countDownModal: document.querySelector("#first-player-modal"),
+    openPackBtn: document.querySelector("#open-pack"),
+    closePackBtn: document.querySelector("#close-pack-info-modal"),
+    startGameBtn: document.querySelector("#start-the-game"),
+    packErrorOkBtn: document.querySelector("#pack-error-ok-btn"),
+    closePackErrorBtn: document.querySelector("#pack-error-close-modal"),
+    modalPackInfoContainer: document.querySelector("#pack-info-modal"),
+};
 
 export function setupPackInfoCallbacks() {
-    document.querySelector("#open-pack").addEventListener("click", openPackInfoModal);
-
-    document.querySelector("#close-pack-info-modal").addEventListener("click", closePackInfoModal);
-
-    document.querySelector("#start-the-game").addEventListener("click", handleStartTheGame);
-
-    document.querySelector("#pack-error-ok-btn").addEventListener("click", closePackErrorModal);
-
-    document.querySelector("#pack-error-close-modal").addEventListener("click", closePackErrorModal);
+    REFS.openPackBtn.addEventListener("click", openPackInfoModal);
+    REFS.closePackBtn.addEventListener("click", closePackInfoModal);
+    REFS.startGameBtn.addEventListener("click", handleStartTheGame);
+    REFS.packErrorOkBtn.addEventListener("click", closePackErrorModal);
+    REFS.closePackErrorBtn.addEventListener("click", closePackErrorModal);
 }
 
 export async function openPackInfoModal() {
-    const modalPackInfoContainer = document.querySelector("#pack-info-modal");
-
     const filePath = await open({
         multiple: false,
         filters: [
@@ -47,7 +50,7 @@ export async function openPackInfoModal() {
             setPackQuestions(packInfo.packQuestions);
             setPackTopicList(packInfo.packTopicList);
 
-            openModal(modalPackInfoContainer);
+            openModal(REFS.modalPackInfoContainer);
         })
         .catch((error) => {
             console.error("Promise rejection:", error);
@@ -95,7 +98,7 @@ function setPackAuthor(packAuthor) {
 export function closePackInfoModal() {
     const modalPackInfoContainer = document.querySelector("#pack-info-modal");
 
-    closeModal(modalPackInfoContainer);
+    closeModal(REFS.modalPackInfoContainer);
 }
 
 export async function handleStartTheGame() {
@@ -117,7 +120,7 @@ export async function handleStartTheGame() {
         })
         .catch((err) => {
             console.log("Error during gamestar");
-            closeModal(countDownModal);
+            closeModal(REFS.countDownModal);
         });
 }
 
@@ -136,7 +139,7 @@ export async function closePackErrorModal() {
 }
 
 function countdown() {
-    openModal(countDownModal);
+    openModal(REFS.countDownModal);
 
     var countdown = 10;
     var countdownElement = document.getElementById("countdown");
