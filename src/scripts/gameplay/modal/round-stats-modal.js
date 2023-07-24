@@ -1,41 +1,54 @@
-import {fetchRoundStats, initNextRound} from "../../service/back-end-com.js";
-import {closeModal, openModal} from "../../service/modal-common.js";
-import {getImagePathOrDefault} from "../../service/utils.js";
-import {displayRoundScreen} from "../gameplay-service.js";
-import {loadRoundFromBackend} from "../setup.js";
+import { fetchRoundStats, initNextRound } from "../../service/back-end-com.js";
+import { closeModal, openModal } from "../../service/modal-common.js";
+import { getImagePathOrDefault } from "../../service/utils.js";
+import { displayRoundScreen } from "../gameplay-service.js";
+import { loadRoundFromBackend } from "../setup.js";
+
+const REFS = {
+    // Common //
+    statsModalDiv: document.querySelector("#stats-modal"),
+    roundStatsTbody: document.querySelector("#player-stats-table").querySelector("tbody"),
+
+    // Li //
+    roundTimeLi: document.querySelector("#round-time"),
+    totalWrongAnswersLi: document.querySelector("#wrong-answers"),
+    totalCorrectAnswersLi: document.querySelector("#correct-answers"),
+    pigQuestionsElementLi: document.querySelector("#pip-question"),
+    normalQuestionsElementLi: document.querySelector("#normal-question"),
+    roundNumberElementLi: document.querySelector("#round-number"),
+    totalQuestionElementLi: document.querySelector("#total-questions"),
+};
 
 export function showRoundStats() {
-    const modalContainer = document.querySelector("#stats-modal");
-    openModal(modalContainer);
+    openModal(REFS.statsModalDiv);
 
-    updateWithNewRoundStats()
+    updateWithNewRoundStats();
 }
 
 export function updateWithNewRoundStats() {
-    fetchRoundStats()
-        .then(stats => {
-            setRoundNumber(stats.roundName);
-            setTotalQuestion(stats.questionNumber);
-            setNormalQuestions(stats.normalQuestionNum);
-            setPipQuestions(stats.pigInPokeQuestionNum);
-            setTotalCorrect(stats.totalCorrectAnswers);
-            setTotalWrong(stats.totalWrongAnswers);
-            // setTotalTries(stats.totalTries);
-            setRoundTime(stats.roundTime);
-            fillPlayersStats(stats.players);
-        });
+    fetchRoundStats().then((stats) => {
+        REFS.roundTimeLi.innerText = "Round time: " + stats.roundTime;
+        REFS.roundNumberElementLi.innerText = "Round: " + stats.roundName;
+
+        REFS.normalQuestionsElementLi.innerText = "Normal: " + stats.normalQuestionNum;
+        REFS.pigQuestionsElementLi.innerText = "Pig in poke questions: " + stats.pigInPokeQuestionNum;
+
+        REFS.totalWrongAnswersLi.innerText = "Total wrong answers: " + stats.totalWrongAnswers;
+        REFS.totalCorrectAnswersLi.innerText = "Total correct answers: " + stats.totalCorrectAnswers;
+        REFS.totalQuestionElementLi.innerText = "Total questions: " + stats.questionNumber;
+
+        fillPlayersStats(stats.players);
+    });
 }
 
 function fillPlayersStats(playerStats) {
-    const roundStatsTbody = document.querySelector("#player-stats-table")
-        .querySelector("tbody");
-    const statsLabel = roundStatsTbody.querySelector(".dark-table-labels");
-    roundStatsTbody.innerHTML = "";
-    roundStatsTbody.appendChild(statsLabel);
+    const statsLabel = REFS.roundStatsTbody.querySelector(".dark-table-labels");
+    REFS.roundStatsTbody.innerHTML = "";
+    REFS.roundStatsTbody.appendChild(statsLabel);
 
     playerStats.forEach((stats) => {
         let tr = document.createElement("tr");
-        roundStatsTbody.appendChild(tr);
+        REFS.roundStatsTbody.appendChild(tr);
 
         let tdIcon = document.createElement("td");
         tr.appendChild(tdIcon);
@@ -64,53 +77,13 @@ function fillPlayersStats(playerStats) {
         let total = document.createElement("td");
         total.innerText = stats.totalAnswers;
         tr.appendChild(total);
-
     });
 }
 
-function setTotalWrong(wrong) {
-    const totalWrongAnswers = document.querySelector("#wrong-answers");
-    totalWrongAnswers.innerText = "Total wrong answers: " + wrong;
-}
-
-function setRoundTime(time) {
-    const roundTime = document.querySelector("#round-time");
-    roundTime.innerText = "Round time: " + time;
-}
-
-function setTotalCorrect(correct) {
-    const totalCorrectAnswers = document.querySelector("#correct-answers");
-    totalCorrectAnswers.innerText = "Total correct answers: " + correct;
-}
-
-function setPipQuestions(pip) {
-    const pigQuestionsElement = document.querySelector("#pip-question");
-    pigQuestionsElement.innerText = "Pig in poke questions: " + pip;
-}
-
-function setNormalQuestions(normal) {
-    const normalQuestionsElement = document.querySelector("#normal-question");
-    normalQuestionsElement.innerText = "Normal: " + normal;
-}
-
-function setRoundNumber(number) {
-    const roundNumberElement = document.querySelector("#round-number");
-    roundNumberElement.innerText = "Round: " + number;
-}
-
-function setTotalQuestion(total) {
-    const totalQuestionElement = document.querySelector("#total-questions");
-    totalQuestionElement.innerText = "Total questions: " + total;
-}
-
 export function nextRoundHandler() {
-    const modalContainer = document.querySelector("#stats-modal");
-    closeModal(modalContainer);
+    closeModal(REFS.statsModalDiv);
     displayRoundScreen();
-    initNextRound()
-        .then(async () => {
-            await loadRoundFromBackend();
-        })
+    initNextRound().then(async () => {
+        await loadRoundFromBackend();
+    });
 }
-
-
