@@ -109,42 +109,4 @@ export async function isAllowAnswerRequired() {
 
 export async function fetchRoundStats() {
     return await invoke("fetch_round_stats");
-    return {
-        roundNumber: 2,
-        questionNumber: 40,
-        normalQuestionNum: 20,
-        pigInPokeQuestionNum: 4,
-        totalCorrectAnswers: 27,
-        totalWrongAnswers: 8,
-        roundTime: "13:55",
-        players: [
-            {
-                id: 1,
-                name: "HalavicH",
-                score: 400,
-                playerIconPath: "",
-                totalAnswers: 5,
-                answeredCorrectly: 3,
-                answeredWrong: 2,
-            },
-            {
-                id: 2,
-                name: "Button",
-                score: 300,
-                playerIconPath: "",
-                totalAnswers: 5,
-                answeredCorrectly: 3,
-                answeredWrong: 2,
-            },
-            {
-                id: 3,
-                name: "Minty",
-                score: 200,
-                playerIconPath: "",
-                totalAnswers: 5,
-                answeredCorrectly: 3,
-                answeredWrong: 2,
-            },
-        ],
-    };
 }
