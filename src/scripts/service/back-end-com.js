@@ -1,7 +1,7 @@
-const {invoke} = window.__TAURI__.tauri;
+const { invoke } = window.__TAURI__.tauri;
 
 export async function setHubType(hubType) {
-    return await invoke("set_hub_type", {hubType});
+    return await invoke("set_hub_type", { hubType });
 }
 
 export async function getSettingsConfig() {
@@ -9,7 +9,7 @@ export async function getSettingsConfig() {
 }
 
 export async function probeHub(selectedOption) {
-    return await invoke("discover_hub", {path: selectedOption});
+    return await invoke("discover_hub", { path: selectedOption });
 }
 
 export async function setHubRadioChannel(value) {
@@ -24,23 +24,29 @@ export async function discoverPlayers() {
 
 export async function savePlayers(playersList) {
     playersList.forEach((player) => {
-        console.log("Saved player" +
-            "id: " + player.terminalId +
-            "iconPath: " + player.playerIconPath +
-            "name: " + player.playerName +
-            "used: " + player.used);
+        console.log(
+            "Saved player" +
+                "id: " +
+                player.termId +
+                "iconPath: " +
+                player.icon +
+                "name: " +
+                player.name +
+                "used: " +
+                player.isUsed
+        );
     });
 
-    await invoke("save_players", {players: playersList});
+    await invoke("save_players", { players: playersList });
 }
 
 export async function getPackInfo(path) {
-    return invoke("get_pack_info", {path: path});
+    return invoke("get_pack_info", { path: path });
 }
 
 export async function saveRoundDuration(roundDurationMinutes) {
     console.log("Round duration: " + roundDurationMinutes);
-    invoke("save_round_duration", {durationMin: roundDurationMinutes});
+    invoke("save_round_duration", { durationMin: roundDurationMinutes });
 }
 
 export function startTheGame() {
@@ -57,7 +63,7 @@ export async function fetchRound() {
 }
 
 export async function getQuestionData(topic, price) {
-    return await invoke("get_question_data", {topic: topic, price: price});
+    return await invoke("get_question_data", { topic: topic, price: price });
 }
 
 export async function hasNextQuestion() {
@@ -69,7 +75,7 @@ export async function initNextRound() {
 }
 
 export async function answerQuestion(answeredCorrectly) {
-    return await invoke("answer_question", {answeredCorrectly: answeredCorrectly});
+    return await invoke("answer_question", { answeredCorrectly: answeredCorrectly });
 }
 
 export async function hasNoPlayerToAnswer() {
@@ -78,7 +84,7 @@ export async function hasNoPlayerToAnswer() {
 
 export async function sendPipVictim(victimId) {
     console.log(victimId);
-    return await invoke("send_pip_victim", {victimId: victimId});
+    return await invoke("send_pip_victim", { victimId: victimId });
 }
 
 export async function getActivePlayerId() {
@@ -90,7 +96,7 @@ export async function allowAnswer() {
 }
 
 export async function finishQuestionPrematurely(topic, price) {
-    return await invoke("finish_question_prematurely", {topic: topic, price: price});
+    return await invoke("finish_question_prematurely", { topic: topic, price: price });
 }
 
 export async function waitForFirstClick() {
@@ -138,7 +144,7 @@ export async function fetchRoundStats() {
                 totalAnswers: 5,
                 answeredCorrectly: 3,
                 answeredWrong: 2,
-            }
-        ]
+            },
+        ],
     };
 }
