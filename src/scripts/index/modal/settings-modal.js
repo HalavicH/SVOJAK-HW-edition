@@ -17,70 +17,68 @@ const REFS = {
     settingsModal: document.querySelector("#settings-modal"),
 
     // Buttons
-    settingsBtn: document.querySelector("#settings-button"),
-    closeSettingsBtn: document.querySelector("#close-settings-modal"),
+    openModalBtn: document.querySelector("#settings-button"),
+    closeModalBtn: document.querySelector("#close-settings-modal"),
 
     ///////////   HW   ///////////
     hwHubSettingsModal: document.querySelector("#hw-hub-settings-modal"),
     // Tables
-    serialTerminalTable: document.querySelector("#terminal-data-table"),
     hwTerminalDataTable: document.querySelector("#terminal-data-table"),
 
     // Buttons
-    hwHubBtn: document.querySelector("#hw-hub-btn"),
-    closeHwBtn: document.querySelector("#close-hw-hub-settings-modal"),
-    saveHwButton: document.querySelector("#save-hw-hub-settings-modal"),
-    setHwBtn: document.querySelector("#set-hub-radio-channel"),
-    refreshBtn: document.querySelector("#refresh-terminals-btn"),
+    hwOpenModalBtn: document.querySelector("#hw-hub-btn"),
+    hwCloseModalBtn: document.querySelector("#close-hw-hub-settings-modal"),
+    hwSaveSettingsBtn: document.querySelector("#save-hw-hub-settings-modal"),
+    hwSetRcBtn: document.querySelector("#set-hub-radio-channel"),
+    hwRefreshTermsBtn: document.querySelector("#refresh-terminals-btn"),
 
     // Inputs
-    radioChannelInput: document.querySelector("#radio-channel"),
-    serialPortMenu: document.querySelector("#serial-port-menu"),
-    serialPortBtn: document.querySelector("#serial-port-menu"),
+    hwRcInput: document.querySelector("#radio-channel"),
+    hwSerialPortMenu: document.querySelector("#serial-port-menu"),
 
     // Divs
-    serialHubStatusDiv: document.querySelector("#hub-status-field"),
+    hwHubStatusDiv: document.querySelector("#hub-status-field"),
 
     ///////////   WEB  ///////////
     webHubSettingsModal: document.querySelector("#web-hub-settings-modal"),
 
     // Tables
-    webPlayerTable: document.querySelector("#players-data-table"),
+    webTerminalDataTable: document.querySelector("#players-data-table"),
 
     // Buttons
-    webHubBtn: document.querySelector("#web-hub-btn"),
-    closeWebHubBtn: document.querySelector("#close-web-hub-settings-modal"),
-    saveWebHubBtn: document.querySelector("#save-web-hub-settings-modal"),
-    refreshWebBtn: document.querySelector("#refresh-web-players-btn"),
+    webOpenModalBtn: document.querySelector("#web-hub-btn"),
+    webCloseModalBtn: document.querySelector("#close-web-hub-settings-modal"),
+    webSaveModalBtn: document.querySelector("#save-web-hub-settings-modal"),
+    webRefreshTermsBtn: document.querySelector("#refresh-web-players-btn"),
 
     // Divs
     webHubStatusDiv: document.querySelector("#web-hub-status-field"),
-    webHubIpField: document.querySelector("#hub-ip-field"),
+    webHubIpDiv: document.querySelector("#hub-ip-field"),
 };
 
 function commonSettingsCallbacks() {
-    REFS.settingsBtn.addEventListener("click", openSettingsModal);
-    REFS.closeSettingsBtn.addEventListener("click", closeSettingsModal);
+    REFS.openModalBtn.addEventListener("click", openSettingsModal);
+    REFS.closeModalBtn.addEventListener("click", closeSettingsModal);
 }
 
 function hwSettingsCallbacks() {
-    REFS.hwHubBtn.addEventListener("click", openHwHubSettingsModal);
-    REFS.closeHwBtn.addEventListener("click", closeHwHubSettingsModal);
-    REFS.saveHwButton.addEventListener("click", saveHwHubSettingsModal);
-    REFS.setHwBtn.addEventListener("click", handleSetHubRadioChannel);
-    REFS.refreshBtn.addEventListener("click", async () => {
-        await handleDiscoverTerminals(REFS.serialTerminalTable);
+    REFS.hwOpenModalBtn.addEventListener("click", openHwHubSettingsModal);
+    REFS.hwCloseModalBtn.addEventListener("click", closeHwHubSettingsModal);
+    REFS.hwSaveSettingsBtn.addEventListener("click", saveHwHubSettingsModal);
+    REFS.hwSetRcBtn.addEventListener("click", handleSetHubRadioChannel);
+    REFS.hwRefreshTermsBtn.addEventListener("click", async () => {
+        await handleDiscoverTerminals(REFS.hwTerminalDataTable);
     });
 
-    REFS.serialPortBtn.addEventListener("change", serialPortSelectHandler);
+    REFS.hwSerialPortMenu.addEventListener("change", serialPortSelectHandler);
 }
 
 function webSettingsCallbacks() {
-    REFS.webHubBtn.addEventListener("click", openWebHubSettingsModal);
-    REFS.closeWebHubBtn.addEventListener("click", closeWebHubSettingsModal);
-    REFS.saveWebHubBtn.addEventListener("click", saveWebHubSettingsModal);
-    REFS.refreshWebBtn.addEventListener("click", async () => {
-        await handleDiscoverTerminals(REFS.webPlayerTable);
+    REFS.webOpenModalBtn.addEventListener("click", openWebHubSettingsModal);
+    REFS.webCloseModalBtn.addEventListener("click", closeWebHubSettingsModal);
+    REFS.webSaveModalBtn.addEventListener("click", saveWebHubSettingsModal);
+    REFS.webRefreshTermsBtn.addEventListener("click", async () => {
+        await handleDiscoverTerminals(REFS.webTerminalDataTable);
     });
 }
 
@@ -111,7 +109,7 @@ export async function openHwHubSettingsModal() {
     const config = await getSettingsConfig();
 
     if (config.hub_port !== "") {
-        discoverHubAndSetStatus(config.hub_port, REFS.serialHubStatusDiv);
+        discoverHubAndSetStatus(config.hub_port, REFS.hwHubStatusDiv);
     }
 
     fillSerialPortMenu(config.available_ports, config.hub_port);
@@ -125,7 +123,7 @@ export function closeHwHubSettingsModal() {
 }
 
 export function saveHwHubSettingsModal() {
-    processPlayerDataSaving(REFS.serialTerminalTable);
+    processPlayerDataSaving(REFS.hwTerminalDataTable);
 
     closeModal(REFS.hwHubSettingsModal);
 }
@@ -177,11 +175,11 @@ function setHubStatus(status, hubStatusElement) {
 }
 
 function fillSerialPortMenu(availablePorts, activePort) {
-    REFS.serialPortMenu.innerHTML = "";
+    REFS.hwSerialPortMenu.innerHTML = "";
 
     let optionElement = document.createElement("option");
     optionElement.innerText = "Select port";
-    REFS.serialPortMenu.appendChild(optionElement);
+    REFS.hwSerialPortMenu.appendChild(optionElement);
 
     availablePorts.forEach((portName) => {
         var optionElement = document.createElement("option");
@@ -191,17 +189,17 @@ function fillSerialPortMenu(availablePorts, activePort) {
             optionElement.selected = true;
         }
 
-        REFS.serialPortMenu.appendChild(optionElement);
+        REFS.hwSerialPortMenu.appendChild(optionElement);
     });
 }
 
 function setRadioChannel(radioChannelNum) {
     if (radioChannelNum === undefined || radioChannelNum === 0) {
-        REFS.radioChannelInput.value = "";
+        REFS.hwRcInput.value = "";
         return;
     }
 
-    REFS.radioChannelInput.value = radioChannelNum;
+    REFS.hwRcInput.value = radioChannelNum;
 }
 
 function fillPlayersData(newPlayersData, playerTable) {
@@ -274,16 +272,16 @@ export async function serialPortSelectHandler(event) {
 
     // Perform actions based on the selected option
     console.log("Selected option:", selectedOption);
-    discoverHubAndSetStatus(selectedOption, REFS.serialHubStatusDiv);
-    await handleDiscoverTerminals(REFS.serialTerminalTable);
+    discoverHubAndSetStatus(selectedOption, REFS.hwHubStatusDiv);
+    await handleDiscoverTerminals(REFS.hwTerminalDataTable);
 }
 
 export async function handleSetHubRadioChannel() {
     console.log("Set radio channel...");
-    const channelIdObject = REFS.radioChannelInput;
+    const channelIdObject = REFS.hwRcInput;
 
     await setHubRadioChannel(channelIdObject.value);
-    await handleDiscoverTerminals(REFS.serialTerminalTable);
+    await handleDiscoverTerminals(REFS.hwTerminalDataTable);
 }
 
 // WEB HUB settings //
@@ -295,11 +293,11 @@ async function openWebHubSettingsModal() {
 
     const config = await getSettingsConfig();
 
-    discoverHubAndSetStatus(config.hub_port, REFS.serialHubStatusDiv);
+    discoverHubAndSetStatus(config.hub_port, REFS.hwHubStatusDiv);
 
     discoverHubAndSetStatus("Nothing", REFS.webHubStatusDiv);
 
-    REFS.webHubIpField.innerText = config.hub_port;
+    REFS.webHubIpDiv.innerText = config.hub_port;
     // TODO: Set player polling
 
     setInterval(queryWebPlayers, 1000);
@@ -310,7 +308,7 @@ function closeWebHubSettingsModal() {
 }
 
 function saveWebHubSettingsModal() {
-    processPlayerDataSaving(REFS.webPlayerTable);
+    processPlayerDataSaving(REFS.webTerminalDataTable);
 
     closeModal(REFS.webHubSettingsModal);
 }
@@ -327,6 +325,6 @@ async function queryWebPlayers() {
         console.log("Modal is closed! Clearing the interval");
         clearInterval(intervalId);
     } else {
-        await handleDiscoverTerminals(REFS.webPlayerTable);
+        await handleDiscoverTerminals(REFS.webTerminalDataTable);
     }
 }
