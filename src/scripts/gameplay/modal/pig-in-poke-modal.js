@@ -5,26 +5,29 @@ import {
     displayQuestionScreen,
     setActivePlayerBadgeState,
     setAllPlayersState,
-    updatePlayers
+    updatePlayers,
 } from "../gameplay-service.js";
 
+const REFS = {
+    playerListDiv: document.querySelector("#player-victim-list"),
+    pipModal: document.querySelector("#pig-in-poke-modal"),
+};
 
 export async function processPipPlayers(activePlayerId) {
     const players = await fetchPlayers();
-    const playerList = document.querySelector("#player-victim-list");
-    playerList.innerHTML = "";
+    REFS.playerListDiv.innerHTML = "";
 
     players.forEach((player) => {
         if (player.id === activePlayerId) {
             console.log("Player with id: '" + activePlayerId + "' removed from pip because he is choosing the victim");
             return;
         }
- 
+
         let playerBadge = document.createElement("div");
         playerBadge.className = "player-victim-badge";
         playerBadge.addEventListener("click", processVictimSelection);
         playerBadge.style.cursor = "pointer";
-        playerList.appendChild(playerBadge);
+        REFS.playerListDiv.appendChild(playerBadge);
 
         let playerIcon = document.createElement("div");
         playerIcon.className = "player-icon";
@@ -40,21 +43,18 @@ export async function processPipPlayers(activePlayerId) {
         playerBadge.appendChild(playerName);
     });
 
-    const modal = document.querySelector("#pig-in-poke-modal");
-
-    openModal(modal);
+    openModal(REFS.pipModal);
 }
 
-async function processVictimSelection(event) { 
+async function processVictimSelection(event) {
     // Єбаний костиль.
     const victim = event.target.parentNode.parentNode;
     const name = victim.querySelector("p").innerText;
     console.log("Victim is: " + name);
-    
+
     await sendPipVictim(name);
 
-    const modal = document.querySelector("#pig-in-poke-modal");
-    closeModal(modal);
+    closeModal(REFS.pipModal);
 
     // setPipPlayersSelection();
     updatePlayers();
@@ -65,4 +65,3 @@ export function setPipPlayersSelection() {
     setAllPlayersState("inactive");
     setActivePlayerBadgeState("target-player");
 }
-
