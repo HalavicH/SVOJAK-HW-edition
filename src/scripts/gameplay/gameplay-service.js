@@ -1,25 +1,49 @@
-const {convertFileSrc} = window.__TAURI__.tauri;
+const { convertFileSrc } = window.__TAURI__.tauri;
 
 import {
     allowAnswer,
-    answerQuestion, finishQuestionPrematurely,
+    answerQuestion,
+    finishQuestionPrematurely,
     getActivePlayerId,
     getQuestionData,
     hasNextQuestion,
     isAllowAnswerRequired,
-    waitForFirstClick
+    waitForFirstClick,
 } from "../service/back-end-com.js";
-import {processPipPlayers} from "./modal/pig-in-poke-modal.js";
-import {processAuctionPlayers} from "./modal/auction-modal.js";
-import {showRoundStats} from "./modal/round-stats-modal.js";
-import {displayPlayers} from "./setup.js";
+import { processPipPlayers } from "./modal/pig-in-poke-modal.js";
+import { processAuctionPlayers } from "./modal/auction-modal.js";
+import { showRoundStats } from "./modal/round-stats-modal.js";
+import { displayPlayers } from "./setup.js";
 
 let qCtx = {
     price: undefined,
     category: undefined,
     answer: undefined,
-    slider: undefined
-}
+    slider: undefined,
+};
+
+const REFS = {
+    questionNumberDiv: document.querySelector("#question-number"),
+    questionCategoryDiv: document.querySelector("#question-category"),
+    questionPriceDiv: document.querySelector("#question-price"),
+
+    // Buttons //
+    prevSlideBtn: document.querySelector("#prev-button"),
+    nextButton: document.querySelector("#next-button"),
+    allowAnswerBtn: document.querySelector("#allow-answer-btn"),
+    correctAnswerBtn: document.querySelector("#correct-answer-btn"),
+    wrongAnswerBtn: document.querySelector("#wrong-answer-btn"),
+
+    // Screens //
+    roundViewport: document.querySelector("#round-screen"),
+    questionViewport: document.querySelector("#question-screen"),
+
+    // //Badges
+    playerBadges: document.querySelector("#player-list").querySelectorAll(".player-badge"),
+
+    // List //
+    playerList: document.querySelector("#player-list"),
+};
 
 export async function processQuestionSelection(event) {
     const question = event.target;
@@ -39,10 +63,10 @@ export async function processQuestionSelection(event) {
 
 function placeQuestionContent(question) {
     // Meta data
-    document.querySelector("#question-number").innerText = "Question: " + question.number;
-    document.querySelector("#question-category").innerText = "Category: " + question.category;
-    document.querySelector("#question-price").innerText = "Price: " + question.price;
-    document.querySelector("#question-price").innerText = "Answer: " + question.answer;
+    REFS.questionNumberDiv.innerText = "Question: " + question.number;
+    REFS.questionCategoryDiv.innerText = "Category: " + question.category;
+    REFS.questionPriceDiv.innerText = "Price: " + question.price;
+    REFS.questionPriceDiv.innerText = "Answer: " + question.answer;
 
     const questionViewport = document.querySelector("#question-slider");
     if (questionViewport.currentSlider !== undefined) {
@@ -67,21 +91,17 @@ class Slider {
 
     init() {
         this.showSlide(this.currentIndex);
-
-        const prevButton = document.querySelector("#prev-button");
-        const nextButton = document.querySelector("#next-button");
-
-        prevButton.addEventListener("click", this.prevSlide.bind(this));
-        nextButton.addEventListener("click", this.nextSlide.bind(this));
+        REFS.prevSlideBtn.addEventListener("click", this.prevSlide.bind(this));
+        REFS.nextButton.addEventListener("click", this.nextSlide.bind(this));
 
         document.addEventListener("keydown", this.handleKeyDown.bind(this));
 
         if (this.scenario.length <= 1) {
-            prevButton.style.display = "none";
-            nextButton.style.display = "none";
+            REFS.prevSlideBtn.style.display = "none";
+            REFS.nextButton.style.display = "none";
         } else {
-            prevButton.style.display = "unset";
-            nextButton.style.display = "unset";
+            REFS.prevSlideBtn.style.display = "unset";
+            REFS.nextButton.style.display = "unset";
         }
     }
 
@@ -106,12 +126,9 @@ class Slider {
     }
 
     destroy() {
-        console.log("destruction called")
-        const prevButton = document.querySelector("#prev-button");
-        const nextButton = document.querySelector("#next-button");
-
-        prevButton.removeEventListener("click", this.prevSlide.bind(this));
-        nextButton.removeEventListener("click", this.nextSlide.bind(this));
+        console.log("destruction called");
+        REFS.prevSlideBtn.removeEventListener("click", this.prevSlide.bind(this));
+        REFS.nextButton.removeEventListener("click", this.nextSlide.bind(this));
 
         document.removeEventListener("keydown", this.handleKeyDown.bind(this));
     }
@@ -212,18 +229,16 @@ class Slider {
     }
 }
 
-
 async function setAnswerButtonsAccordingToQuestionType() {
     // Disable allow button
-    const button = document.querySelector("#allow-answer-btn");
-    if (await (isAllowAnswerRequired()) === true) {
-        button.style.display = "block";
-        document.querySelector("#correct-answer-btn").className = "inactive";
-        document.querySelector("#wrong-answer-btn").className = "inactive";
+    if ((await isAllowAnswerRequired()) === true) {
+        REFS.allowAnswerBtn.style.display = "block";
+        REFS.correctAnswerBtn.className = "inactive";
+        REFS.wrongAnswerBtn.className = "inactive";
     } else {
         button.style.display = "none";
-        document.querySelector("#correct-answer-btn").className = "";
-        document.querySelector("#wrong-answer-btn").className = "";
+        REFS.correctAnswerBtn.className = "";
+        REFS.wrongAnswerBtn.className = "";
     }
 }
 
@@ -232,12 +247,12 @@ export async function processQuestionDisplay(topic, price) {
     const question = await getQuestionData(topic, parseInt(price));
     console.log(
         "Response" +
-        ". questionType: " +
-        question.questionType +
-        ", mediaType: " +
-        question.scenario[0].mediaType +
-        ", content: " +
-        question.scenario[0].content
+            ". questionType: " +
+            question.questionType +
+            ", mediaType: " +
+            question.scenario[0].mediaType +
+            ", content: " +
+            question.scenario[0].content
     );
 
     qCtx.price = question.price;
@@ -260,22 +275,18 @@ export async function processQuestionDisplay(topic, price) {
 
 export function displayQuestionScreen() {
     // Disable round viewport
-    const roundViewport = document.querySelector("#round-screen");
-    roundViewport.style.display = "none";
+    REFS.roundViewport.style.display = "none";
 
     // Enable question viewport
-    const questionViewport = document.querySelector("#question-screen");
-    questionViewport.style.display = "flex";
+    REFS.questionViewport.style.display = "flex";
 }
 
 export function displayRoundScreen() {
     // Disable question viewport
-    const questionViewport = document.querySelector("#question-screen");
-    questionViewport.style.display = "none";
+    REFS.questionViewport.style.display = "none";
 
     // Enable round viewport
-    const roundViewport = document.querySelector("#round-screen");
-    roundViewport.style.display = "flex";
+    REFS.roundViewport.style.display = "flex";
 }
 
 export async function processCorrectAnswer() {
@@ -311,14 +322,12 @@ export async function allowAnswerHandler() {
     await waitForFirstClick();
     updatePlayers();
     // setActivePlayerBadgeState("first-response");
-    document.querySelector("#correct-answer-btn").className = "";
-    document.querySelector("#wrong-answer-btn").className = "";
+    REFS.correctAnswerBtn.className = "";
+    REFS.wrongAnswerBtn.className = "";
 }
 
 export function updateUserScore(responcePlayer) {
-    const playerBadges = document.querySelector("#player-list").querySelectorAll(".player-badge");
-
-    playerBadges.forEach((player) => {
+    REFS.playerBadges.forEach((player) => {
         if (responcePlayer.id == player.querySelector(".player-details-id").innerText) {
             player.querySelector(".player-details-score-value").innerText = responcePlayer.newScore;
         }
@@ -326,8 +335,7 @@ export function updateUserScore(responcePlayer) {
 }
 
 export function setAllPlayersState(state) {
-    const playerList = document.querySelector("#player-list");
-    const playerBadges = playerList.querySelectorAll(".player-badge");
+    const playerBadges = REFS.playerList.querySelectorAll(".player-badge");
 
     playerBadges.forEach((player) => {
         player.className = "player-badge " + state;
@@ -336,8 +344,7 @@ export function setAllPlayersState(state) {
 
 export async function setActivePlayerBadgeState(state) {
     const activePlayer = await getActivePlayerId();
-    const playerList = document.querySelector("#player-list");
-    const playerBadges = playerList.querySelectorAll(".player-badge");
+    const playerBadges = REFS.playerList.querySelectorAll(".player-badge");
 
     playerBadges.forEach((player) => {
         const id = player.querySelector(".player-details-id").innerText;
@@ -353,18 +360,18 @@ export function updatePlayers() {
 }
 
 function showAnswerModal() {
-    qCtx.slider.showAnswer()
+    qCtx.slider.showAnswer();
 }
 
 export async function processShowAnswer() {
     finishQuestionPrematurely()
         .then(() => {
             console.log("Answer: " + qCtx.answer);
-            showAnswerModal()
+            showAnswerModal();
         })
         .catch((err) => {
             console.error("Can't finish question: " + err);
-            showAnswerModal()
+            showAnswerModal();
             // displayRoundScreen();
-        })
+        });
 }
