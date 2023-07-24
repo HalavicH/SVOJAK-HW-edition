@@ -1,13 +1,14 @@
-import {fetchPlayers, fetchRound} from "../service/back-end-com.js";
-import {closeModal, openModal} from "../service/modal-common.js";
-import {getImagePathOrDefault} from "../service/utils.js";
+import { fetchPlayers, fetchRound } from "../service/back-end-com.js";
+import { closeModal, openModal } from "../service/modal-common.js";
+import { getImagePathOrDefault } from "../service/utils.js";
 import {
     processCorrectAnswer,
     processWrongAnswer,
     processQuestionSelection,
-    allowAnswerHandler, processShowAnswer
+    allowAnswerHandler,
+    processShowAnswer,
 } from "./gameplay-service.js";
-import {nextRoundHandler} from "./modal/round-stats-modal.js";
+import { nextRoundHandler } from "./modal/round-stats-modal.js";
 
 console.log("Gameplay loaded!");
 
@@ -18,61 +19,55 @@ window.addEventListener("DOMContentLoaded", () => {
     loadRoundFromBackend();
 });
 
+const REFS = {
+    // Modal //
+    exidDialogModal: document.querySelector("#exit-dialog-modal"),
+
+    // Buttons//
+    goToMenuBtn: document.querySelectorAll(".go-to-main-menu"),
+    correctAnswerBtn: document.querySelector("#correct-answer-btn"),
+    wrongAnswerBtn: document.querySelector("#wrong-answer-btn"),
+    showAnswerBtn: document.querySelector("#show-answer-btn"),
+    allowAnswerBtn: document.querySelector("#allow-answer-btn"),
+    exidDialogYesBtn: document.querySelector("#exit-dialog-yes"),
+    exidDialogNoBtn: document.querySelector("#exit-dialog-no"),
+    nextRoundNoBtn: document.querySelector("#next-round-btn"),
+
+    // List //
+    playerList: document.querySelector("#player-list"),
+    packList: document.querySelector("#round-data-tbody"),
+};
+
 function addButtonEventListeners() {
     // modal processing
-    document.querySelectorAll(".go-to-main-menu")
-        .forEach((button) => {
-            console.log("Applying handler to button: " + button);
-            button.addEventListener("click", () => {
-                const modal = document.querySelector("#exit-dialog-modal");
-                openModal(modal);
-
-            });
+    REFS.goToMenuBtn.forEach((button) => {
+        console.log("Applying handler to button: " + button);
+        button.addEventListener("click", () => {
+            openModal(REFS.exidDialogModal);
         });
-    document
-        .querySelector("#correct-answer-btn")
-        .addEventListener("click", processCorrectAnswer);
+    });
+    REFS.correctAnswerBtn.addEventListener("click", processCorrectAnswer);
+    REFS.wrongAnswerBtn.addEventListener("click", processWrongAnswer);
+    REFS.showAnswerBtn.addEventListener("click", processShowAnswer);
+    REFS.allowAnswerBtn.addEventListener("click", allowAnswerHandler);
+    REFS.exidDialogYesBtn.addEventListener("click", () => {
+        window.location.href = "./index.html";
+    });
 
-    document
-        .querySelector("#wrong-answer-btn")
-        .addEventListener("click", processWrongAnswer);
-
-    document
-        .querySelector("#show-answer-btn")
-        .addEventListener("click", processShowAnswer);
-
-    document
-        .querySelector("#allow-answer-btn")
-        .addEventListener("click", allowAnswerHandler);
-
-    document
-        .querySelector("#exit-dialog-yes")
-        .addEventListener("click", () => {
-            window.location.href = "./index.html";
-        });
-
-    document
-        .querySelector("#exit-dialog-no")
-        .addEventListener("click", closeExitDialogModal);
-
-    document
-        .querySelector("#next-round-btn")
-        .addEventListener("click", nextRoundHandler);
+    REFS.exidDialogNoBtn.addEventListener("click", closeExitDialogModal);
+    REFS.nextRoundNoBtn.addEventListener("click", nextRoundHandler);
 }
 
 function closeExitDialogModal() {
-    const modal = document.querySelector("#exit-dialog-modal");
-
-    closeModal(modal);
+    closeModal(REFS.exidDialogModal);
 }
 
 export async function displayPlayers() {
     const players = await fetchPlayers();
-    const playerList = document.querySelector("#player-list");
-    playerList.innerHTML = "";
+    REFS.playerList.innerHTML = "";
 
     players.forEach((player) => {
-        addMainScreenPlayer(player, playerList)
+        addMainScreenPlayer(player, REFS.playerList);
     });
 }
 
@@ -146,18 +141,16 @@ function addMainScreenPlayer(player, playerList) {
 
 export async function loadRoundFromBackend() {
     const round = await fetchRound();
-    const packList = document.querySelector("#round-data-tbody")
-    packList.innerHTML = "";
+    REFS.packList.innerHTML = "";
 
-    document.querySelectorAll(".round-label")
-        .forEach((label) => {
-            label.innerText = round.roundName + " - " + round.roundType;
-        });
+    document.querySelectorAll(".round-label").forEach((label) => {
+        label.innerText = round.roundName + " - " + round.roundType;
+    });
 
     round.roundTopics.forEach((topic) => {
         // Create row
         let tr = document.createElement("tr");
-        packList.appendChild(tr);
+        REFS.packList.appendChild(tr);
 
         // Create topic marker
         let topicMarker = document.createElement("div");
@@ -174,7 +167,7 @@ export async function loadRoundFromBackend() {
         let questionWidth = 65 / topic.questions.length;
         topic.questions.forEach((question) => {
             addQuestion(question.price, topicMarker, tr, questionWidth);
-        })
+        });
     });
 }
 
