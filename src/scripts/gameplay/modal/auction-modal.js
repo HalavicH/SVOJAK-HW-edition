@@ -12,54 +12,26 @@ export async function processAuctionPlayers(activePlayerId) {
     REFS.playerListDiv.innerHTML = "";
 
     players.forEach((player) => {
-        let playerBadge = document.createElement("div");
-        playerBadge.className = "player-auction-badge";
-        // playerBadge.addEventListener("click", processVictimSelection);
-        playerBadge.style.cursor = "pointer";
-        REFS.playerListDiv.appendChild(playerBadge);
+        const element = document.createElement("div");
+        element.className = "player-auction-badge";
 
-        let playerIcon = document.createElement("div");
-        playerIcon.className = "player-icon";
-        playerBadge.appendChild(playerIcon);
+        element.innerHTML = `
+            <div class="player-icon">
+                <img src=${getImagePathOrDefault(player.playerIconPath)}></>
+            </div>
+            <div class="player-details">
+                <div class="player-details-id" style="display: none;">${player.id}</div>
+                <p class="player-details-name">${player.playerName}</p>
+                <div class="player-details-bid">Bid: 
+                    <p class="player-details-bid-value"> 0 </p>
+                </div>
+                <div class="player-details-score"> Score: 
+                    <p class="player-details-score-value">${player.score}</p>
+                <div>
+            </div>
+        `;
 
-        let icon = document.createElement("img");
-        icon.src = getImagePathOrDefault(player.playerIconPath);
-        playerIcon.appendChild(icon);
-
-        let playersDetails = document.createElement("div");
-        playersDetails.className = "player-details";
-        playerBadge.appendChild(playersDetails);
-
-        let playerDetailsId = document.createElement("div");
-        playerDetailsId.className = "player-details-id";
-        playerDetailsId.style.display = "none";
-        playerDetailsId.innerText = player.id;
-        playersDetails.appendChild(playerDetailsId);
-
-        let playerDetailsName = document.createElement("p");
-        playerDetailsName.className = "player-details-name";
-        playerDetailsName.innerText = player.playerName;
-        playersDetails.appendChild(playerDetailsName);
-
-        let playerBid = document.createElement("div");
-        playerBid.className = "player-details-bid";
-        playerBid.innerText = "Bid: ";
-        playersDetails.appendChild(playerBid);
-
-        let bid = document.createElement("p");
-        bid.className = "player-details-bid-value";
-        bid.innerText = 0;
-        playerBid.appendChild(bid);
-
-        let playerDetailsScore = document.createElement("div");
-        playerDetailsScore.className = "player-details-score";
-        playerDetailsScore.innerText = "Score: ";
-        playersDetails.appendChild(playerDetailsScore);
-
-        let score = document.createElement("p");
-        score.className = "player-details-score-value";
-        score.innerText = player.score;
-        playerDetailsScore.appendChild(score);
+        REFS.playerListDiv.appendChild(element);
     });
 
     openModal(REFS.auctionModal);

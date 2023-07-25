@@ -53,6 +53,8 @@
 
     height: 30%;
     width: 30%;
+
+    cursor: pointer;
 }
 
 .player-auction-badge > .name {

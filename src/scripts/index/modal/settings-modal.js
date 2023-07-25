@@ -138,8 +138,8 @@ function processPlayerDataSaving(playersTable) {
 
         const id = parseInt(playerDataElements[0].innerText);
         const icon = "./assets/game-over-picture.png"; // TODO: save icon from playerDataElements[1];
-        const name = playerDataElements[2].firstChild.value;
-        const used = playerDataElements[3].firstChild.checked;
+        const name = playerDataElements[2].querySelector("input").value;
+        const used = playerDataElements[3].querySelector("input").checked;
 
         const playerData = {
             termId: id,
@@ -203,7 +203,6 @@ function setRadioChannel(radioChannelNum) {
 }
 
 function fillPlayersData(newPlayersData, playerTable) {
-    // Get elements to work with
     const tbody = playerTable.childNodes[1];
 
     // Clear old data
@@ -214,41 +213,24 @@ function fillPlayersData(newPlayersData, playerTable) {
 
     // Fill with new players
     newPlayersData.forEach((playerData) => {
-        let tr = document.createElement("tr");
-        tr.className = "terminal-data";
-        tbody.appendChild(tr);
-
-        let tdId = document.createElement("td");
-        tdId.innerText = playerData.termId;
-        tr.appendChild(tdId);
-
-        let tdIcon = document.createElement("td");
-        tr.appendChild(tdIcon);
-
         const imagePath = getImagePathOrDefault(playerData.icon);
+        const tr = document.createElement("tr");
+        tr.className = "terminal-data";
 
-        let icon = document.createElement("img");
-        icon.src = imagePath;
-        icon.className = "player-image";
-        tdIcon.appendChild(icon);
+        tr.innerHTML = `
+            <td>${playerData.termId}</td>
+            <td>
+                <img src="${imagePath}" class="player-image" alt="Player Icon">
+            </td>
+            <td>
+                <input class="term-name" placeholder="Enter player name" type="text" value="${playerData.name}"></input>
+            </td>
+            <td>
+                <input type="checkbox" ${playerData.isUsed ? "checked" : ""}>
+            </td>
+        `;
 
-        // <input class="term-name" placeholder="Enter player name" type="text"></input>
-        let tdName = document.createElement("td");
-        let input = document.createElement("input");
-        input.className = "term-name";
-        input.placeholder = "Enter player name";
-        input.type = "text";
-        input.value = playerData.name;
-        tdName.appendChild(input);
-        tr.appendChild(tdName);
-
-        let tdUsed = document.createElement("td");
-        tr.appendChild(tdUsed);
-
-        let usedCheckBox = document.createElement("input");
-        usedCheckBox.type = "checkbox";
-        usedCheckBox.checked = playerData.isUsed;
-        tdUsed.appendChild(usedCheckBox);
+        tbody.appendChild(tr);
     });
 }
 
