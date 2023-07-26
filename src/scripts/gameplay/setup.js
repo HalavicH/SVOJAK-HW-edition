@@ -105,38 +105,18 @@ function addMainScreenPlayer(player, playerList) {
     playerBadge.className = "player-badge " + stateClass;
     playerList.appendChild(playerBadge);
 
-    let playerIcon = document.createElement("div");
-    playerIcon.className = "player-icon";
-    playerBadge.appendChild(playerIcon);
-
-    let icon = document.createElement("img");
-    icon.src = getImagePathOrDefault(player.playerIconPath);
-    playerIcon.appendChild(icon);
-
-    let playersDetails = document.createElement("div");
-    playersDetails.className = "player-details";
-    playerBadge.appendChild(playersDetails);
-
-    let playerDetailsId = document.createElement("div");
-    playerDetailsId.className = "player-details-id";
-    playerDetailsId.style.display = "none";
-    playerDetailsId.innerText = player.id;
-    playersDetails.appendChild(playerDetailsId);
-
-    let playerDetailsName = document.createElement("p");
-    playerDetailsName.className = "player-details-name";
-    playerDetailsName.innerText = player.playerName;
-    playersDetails.appendChild(playerDetailsName);
-
-    let playerDetailsScore = document.createElement("div");
-    playerDetailsScore.className = "player-details-score";
-    playerDetailsScore.innerText = "Score: ";
-    playersDetails.appendChild(playerDetailsScore);
-
-    let score = document.createElement("p");
-    score.className = "player-details-score-value";
-    score.innerText = player.score;
-    playerDetailsScore.appendChild(score);
+    playerBadge.innerHTML = `
+        <div class="player-icon">
+            <img src=${getImagePathOrDefault(player.playerIconPath)}/>
+        </div>
+        <div class="player-details">
+            <div class="player-details-id" style="display: none;">${player.id}</div>
+            <p class="player-details-name">${player.playerName}</p>
+            <div class="player-details-score">Score: </div>
+            <p class="player-details-score-value">${player.score}</p>
+        </div>
+    `;
+    REFS.playerList.appendChild(playerBadge);
 }
 
 export async function loadRoundFromBackend() {
