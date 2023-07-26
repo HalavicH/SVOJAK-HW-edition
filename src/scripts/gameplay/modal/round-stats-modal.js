@@ -50,33 +50,17 @@ function fillPlayersStats(playerStats) {
         let tr = document.createElement("tr");
         REFS.roundStatsTbody.appendChild(tr);
 
-        let tdIcon = document.createElement("td");
-        tr.appendChild(tdIcon);
-
-        let icon = document.createElement("img");
-        icon.src = getImagePathOrDefault(stats.playerIconPath);
-        icon.className = "player-image";
-        tdIcon.appendChild(icon);
-
-        let name = document.createElement("td");
-        name.innerText = stats.name;
-        tr.appendChild(name);
-
-        let score = document.createElement("td");
-        score.innerText = stats.score;
-        tr.appendChild(score);
-
-        let correct = document.createElement("td");
-        correct.innerText = stats.answeredCorrectly;
-        tr.appendChild(correct);
-
-        let wrong = document.createElement("td");
-        wrong.innerText = stats.answeredWrong;
-        tr.appendChild(wrong);
-
-        let total = document.createElement("td");
-        total.innerText = stats.totalAnswers;
-        tr.appendChild(total);
+        tr.innerHTML = `
+            <td>
+                <img src=${getImagePathOrDefault(stats.playerIconPath)} class="player-image"/>            
+            </td>
+            <td>${stats.name}</td>
+            <td>${stats.score}</td>
+            <td>${stats.answeredCorrectly}</td>
+            <td>${stats.answeredWrong}</td>
+            <td>${stats.totalAnswers}</td>
+            `;
+        REFS.roundStatsTbody.appendChild(tr);
     });
 }
 
