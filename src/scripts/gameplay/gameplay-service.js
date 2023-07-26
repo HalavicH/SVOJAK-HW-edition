@@ -23,6 +23,7 @@ let qCtx = {
 };
 
 const REFS = {
+    // Div //
     questionNumberDiv: document.querySelector("#question-number"),
     questionCategoryDiv: document.querySelector("#question-category"),
     questionPriceDiv: document.querySelector("#question-price"),

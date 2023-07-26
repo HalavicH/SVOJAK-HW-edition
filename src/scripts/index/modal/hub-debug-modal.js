@@ -5,27 +5,40 @@ const { invoke } = window.__TAURI__.tauri;
 const { open } = window.__TAURI__.dialog;
 
 const REFS = {
-    openHubDebug: document.querySelector("#open-hub-debug"),
-    closeHubDebugModal: document.querySelector("#close-hub-debug-modal"),
+    // Buttons//
+    openHubDebugBtn: document.querySelector("#open-hub-debug"),
     sendRequestBtn: document.querySelector("#send-request-btn"),
-    devSerialPortMenu: document.querySelector("#dev-serial-port-menu"),
-    devHubCommandMenu: document.querySelector("#dev-hub-command-menu"),
     sendComandBtn: document.querySelector("#send-command-btn"),
-    parameter1Input: document.querySelector("#request-parameter-1"),
-    parameter2Input: document.querySelector("#request-parameter-2"),
+
+    // Modal //
+    closeHubDebugModal: document.querySelector("#close-hub-debug-modal"),
+    modal: document.querySelector("#hub-debug-modal"),
+
+    // Frame //
     requestFrame: document.querySelector("#request-frame"),
     responseFrame: document.querySelector("#response-frame"),
-    responseObject: document.querySelector("#response-object"),
-    modal: document.querySelector("#hub-debug-modal"),
-    portStatusElement: document.querySelector("#port-status-field"),
-    requestStatusValue: document.querySelector("#request-status-value"),
+
+    // Value //
     commandStatusValue: document.querySelector("#command-status-value"),
-    requestFromInput: document.querySelector("#request-from-input"),
+    requestStatusValue: document.querySelector("#request-status-value"),
     responseContentValue: document.querySelector("#response-content-value"),
+
+    // Menu //
+    devSerialPortMenu: document.querySelector("#dev-serial-port-menu"),
+    devHubCommandMenu: document.querySelector("#dev-hub-command-menu"),
+
+    // Input //
+    parameter1Input: document.querySelector("#request-parameter-1"),
+    parameter2Input: document.querySelector("#request-parameter-2"),
+    requestFromInput: document.querySelector("#request-from-input"),
+
+    // Trash //
+    responseObjectDiv: document.querySelector("#response-object"),
+    portStatusElement: document.querySelector("#port-status-field"),
 };
 
 export function setupHubDebugCallbacks() {
-    REFS.openHubDebug.addEventListener("click", openHubDebugModal);
+    REFS.openHubDebugBtn.addEventListener("click", openHubDebugModal);
     REFS.closeHubDebugModal.addEventListener("click", closeHubDebugModal);
     REFS.sendRequestBtn.addEventListener("click", sendRawHubRequest);
     REFS.devSerialPortMenu.addEventListener("change", serialPortSelectHandler);
@@ -268,7 +281,7 @@ function createRequest() {
 
             REFS.requestFrame.textContent = response.request_frame;
             REFS.responseFrame.textContent = response.response_frame;
-            REFS.responseObject.innerHTML = `<pre>${response.response_obj}</pre>`;
+            REFS.responseObjectDiv.innerHTML = `<pre>${response.response_obj}</pre>`;
         })
         .catch((err) => {
             console.error("Can't process request: " + err);

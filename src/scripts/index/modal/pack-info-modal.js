@@ -5,14 +5,16 @@ const { invoke } = window.__TAURI__.tauri;
 const { open } = window.__TAURI__.dialog;
 
 const REFS = {
-    // Setup Pack Info Callbacks //
+    // Common //
     countDownModal: document.querySelector("#first-player-modal"),
+    modalPackInfoContainer: document.querySelector("#pack-info-modal"),
+
+    // Buttons //
     openPackBtn: document.querySelector("#open-pack"),
     closePackBtn: document.querySelector("#close-pack-info-modal"),
     startGameBtn: document.querySelector("#start-the-game"),
     packErrorOkBtn: document.querySelector("#pack-error-ok-btn"),
     closePackErrorBtn: document.querySelector("#pack-error-close-modal"),
-    modalPackInfoContainer: document.querySelector("#pack-info-modal"),
 };
 
 export function setupPackInfoCallbacks() {
