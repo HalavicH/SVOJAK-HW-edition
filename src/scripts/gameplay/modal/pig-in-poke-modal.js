@@ -26,21 +26,15 @@ export async function processPipPlayers(activePlayerId) {
         let playerBadge = document.createElement("div");
         playerBadge.className = "player-victim-badge";
         playerBadge.addEventListener("click", processVictimSelection);
-        playerBadge.style.cursor = "pointer";
         REFS.playerListDiv.appendChild(playerBadge);
 
-        let playerIcon = document.createElement("div");
-        playerIcon.className = "player-icon";
-        playerBadge.appendChild(playerIcon);
-
-        let icon = document.createElement("img");
-        icon.src = getImagePathOrDefault(player.playerIconPath);
-        playerIcon.appendChild(icon);
-
-        let playerName = document.createElement("p");
-        playerName.className = "name";
-        playerName.innerText = player.playerName;
-        playerBadge.appendChild(playerName);
+        playerBadge.innerHTML = `
+            <div class="player-icon">
+                <img src=${getImagePathOrDefault(player.playerIconPath)}/>
+            </div>
+            <p class="name">${player.playerName}</p>
+        `;
+        REFS.playerListDiv.appendChild(playerBadge);
     });
 
     openModal(REFS.pipModal);
